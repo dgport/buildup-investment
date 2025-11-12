@@ -134,7 +134,7 @@ const Carousel = React.forwardRef<
         <div
           ref={ref}
           onKeyDownCapture={handleKeyDown}
-          className={cn('relative md:px-2', className)}
+          className={cn('relative md:pr-2', className)}
           role="region"
           aria-roledescription="carousel"
           {...props}
@@ -158,7 +158,7 @@ const CarouselContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          'flex gap-6',
+          'flex gap-6 md:gap-0',
           orientation === 'horizontal' ? '-ml-3' : '-mt-4 flex-col',
           className
         )}

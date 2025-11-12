@@ -16,7 +16,7 @@ const ProjectCard = ({ project }: any) => {
     project?.partner?.translation?.companyName || project?.partner?.companyName
 
   return (
-    <div className="bg-white rounded-xl border border-gray-300 transition-all duration-300 h-full p-2 cursor-pointer">
+    <div className="bg-white rounded-xl border border-gray-300 transition-all duration-300 h-full p-1 cursor-pointer">
       <div className="relative h-72 overflow-hidden rounded-lg">
         {!imageError ? (
           <img

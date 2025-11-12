@@ -51,7 +51,7 @@ const ProjectsCarousel = ({ projects }: ProjectsCarouselProps) => {
         </div>
 
         <Carousel opts={{ align: 'start', loop: true }} className="w-full ">
-          <CarouselContent className="my-7">
+          <CarouselContent className="my-7 ">
             {projects.map(project => (
               <CarouselItem
                 key={project.id}

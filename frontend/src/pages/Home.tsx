@@ -28,7 +28,7 @@ const HomePage = () => {
         </div>
       ) : (
         projects && (
-          <section className=" px-6 sm:px-8 md:px-12 lg:px-16 xl:px-24">
+          <section className=" px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
             <ProjectsCarousel projects={projects} />
           </section>
         )
@@ -42,7 +42,7 @@ const HomePage = () => {
         </div>
       ) : (
         partners && (
-          <section className=" px-6 sm:px-8 md:px-12 lg:px-16 xl:px-24">
+          <section className=" px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
             <PartnersCarousel companies={partners} />{' '}
           </section>
         )
