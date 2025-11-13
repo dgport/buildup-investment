@@ -2,11 +2,6 @@ import { api } from '../api/api'
 import { API_ENDPOINTS } from '@/constants/api'
 import type { Apartment, ApartmentTranslation } from '../types/apartments'
 
-export interface UpsertApartmentTranslationDto {
-  language: string
-  description: string
-}
-
 export const apartmentsService = {
   getAll: (lang?: string, projectId?: number) =>
     api.get<Apartment[]>(API_ENDPOINTS.APARTMENTS.APARTMENTS, {
@@ -45,7 +40,7 @@ export const apartmentsService = {
   getTranslations: (id: number) =>
     api.get<ApartmentTranslation[]>(API_ENDPOINTS.APARTMENTS.TRANSLATIONS(id)),
 
-  upsertTranslation: (id: number, data: UpsertApartmentTranslationDto) =>
+  upsertTranslation: (id: number, data: ApartmentTranslation) =>
     api.patch<ApartmentTranslation>(
       API_ENDPOINTS.APARTMENTS.TRANSLATIONS(id),
       data

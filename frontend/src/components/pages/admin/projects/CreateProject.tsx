@@ -28,9 +28,15 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
     projectName: '',
     projectLocation: '',
     partnerId: '',
+    priceFrom: '',
+    deliveryDate: '',
+    numFloors: '',
+    numApartments: '',
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const createProject = useCreateProject()
@@ -44,6 +50,26 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
       reader.onloadend = () => setImagePreview(reader.result as string)
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length > 0) {
+      setGalleryFiles(prev => [...prev, ...files])
+
+      files.forEach(file => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setGalleryPreviews(prev => [...prev, reader.result as string])
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+  }
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryFiles(prev => prev.filter((_, i) => i !== index))
+    setGalleryPreviews(prev => prev.filter((_, i) => i !== index))
   }
 
   const validateForm = () => {
@@ -68,9 +94,27 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
     data.append('projectName', formData.projectName)
     data.append('projectLocation', formData.projectLocation)
     data.append('partnerId', formData.partnerId)
+
+    if (formData.priceFrom) {
+      data.append('priceFrom', formData.priceFrom)
+    }
+    if (formData.deliveryDate) {
+      data.append('deliveryDate', formData.deliveryDate)
+    }
+    if (formData.numFloors) {
+      data.append('numFloors', formData.numFloors)
+    }
+    if (formData.numApartments) {
+      data.append('numApartments', formData.numApartments)
+    }
+
     if (imageFile) {
       data.append('image', imageFile)
     }
+
+    galleryFiles.forEach(file => {
+      data.append('gallery', file)
+    })
 
     try {
       await createProject.mutateAsync(data)
@@ -183,15 +227,92 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
           )}
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label
+              htmlFor="priceFrom"
+              className="text-sm font-medium text-foreground"
+            >
+              Price From (₾)
+            </Label>
+            <Input
+              id="priceFrom"
+              type="number"
+              value={formData.priceFrom}
+              onChange={e =>
+                setFormData({ ...formData, priceFrom: e.target.value })
+              }
+              placeholder="e.g., 50000"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="deliveryDate"
+              className="text-sm font-medium text-foreground"
+            >
+              Delivery Date
+            </Label>
+            <Input
+              id="deliveryDate"
+              type="date"
+              value={formData.deliveryDate}
+              onChange={e =>
+                setFormData({ ...formData, deliveryDate: e.target.value })
+              }
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="numFloors"
+              className="text-sm font-medium text-foreground"
+            >
+              Number of Floors
+            </Label>
+            <Input
+              id="numFloors"
+              type="number"
+              value={formData.numFloors}
+              onChange={e =>
+                setFormData({ ...formData, numFloors: e.target.value })
+              }
+              placeholder="e.g., 10"
+              className="bg-background border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="numApartments"
+              className="text-sm font-medium text-foreground"
+            >
+              Number of Apartments
+            </Label>
+            <Input
+              id="numApartments"
+              type="number"
+              value={formData.numApartments}
+              onChange={e =>
+                setFormData({ ...formData, numApartments: e.target.value })
+              }
+              placeholder="e.g., 50"
+              className="bg-background border-border"
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label className="text-sm font-medium text-foreground">
-            Project Image
+            Main Project Image
           </Label>
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-foreground/40 transition-colors relative bg-muted/30">
             {imagePreview ? (
               <div className="relative inline-block">
                 <img
-                  src={imagePreview || '/placeholder.svg'}
+                  src={imagePreview}
                   alt="Preview"
                   className="max-h-48 rounded-md border border-border"
                 />
@@ -226,6 +347,53 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-foreground">
+            Gallery Images (up to 20)
+          </Label>
+          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-foreground/40 transition-colors relative bg-muted/30">
+            <div className="py-2">
+              <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-3" />
+              <p className="text-sm font-medium text-foreground">
+                Click to upload multiple images
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                PNG, JPG up to 5MB each
+              </p>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleGalleryChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </div>
+
+          {galleryPreviews.length > 0 && (
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+              {galleryPreviews.map((preview, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={preview}
+                    alt={`Gallery ${index + 1}`}
+                    className="w-full h-24 object-cover rounded-md border border-border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6"
+                    onClick={() => removeGalleryImage(index)}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {errors.submit && (

@@ -20,12 +20,17 @@ model Partners {
 }
 
 model Projects {
-  id              Int      @id @default(autoincrement())
-  projectName     String   @map("project_name") @unique
-  projectLocation String   @map("project_location")
+  id              Int       @id @default(autoincrement())
+  projectName     String    @map("project_name") @unique
+  projectLocation String    @map("project_location")
   image           String?
-  createdAt       DateTime @map("created_at") @default(now())
-  partnerId       Int      @map("partner_id")
+  gallery         String[]  @default([]) // New: Gallery images array
+  priceFrom       Int?      @map("price_from") // New: Optional price
+  deliveryDate    DateTime? @map("delivery_date") // New: Optional delivery date
+  numFloors       Int?      @map("num_floors") // New: Optional number of floors
+  numApartments   Int?      @map("num_apartments") // New: Optional number of apartments
+  createdAt       DateTime  @map("created_at") @default(now())
+  partnerId       Int       @map("partner_id")
 
   partner      Partners              @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   translations ProjectTranslations[]

@@ -16,6 +16,8 @@ export const API_ENDPOINTS = {
   PROJECTS: {
     PROJECTS: '/projects',
     PROJECT_BY_ID: (id: number) => `/projects/${id}`,
+    PROJECT_GALLERY_IMAGE: (id: number, imageIndex: number) =>
+      `/projects/${id}/gallery/${imageIndex}`,
     TRANSLATIONS: (id: number) => `/projects/${id}/translations`,
     TRANSLATION_BY_LANGUAGE: (id: number, language: string) =>
       `/projects/${id}/translations/${language}`,

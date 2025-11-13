@@ -10,7 +10,7 @@ import {
   Patch,
   Post,
   Query,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
@@ -25,7 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertProjectTranslationDto } from './dto/UpsertProjectTranslations.dto';
 
@@ -47,19 +47,53 @@ export class ProjectsController {
     return this.projectsService.findAll(lang || 'en');
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get project by ID' })
+  @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
+  @ApiQuery({
+    name: 'lang',
+    required: false,
+    description: 'Language code (e.g., en, ka, ru)',
+    example: 'en',
+  })
+  @ApiResponse({ status: 200, description: 'Project retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Project not found' })
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('lang') lang?: string,
+  ) {
+    return this.projectsService.findOne(id, lang || 'en');
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new project' })
   @ApiResponse({ status: 201, description: 'Project created successfully' })
   @ApiResponse({ status: 409, description: 'Project already exists' })
-  @UseInterceptors(FileInterceptor('image', multerConfig('projects')))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'image', maxCount: 1 },
+        { name: 'gallery', maxCount: 20 },
+      ],
+      multerConfig('projects'),
+    ),
+  )
   @ApiBody({ type: CreateProjectDto })
   async createProject(
     @Body() dto: CreateProjectDto,
-    @UploadedFile() image?: Express.Multer.File,
+    @UploadedFiles()
+    files?: {
+      image?: Express.Multer.File[];
+      gallery?: Express.Multer.File[];
+    },
   ) {
-    return this.projectsService.createProject(dto, image);
+    return this.projectsService.createProject(
+      dto,
+      files?.image?.[0],
+      files?.gallery,
+    );
   }
 
   @Patch(':id')
@@ -68,7 +102,15 @@ export class ProjectsController {
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Project updated successfully' })
   @ApiResponse({ status: 404, description: 'Project not found' })
-  @UseInterceptors(FileInterceptor('image', multerConfig('projects')))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'image', maxCount: 1 },
+        { name: 'gallery', maxCount: 20 },
+      ],
+      multerConfig('projects'),
+    ),
+  )
   @ApiBody({
     type: UpdateProjectDto,
     description: 'Project update data',
@@ -76,9 +118,18 @@ export class ProjectsController {
   async updateProject(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProjectDto,
-    @UploadedFile() image?: Express.Multer.File,
+    @UploadedFiles()
+    files?: {
+      image?: Express.Multer.File[];
+      gallery?: Express.Multer.File[];
+    },
   ) {
-    return this.projectsService.updateProject(id, dto, image);
+    return this.projectsService.updateProject(
+      id,
+      dto,
+      files?.image?.[0],
+      files?.gallery,
+    );
   }
 
   @Delete(':id')
@@ -88,6 +139,22 @@ export class ProjectsController {
   @ApiResponse({ status: 404, description: 'Project not found' })
   async deleteProject(@Param('id', ParseIntPipe) id: number) {
     return this.projectsService.deleteProject(id);
+  }
+
+  @Delete(':id/gallery/:imageIndex')
+  @ApiOperation({ summary: 'Delete a specific gallery image from project' })
+  @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
+  @ApiParam({ name: 'imageIndex', description: 'Image index', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: 'Gallery image deleted successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Project or image not found' })
+  async deleteGalleryImage(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('imageIndex', ParseIntPipe) imageIndex: number,
+  ) {
+    return this.projectsService.deleteGalleryImage(id, imageIndex);
   }
 
   @Get(':id/translations')

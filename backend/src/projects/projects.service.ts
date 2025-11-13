@@ -37,6 +37,11 @@ export class ProjectsService {
       projectName: project.projectName,
       projectLocation: project.projectLocation,
       image: project.image,
+      gallery: project.gallery,
+      priceFrom: project.priceFrom,
+      deliveryDate: project.deliveryDate,
+      numFloors: project.numFloors,
+      numApartments: project.numApartments,
       createdAt: project.createdAt,
       translation: project.translations[0] || null,
       partner: project.partner
@@ -50,7 +55,57 @@ export class ProjectsService {
     }));
   }
 
-  async createProject(dto: CreateProjectDto, image?: Express.Multer.File) {
+  async findOne(id: number, lang: string = 'en') {
+    const project = await this.prismaService.projects.findUnique({
+      where: { id },
+      include: {
+        partner: {
+          include: {
+            translations: {
+              where: { language: lang },
+              take: 1,
+            },
+          },
+        },
+        translations: {
+          where: { language: lang },
+          take: 1,
+        },
+      },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID "${id}" not found`);
+    }
+
+    return {
+      id: project.id,
+      projectName: project.projectName,
+      projectLocation: project.projectLocation,
+      image: project.image,
+      gallery: project.gallery,
+      priceFrom: project.priceFrom,
+      deliveryDate: project.deliveryDate,
+      numFloors: project.numFloors,
+      numApartments: project.numApartments,
+      createdAt: project.createdAt,
+      translation: project.translations[0] || null,
+      partner: project.partner
+        ? {
+            id: project.partner.id,
+            companyName: project.partner.companyName,
+            image: project.partner.image,
+            translation: project.partner.translations[0] || null,
+          }
+        : null,
+    };
+  }
+
+  async createProject(
+    dto: CreateProjectDto,
+    image?: Express.Multer.File,
+    gallery?: Express.Multer.File[],
+  ) {
     await this.validatePartnerExists(dto.partnerId);
 
     const existingProject = await this.prismaService.projects.findUnique({
@@ -63,11 +118,23 @@ export class ProjectsService {
       );
     }
 
+    // Generate gallery URLs
+    const galleryUrls = gallery
+      ? gallery
+          .map((img) => FileUtils.generateImageUrl(img, 'projects'))
+          .filter((url): url is string => url !== null)
+      : [];
+
     const project = await this.prismaService.projects.create({
       data: {
         projectName: dto.projectName,
         projectLocation: dto.projectLocation,
         image: image ? FileUtils.generateImageUrl(image, 'projects') : null,
+        gallery: galleryUrls,
+        priceFrom: dto.priceFrom,
+        deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : null,
+        numFloors: dto.numFloors,
+        numApartments: dto.numApartments,
         partnerId: dto.partnerId,
       },
       include: {
@@ -92,6 +159,7 @@ export class ProjectsService {
     id: number,
     dto: UpdateProjectDto,
     image?: Express.Multer.File,
+    gallery?: Express.Multer.File[],
   ) {
     const project = await this.prismaService.projects.findUnique({
       where: { id },
@@ -114,13 +182,29 @@ export class ProjectsService {
       imagePath = FileUtils.generateImageUrl(image, 'projects');
     }
 
+    // Handle gallery images - add to existing
+    let galleryUrls = [...project.gallery];
+    if (gallery && gallery.length > 0) {
+      const newGalleryUrls = gallery
+        .map((img) => FileUtils.generateImageUrl(img, 'projects'))
+        .filter((url): url is string => url !== null);
+      galleryUrls = [...galleryUrls, ...newGalleryUrls];
+    }
+
     const updatedProject = await this.prismaService.projects.update({
       where: { id },
       data: {
         ...(dto.projectName && { projectName: dto.projectName }),
         ...(dto.projectLocation && { projectLocation: dto.projectLocation }),
         ...(dto.partnerId && { partnerId: dto.partnerId }),
+        ...(dto.priceFrom !== undefined && { priceFrom: dto.priceFrom }),
+        ...(dto.deliveryDate && { deliveryDate: new Date(dto.deliveryDate) }),
+        ...(dto.numFloors !== undefined && { numFloors: dto.numFloors }),
+        ...(dto.numApartments !== undefined && {
+          numApartments: dto.numApartments,
+        }),
         image: imagePath,
+        gallery: galleryUrls,
       },
       include: {
         partner: true,
@@ -128,6 +212,41 @@ export class ProjectsService {
     });
 
     return updatedProject;
+  }
+
+  async deleteGalleryImage(id: number, imageIndex: number) {
+    const project = await this.prismaService.projects.findUnique({
+      where: { id },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID "${id}" not found`);
+    }
+
+    if (imageIndex < 0 || imageIndex >= project.gallery.length) {
+      throw new BadRequestException(
+        `Invalid image index. Project has ${project.gallery.length} gallery images.`,
+      );
+    }
+
+    const imageToDelete = project.gallery[imageIndex];
+
+    // Delete the file from storage
+    await FileUtils.deleteFile(imageToDelete);
+
+    // Remove image from array
+    const updatedGallery = project.gallery.filter(
+      (_, index) => index !== imageIndex,
+    );
+
+    await this.prismaService.projects.update({
+      where: { id },
+      data: {
+        gallery: updatedGallery,
+      },
+    });
+
+    return { message: 'Gallery image deleted successfully' };
   }
 
   async upsertTranslation(
@@ -220,8 +339,16 @@ export class ProjectsService {
       throw new NotFoundException(`Project with ID "${id}" not found`);
     }
 
+    // Delete main image
     if (project.image) {
       await FileUtils.deleteFile(project.image);
+    }
+
+    // Delete all gallery images
+    if (project.gallery && project.gallery.length > 0) {
+      for (const imagePath of project.gallery) {
+        await FileUtils.deleteFile(imagePath);
+      }
     }
 
     await this.prismaService.projects.delete({

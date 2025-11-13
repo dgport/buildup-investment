@@ -1,3 +1,12 @@
+import type { Project } from "./projects"
+
+export interface ApartmentTranslation {
+  id: number
+  apartmentId: number
+  language: string
+  description: string
+}
+
 export interface Apartment {
   id: number
   room: number
@@ -7,16 +16,6 @@ export interface Apartment {
   images: string[]
   description: string | null
   createdAt: string
-  project: {
-    id: number
-    projectName: string
-    projectLocation: string
-  }
-}
-
-export interface ApartmentTranslation {
-  id: number
-  apartmentId: number
-  language: string
-  description: string
+  project: Project
+  translation?: ApartmentTranslation | null
 }

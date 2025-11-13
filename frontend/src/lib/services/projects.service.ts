@@ -1,3 +1,4 @@
+// services/projects.service.ts
 import type { Project, ProjectTranslation } from '../types/projects'
 import { api } from '../api/api'
 import { API_ENDPOINTS } from '@/constants/api'
@@ -11,6 +12,11 @@ export interface UpsertProjectTranslationDto {
 export const projectsService = {
   getAll: (lang?: string) =>
     api.get<Project[]>(API_ENDPOINTS.PROJECTS.PROJECTS, {
+      params: { lang },
+    }),
+
+  getById: (id: number, lang?: string) =>
+    api.get<Project>(API_ENDPOINTS.PROJECTS.PROJECT_BY_ID(id), {
       params: { lang },
     }),
 
@@ -31,6 +37,11 @@ export const projectsService = {
   deleteProject: (id: number) =>
     api.delete<{ message: string; id: number }>(
       API_ENDPOINTS.PROJECTS.PROJECT_BY_ID(id)
+    ),
+
+  deleteGalleryImage: (id: number, imageIndex: number) =>
+    api.delete<{ message: string }>(
+      API_ENDPOINTS.PROJECTS.PROJECT_GALLERY_IMAGE(id, imageIndex)
     ),
 
   getTranslations: (id: number) =>

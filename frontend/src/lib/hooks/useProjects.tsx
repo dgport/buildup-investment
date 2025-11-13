@@ -1,3 +1,4 @@
+// hooks/useProjects.ts
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   projectsService,
@@ -13,6 +14,17 @@ export const useProjects = (lang?: string) => {
       const response = await projectsService.getAll(lang)
       return response.data
     },
+  })
+}
+
+export const useProject = (id: number, lang?: string) => {
+  return useQuery<Project>({
+    queryKey: ['projects', id, lang],
+    queryFn: async () => {
+      const response = await projectsService.getById(id, lang)
+      return response.data
+    },
+    enabled: !!id,
   })
 }
 
@@ -47,6 +59,27 @@ export const useDeleteProject = () => {
       return response.data
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
+}
+
+export const useDeleteProjectGalleryImage = () => {
+  return useMutation({
+    mutationFn: async ({
+      id,
+      imageIndex,
+    }: {
+      id: number
+      imageIndex: number
+    }) => {
+      const response = await projectsService.deleteGalleryImage(id, imageIndex)
+      return response.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['projects', variables.id],
+      })
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
   })
