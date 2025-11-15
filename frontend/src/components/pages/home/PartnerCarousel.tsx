@@ -6,22 +6,17 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import PartnerCard from '../partners/PartnerCard'
+import type { Partner } from '@/lib/types/partners'
+import PartnerCard from '@/components/pages/partners/PartnerCard'
 
 interface PartnersCarouselProps {
-  companies: Array<{
-    id: number
-    companyName: string
-    image: string
-  }>
+  partners: Partner[]
 }
 
-const PartnersCarousel = ({ companies }: PartnersCarouselProps) => {
+const PartnersCarousel = ({ partners }: PartnersCarouselProps) => {
   const { t } = useTranslation()
 
-  if (!companies || companies.length === 0) {
-    return null
-  }
+  if (!partners || partners.length === 0) return null
 
   return (
     <div className="py-16">
@@ -30,6 +25,7 @@ const PartnersCarousel = ({ companies }: PartnersCarouselProps) => {
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
             {t('partners.title')}
           </h1>
+
           <a
             href="/partners"
             className="text-sm sm:text-base font-semibold text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
@@ -40,17 +36,17 @@ const PartnersCarousel = ({ companies }: PartnersCarouselProps) => {
 
         <Carousel opts={{ align: 'start', loop: true }} className="w-full">
           <CarouselContent className="my-7">
-            {companies.map(company => (
+            {partners.map(partner => (
               <CarouselItem
-                key={company.id}
+                key={partner.id}
                 className="cursor-default basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
               >
-                <PartnerCard company={company} />
+                <PartnerCard partner={partner} />
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="    md:flex bg-gray-100" />
-          <CarouselNext className=" md:flex bg-gray-100" />
+          <CarouselPrevious className="md:flex bg-gray-100" />
+          <CarouselNext className="md:flex bg-gray-100" />
         </Carousel>
       </div>
     </div>

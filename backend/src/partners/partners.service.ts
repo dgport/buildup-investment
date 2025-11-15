@@ -9,12 +9,29 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { LANGUAGES } from '@/common/constants/language';
 
+interface FindAllParams {
+  lang?: string;
+  page?: number;
+  limit?: number;
+}
+
 @Injectable()
 export class PartnersService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findAll(lang: string = 'en') {
+  async findAll(params: FindAllParams = {}) {
+    const { lang = 'en', page = 1, limit = 10 } = params;
+
+    const skip = (page - 1) * limit;
+
+    const total = await this.prismaService.partners.count();
+
     const partners = await this.prismaService.partners.findMany({
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         translations: {
           where: { language: lang },
@@ -23,13 +40,25 @@ export class PartnersService {
       },
     });
 
-    return partners.map((partner) => ({
+    const mappedPartners = partners.map((partner) => ({
       id: partner.id,
       companyName: partner.companyName,
       image: partner.image,
       createdAt: partner.createdAt,
       translation: partner.translations[0] || null,
     }));
+
+    return {
+      data: mappedPartners,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   async createPartner(dto: CreatePartnerDto, image?: Express.Multer.File) {

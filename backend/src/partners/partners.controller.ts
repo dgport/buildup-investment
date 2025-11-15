@@ -35,16 +35,38 @@ export class PartnersController {
   constructor(private readonly partnersService: PartnersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all partners' })
+  @ApiOperation({ summary: 'Get all partners with pagination' })
   @ApiQuery({
     name: 'lang',
     required: false,
     description: 'Language code (e.g., en, ka, ru)',
     example: 'en',
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number',
+    example: 1,
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page',
+    example: 10,
+    type: 'number',
+  })
   @ApiResponse({ status: 200, description: 'Partners retrieved successfully' })
-  async findAll(@Query('lang') lang?: string) {
-    return this.partnersService.findAll(lang || 'en');
+  async findAll(
+    @Query('lang') lang?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.partnersService.findAll({
+      lang,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    });
   }
 
   @Post()

@@ -1,22 +1,21 @@
-import type { Partner } from '../types/partners'
+import type {
+  Partner,
+  PartnerFilters,
+  PartnersResponse,
+  PartnerTranslation,
+  UpsertTranslationDto,
+} from '../types/partners'
 import { api } from '../api/api'
 import { API_ENDPOINTS } from '@/constants/api'
 
-export interface PartnerTranslation {
-  id: number
-  language: string
-  companyName: string
-  partnerId: number
-}
-
-export interface UpsertTranslationDto {
-  language: string
-  companyName: string
-}
-
 export const partnersService = {
-  getAll: (lang?: string) =>
-    api.get<Partner[]>(API_ENDPOINTS.PARTNERS.PARTNERS, {
+  getAll: (filters?: PartnerFilters) =>
+    api.get<PartnersResponse>(API_ENDPOINTS.PARTNERS.PARTNERS, {
+      params: filters,
+    }),
+
+  getById: (id: number, lang?: string) =>
+    api.get<Partner>(API_ENDPOINTS.PARTNERS.PARTNER_BY_ID(id), {
       params: { lang },
     }),
 

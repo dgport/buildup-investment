@@ -1,18 +1,31 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  partnersService,
-  type UpsertTranslationDto,
-} from '../services/partners.service'
 import { queryClient } from '../tanstack/query-client'
-import type { Partner } from '../types/partners'
+import type {
+  Partner,
+  PartnerFilters,
+  PartnersResponse,
+  UpsertTranslationDto,
+} from '../types/partners'
+import { partnersService } from '../services/partners.service'
 
-export const usePartners = (lang?: string) => {
-  return useQuery<Partner[]>({
-    queryKey: ['partners', lang],
+export const usePartners = (filters?: PartnerFilters) => {
+  return useQuery<PartnersResponse>({
+    queryKey: ['partners', filters],
     queryFn: async () => {
-      const response = await partnersService.getAll(lang)
+      const response = await partnersService.getAll(filters)
       return response.data
     },
+  })
+}
+
+export const usePartner = (id: number, lang?: string) => {
+  return useQuery<Partner>({
+    queryKey: ['partners', id, lang],
+    queryFn: async () => {
+      const response = await partnersService.getById(id, lang)
+      return response.data
+    },
+    enabled: !!id,
   })
 }
 

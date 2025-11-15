@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import { usePartners, useDeletePartner } from '@/lib/hooks/usePartners'
 import { Button } from '@/components/ui/button'
 import type { Partner } from '@/lib/types/partners'
@@ -13,22 +14,25 @@ const PARTNERS_PER_PAGE = 5
 export default function PartnersPanel() {
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list')
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const { data: partnersResponse, isLoading, error } = usePartners()
+  const page = parseInt(searchParams.get('page') || '1', 10)
+
+  const {
+    data: partnersResponse,
+    isLoading,
+    error,
+  } = usePartners({
+    page,
+    limit: PARTNERS_PER_PAGE,
+  })
   const deletePartner = useDeletePartner()
 
-  const partners = partnersResponse || []
+  const partners = partnersResponse?.data || []
+  const meta = partnersResponse?.meta
 
-  const totalPages = Math.ceil(partners.length / PARTNERS_PER_PAGE)
-  const startIndex = (currentPage - 1) * PARTNERS_PER_PAGE
-  const paginatedPartners = partners.slice(
-    startIndex,
-    startIndex + PARTNERS_PER_PAGE
-  )
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
+  const handlePageChange = (newPage: number) => {
+    setSearchParams({ page: newPage.toString() })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -42,8 +46,9 @@ export default function PartnersPanel() {
 
     try {
       await deletePartner.mutateAsync(id)
-      if (paginatedPartners.length === 1 && currentPage > 1) {
-        setCurrentPage(currentPage - 1)
+      // If last item on page deleted, go back a page
+      if (partners.length === 1 && page > 1) {
+        handlePageChange(page - 1)
       }
     } catch (error: any) {
       alert(
@@ -59,10 +64,12 @@ export default function PartnersPanel() {
     setSelectedPartner(null)
   }
 
+  // ---------------- CREATE ----------------
   if (view === 'create') {
     return <CreatePartner onBack={handleBack} onSuccess={handleBack} />
   }
 
+  // ---------------- EDIT ----------------
   if (view === 'edit' && selectedPartner) {
     return (
       <EditPartner
@@ -73,6 +80,7 @@ export default function PartnersPanel() {
     )
   }
 
+  // ---------------- LIST ----------------
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
@@ -98,37 +106,33 @@ export default function PartnersPanel() {
             Error loading partners. Please try again.
           </p>
         </div>
-      ) : (
+      ) : partners.length > 0 ? (
         <>
           <div className="flex flex-col gap-4">
-            {paginatedPartners.length > 0 ? (
-              paginatedPartners.map(partner => (
-                <AdminPartnerCard
-                  key={partner.id}
-                  partner={partner}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))
-            ) : (
-              <div className="col-span-full rounded-lg border border-dashed border-border bg-muted/30 p-12 text-center">
-                <p className="text-muted-foreground font-medium">
-                  No partners found
-                </p>
-              </div>
-            )}
+            {partners.map(partner => (
+              <AdminPartnerCard
+                key={partner.id}
+                partner={partner}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
 
-          {partners.length > PARTNERS_PER_PAGE && (
+          {meta && meta.totalPages > 1 && (
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
+              currentPage={page}
+              totalPages={meta.totalPages}
+              hasNextPage={meta.hasNextPage}
+              hasPreviousPage={meta.hasPreviousPage}
               onPageChange={handlePageChange}
-              hasNextPage={currentPage < totalPages}
-              hasPreviousPage={currentPage > 1}
             />
           )}
         </>
+      ) : (
+        <div className="col-span-full rounded-lg border border-dashed border-border bg-muted/30 p-12 text-center">
+          <p className="text-muted-foreground font-medium">No partners found</p>
+        </div>
       )}
     </div>
   )
