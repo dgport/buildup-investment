@@ -83,6 +83,14 @@ export class ProjectsController {
     example: 1,
     type: 'number',
   })
+  @ApiQuery({
+    name: 'public',
+    required: false,
+    description:
+      'Filter by public visibility (defaults to true for client-facing)',
+    example: true,
+    type: 'boolean',
+  })
   @ApiResponse({ status: 200, description: 'Projects retrieved successfully' })
   async findAll(
     @Query('lang') lang?: string,
@@ -92,6 +100,7 @@ export class ProjectsController {
     @Query('priceFrom') priceFrom?: string,
     @Query('priceTo') priceTo?: string,
     @Query('partnerId') partnerId?: string,
+    @Query('public') isPublic?: string,
   ) {
     return this.projectsService.findAll({
       lang: lang || 'en',
@@ -101,6 +110,8 @@ export class ProjectsController {
       priceFrom: priceFrom ? parseFloat(priceFrom) : undefined,
       priceTo: priceTo ? parseFloat(priceTo) : undefined,
       partnerId: partnerId ? parseInt(partnerId, 10) : undefined,
+      public:
+        isPublic === 'true' ? true : isPublic === 'false' ? false : undefined,
     });
   }
 

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -7,6 +7,7 @@ import {
   IsString,
   IsDateString,
   Min,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateProjectDto {
@@ -36,10 +37,10 @@ export class CreateProjectDto {
 
   @ApiPropertyOptional({
     example: 50000,
-    description: 'Starting price',
+    description: 'Starting price (integer)',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : parseInt(value, 10)))
   @IsInt()
   @Min(0)
   priceFrom?: number;
@@ -57,7 +58,7 @@ export class CreateProjectDto {
     description: 'Number of floors in the project',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : parseInt(value, 10)))
   @IsInt()
   @Min(1)
   numFloors?: number;
@@ -67,13 +68,48 @@ export class CreateProjectDto {
     description: 'Number of apartments in the project',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : parseInt(value, 10)))
   @IsInt()
   @Min(1)
   numApartments?: number;
 
+  @ApiPropertyOptional({ description: 'Mark as hot sale', default: false })
+  @IsOptional()
+  @Transform(({ value }) => {
+    console.log(
+      '🔥 hotSale TRANSFORM - raw value:',
+      JSON.stringify(value),
+      'type:',
+      typeof value,
+    );
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return undefined;
+  })
+  @IsBoolean()
+  hotSale?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Make project publicly visible',
+    default: true,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    console.log(
+      '👁️ public TRANSFORM - raw value:',
+      JSON.stringify(value),
+      'type:',
+      typeof value,
+    );
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return undefined;
+  })
+  @IsBoolean()
+  public?: boolean;
+
   @ApiProperty({ example: 1, description: 'Partner ID' })
-  @Type(() => Number)
+  @Transform(({ value }) => parseInt(value, 10))
   @IsInt()
   @IsNotEmpty()
   partnerId: number;

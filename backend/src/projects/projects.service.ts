@@ -18,6 +18,7 @@ interface FindAllParams {
   priceFrom?: number;
   priceTo?: number;
   partnerId?: number;
+  public?: boolean;
 }
 
 @Injectable()
@@ -33,18 +34,21 @@ export class ProjectsService {
       priceFrom,
       priceTo,
       partnerId,
+      public: isPublic,
     } = params;
 
-    // Calculate skip value for pagination
     const skip = (page - 1) * limit;
-
-    // Build where clause for filters
     const where: any = {};
 
     if (location) {
-      where.projectLocation = {
-        contains: location,
-        mode: 'insensitive',
+      where.translations = {
+        some: {
+          language: lang,
+          projectLocation: {
+            contains: location,
+            mode: 'insensitive',
+          },
+        },
       };
     }
 
@@ -58,21 +62,27 @@ export class ProjectsService {
       }
     }
 
-    if (partnerId) {
+    if (partnerId !== undefined) {
       where.partnerId = partnerId;
     }
 
-    // Get total count for pagination
+    if (isPublic !== undefined) {
+      where.public = isPublic;
+    } else {
+      where.public = true;
+    }
+
     const total = await this.prismaService.projects.count({ where });
 
-    // Get paginated projects
     const projects = await this.prismaService.projects.findMany({
       where,
       skip,
       take: limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        { hotSale: 'desc' }, // 1st priority: hot sales first
+        { updatedAt: 'desc' }, // 2nd priority: most recently updated
+        { createdAt: 'desc' }, // 3rd priority: most recently created
+      ],
       include: {
         partner: {
           include: {
@@ -99,7 +109,10 @@ export class ProjectsService {
       deliveryDate: project.deliveryDate,
       numFloors: project.numFloors,
       numApartments: project.numApartments,
+      hotSale: project.hotSale,
+      public: project.public,
       createdAt: project.createdAt,
+      updatedAt: project.updatedAt, // Add this to the response if you want
       translation: project.translations[0] || null,
       partner: project.partner
         ? {
@@ -157,6 +170,8 @@ export class ProjectsService {
       deliveryDate: project.deliveryDate,
       numFloors: project.numFloors,
       numApartments: project.numApartments,
+      hotSale: project.hotSale,
+      public: project.public,
       createdAt: project.createdAt,
       translation: project.translations[0] || null,
       partner: project.partner
@@ -175,6 +190,9 @@ export class ProjectsService {
     image?: Express.Multer.File,
     gallery?: Express.Multer.File[],
   ) {
+    console.log('=== CREATE PROJECT DEBUG ===');
+    console.log('DTO received:', dto);
+
     await this.validatePartnerExists(dto.partnerId);
 
     const existingProject = await this.prismaService.projects.findUnique({
@@ -187,7 +205,6 @@ export class ProjectsService {
       );
     }
 
-    // Generate gallery URLs
     const galleryUrls = gallery
       ? gallery
           .map((img) => FileUtils.generateImageUrl(img, 'projects'))
@@ -200,10 +217,12 @@ export class ProjectsService {
         projectLocation: dto.projectLocation,
         image: image ? FileUtils.generateImageUrl(image, 'projects') : null,
         gallery: galleryUrls,
-        priceFrom: dto.priceFrom,
+        priceFrom: dto.priceFrom ?? null,
         deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : null,
-        numFloors: dto.numFloors,
-        numApartments: dto.numApartments,
+        numFloors: dto.numFloors ?? null,
+        numApartments: dto.numApartments ?? null,
+        hotSale: dto.hotSale ?? false,
+        public: dto.public ?? true,
         partnerId: dto.partnerId,
       },
       include: {
@@ -230,6 +249,18 @@ export class ProjectsService {
     image?: Express.Multer.File,
     gallery?: Express.Multer.File[],
   ) {
+    console.log('=== UPDATE PROJECT DEBUG ===');
+    console.log('Project ID:', id);
+    console.log('DTO received:', dto);
+    console.log('Types:', {
+      priceFrom: typeof dto.priceFrom,
+      numFloors: typeof dto.numFloors,
+      numApartments: typeof dto.numApartments,
+      hotSale: typeof dto.hotSale,
+      public: typeof dto.public,
+      partnerId: typeof dto.partnerId,
+    });
+
     const project = await this.prismaService.projects.findUnique({
       where: { id },
     });
@@ -238,7 +269,7 @@ export class ProjectsService {
       throw new NotFoundException(`Project with ID "${id}" not found`);
     }
 
-    if (dto.partnerId) {
+    if (dto.partnerId !== undefined) {
       await this.validatePartnerExists(dto.partnerId);
     }
 
@@ -251,7 +282,6 @@ export class ProjectsService {
       imagePath = FileUtils.generateImageUrl(image, 'projects');
     }
 
-    // Handle gallery images - add to existing
     let galleryUrls = [...project.gallery];
     if (gallery && gallery.length > 0) {
       const newGalleryUrls = gallery
@@ -260,21 +290,45 @@ export class ProjectsService {
       galleryUrls = [...galleryUrls, ...newGalleryUrls];
     }
 
+    // Build update data object - only include fields that are actually provided
+    const updateData: any = {
+      image: imagePath,
+      gallery: galleryUrls,
+    };
+
+    if (dto.projectName !== undefined) {
+      updateData.projectName = dto.projectName;
+    }
+    if (dto.projectLocation !== undefined) {
+      updateData.projectLocation = dto.projectLocation;
+    }
+    if (dto.partnerId !== undefined) {
+      updateData.partnerId = dto.partnerId;
+    }
+    if (dto.priceFrom !== undefined) {
+      updateData.priceFrom = dto.priceFrom;
+    }
+    if (dto.deliveryDate !== undefined) {
+      updateData.deliveryDate = new Date(dto.deliveryDate);
+    }
+    if (dto.numFloors !== undefined) {
+      updateData.numFloors = dto.numFloors;
+    }
+    if (dto.numApartments !== undefined) {
+      updateData.numApartments = dto.numApartments;
+    }
+    if (dto.hotSale !== undefined) {
+      updateData.hotSale = dto.hotSale;
+    }
+    if (dto.public !== undefined) {
+      updateData.public = dto.public;
+    }
+
+    console.log('Update data:', updateData);
+
     const updatedProject = await this.prismaService.projects.update({
       where: { id },
-      data: {
-        ...(dto.projectName && { projectName: dto.projectName }),
-        ...(dto.projectLocation && { projectLocation: dto.projectLocation }),
-        ...(dto.partnerId && { partnerId: dto.partnerId }),
-        ...(dto.priceFrom !== undefined && { priceFrom: dto.priceFrom }),
-        ...(dto.deliveryDate && { deliveryDate: new Date(dto.deliveryDate) }),
-        ...(dto.numFloors !== undefined && { numFloors: dto.numFloors }),
-        ...(dto.numApartments !== undefined && {
-          numApartments: dto.numApartments,
-        }),
-        image: imagePath,
-        gallery: galleryUrls,
-      },
+      data: updateData,
       include: {
         partner: true,
       },
@@ -299,11 +353,8 @@ export class ProjectsService {
     }
 
     const imageToDelete = project.gallery[imageIndex];
-
-    // Delete the file from storage
     await FileUtils.deleteFile(imageToDelete);
 
-    // Remove image from array
     const updatedGallery = project.gallery.filter(
       (_, index) => index !== imageIndex,
     );
@@ -408,12 +459,10 @@ export class ProjectsService {
       throw new NotFoundException(`Project with ID "${id}" not found`);
     }
 
-    // Delete main image
     if (project.image) {
       await FileUtils.deleteFile(project.image);
     }
 
-    // Delete all gallery images
     if (project.gallery && project.gallery.length > 0) {
       for (const imagePath of project.gallery) {
         await FileUtils.deleteFile(imagePath);

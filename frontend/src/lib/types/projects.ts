@@ -16,6 +16,8 @@ export interface Project {
   deliveryDate: string | null
   numFloors: number | null
   numApartments: number | null
+  hotSale: boolean
+  public: boolean
   createdAt: string
   partnerId: number
   translation?: ProjectTranslation | null
@@ -53,4 +55,5 @@ export interface ProjectFilters {
   priceFrom?: number
   priceTo?: number
   partnerId?: number
+  public?: boolean
 }

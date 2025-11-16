@@ -47,7 +47,12 @@ export const useUpdateProject = () => {
       const response = await projectsService.updateProject(id, data)
       return response.data
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Invalidate the specific project query
+      queryClient.invalidateQueries({
+        queryKey: ['projects', variables.id],
+      })
+      // Also invalidate the projects list
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
   })

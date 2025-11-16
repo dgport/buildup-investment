@@ -1,12 +1,24 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsInt,
   IsOptional,
   IsString,
   IsDateString,
   Min,
+  IsBoolean,
 } from 'class-validator';
+
+// Same transformer for boolean conversion
+const toBoolean = ({ value }: { value: any }): boolean => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const lower = value.toLowerCase();
+    return lower === 'true' || lower === '1';
+  }
+  if (typeof value === 'number') return value === 1;
+  return false;
+};
 
 export class UpdateProjectDto {
   @ApiPropertyOptional({ example: 'Luxury Residence' })
@@ -35,10 +47,10 @@ export class UpdateProjectDto {
 
   @ApiPropertyOptional({
     example: 50000,
-    description: 'Starting price',
+    description: 'Starting price (integer)',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : parseInt(value, 10)))
   @IsInt()
   @Min(0)
   priceFrom?: number;
@@ -56,7 +68,7 @@ export class UpdateProjectDto {
     description: 'Number of floors',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : parseInt(value, 10)))
   @IsInt()
   @Min(1)
   numFloors?: number;
@@ -66,14 +78,29 @@ export class UpdateProjectDto {
     description: 'Number of apartments',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : parseInt(value, 10)))
   @IsInt()
   @Min(1)
   numApartments?: number;
 
+  @ApiPropertyOptional({ description: 'Mark as hot sale', default: false })
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  hotSale?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Make project publicly visible',
+    default: true,
+  })
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  public?: boolean;
+
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
-  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : parseInt(value, 10)))
   @IsInt()
   partnerId?: number;
 }

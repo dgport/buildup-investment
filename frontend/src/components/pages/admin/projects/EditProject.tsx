@@ -1,7 +1,7 @@
 import type React from 'react'
 
 import { useState } from 'react'
-import { X, Upload, Save, Trash2, Image as ImageIcon } from 'lucide-react'
+import { X, Upload, Save, Trash2, ImageIcon } from 'lucide-react'
 import {
   useUpdateProject,
   useDeleteProjectGalleryImage,
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 
 import type { Project } from '@/lib/types/projects'
 import { ProjectTranslationsManager } from './ProjectTranslationsManager'
@@ -32,13 +33,14 @@ interface EditProjectProps {
 export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
   const [formData, setFormData] = useState({
     partnerId: project.partner?.id?.toString() || '',
-    projectLocation: project.projectLocation || '',
     priceFrom: project.priceFrom?.toString() || '',
     deliveryDate: project.deliveryDate
       ? project.deliveryDate.split('T')[0]
       : '',
     numFloors: project.numFloors?.toString() || '',
     numApartments: project.numApartments?.toString() || '',
+    hotSale: Boolean(project.hotSale),
+    public: project.public ?? true,
   })
 
   const [images, setImages] = useState({
@@ -58,8 +60,14 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
   const { data: partnersResponse } = usePartners()
   const partners = partnersResponse?.data || []
 
-  const updateFormField = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const updateFormField = (
+    field: keyof typeof formData,
+    value: string | boolean
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }))
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +144,7 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
 
   const handleSubmit = async () => {
     try {
+      // Delete marked gallery images first
       if (images.deletedGalleryIndices.length > 0) {
         for (const index of images.deletedGalleryIndices) {
           await deleteGalleryImage.mutateAsync({
@@ -145,53 +154,88 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
         }
       }
 
+      // Prepare FormData for update
       const data = new FormData()
 
+      // Main image
       if (images.mainFile) {
         data.append('image', images.mainFile)
       }
 
+      // Partner ID - only if changed
       const originalPartnerId = project.partner?.id?.toString() || ''
       if (formData.partnerId && formData.partnerId !== originalPartnerId) {
         data.append('partnerId', formData.partnerId)
       }
-      if (formData.projectLocation !== project.projectLocation) {
-        data.append('projectLocation', formData.projectLocation)
-      }
-      if (formData.priceFrom !== (project.priceFrom?.toString() || '')) {
-        data.append('priceFrom', formData.priceFrom)
-      }
-      if (
-        formData.deliveryDate !==
-        (project.deliveryDate ? project.deliveryDate.split('T')[0] : '')
-      ) {
-        data.append('deliveryDate', formData.deliveryDate)
-      }
-      if (formData.numFloors !== (project.numFloors?.toString() || '')) {
-        data.append('numFloors', formData.numFloors)
-      }
-      if (
-        formData.numApartments !== (project.numApartments?.toString() || '')
-      ) {
-        data.append('numApartments', formData.numApartments)
+
+      // Price - only if changed
+      const originalPrice = project.priceFrom?.toString() || ''
+      if (formData.priceFrom !== originalPrice) {
+        data.append('priceFrom', formData.priceFrom || '0')
       }
 
+      // Delivery date - only if changed
+      const originalDeliveryDate = project.deliveryDate
+        ? project.deliveryDate.split('T')[0]
+        : ''
+      if (formData.deliveryDate !== originalDeliveryDate) {
+        data.append('deliveryDate', formData.deliveryDate)
+      }
+
+      // Number of floors - only if changed
+      const originalFloors = project.numFloors?.toString() || ''
+      if (formData.numFloors !== originalFloors) {
+        data.append('numFloors', formData.numFloors || '0')
+      }
+
+      // Number of apartments - only if changed
+      const originalApartments = project.numApartments?.toString() || ''
+      if (formData.numApartments !== originalApartments) {
+        data.append('numApartments', formData.numApartments || '0')
+      }
+
+      // Hot sale - only if changed
+      const originalHotSale = Boolean(project.hotSale)
+      if (formData.hotSale !== originalHotSale) {
+        data.append('hotSale', String(formData.hotSale))
+      }
+
+      // Public visibility - only if changed
+      const originalPublic = project.public ?? true
+      if (formData.public !== originalPublic) {
+        data.append('public', String(formData.public))
+      }
+
+      // Gallery files
       images.galleryFiles.forEach(file => {
         data.append('gallery', file)
       })
 
-      const hasUpdateChanges =
+      // Check if there are any changes to send
+      const hasChanges =
         images.mainFile ||
         images.galleryFiles.length > 0 ||
-        (formData.partnerId && formData.partnerId !== originalPartnerId) ||
-        formData.projectLocation !== project.projectLocation ||
-        formData.priceFrom !== (project.priceFrom?.toString() || '') ||
-        formData.deliveryDate !==
-          (project.deliveryDate ? project.deliveryDate.split('T')[0] : '') ||
-        formData.numFloors !== (project.numFloors?.toString() || '') ||
-        formData.numApartments !== (project.numApartments?.toString() || '')
+        images.deletedGalleryIndices.length > 0 ||
+        formData.partnerId !== originalPartnerId ||
+        formData.priceFrom !== originalPrice ||
+        formData.deliveryDate !== originalDeliveryDate ||
+        formData.numFloors !== originalFloors ||
+        formData.numApartments !== originalApartments ||
+        formData.hotSale !== originalHotSale ||
+        formData.public !== originalPublic
 
-      if (hasUpdateChanges) {
+      // Debug log
+      console.log('=== FORM SUBMISSION DEBUG ===')
+      console.log('Has changes:', hasChanges)
+      console.log('FormData contents:')
+      for (const [key, value] of data.entries()) {
+        console.log(`  ${key}:`, value, `(type: ${typeof value})`)
+      }
+      console.log('Boolean states:')
+      console.log('  hotSale:', formData.hotSale, '→', String(formData.hotSale))
+      console.log('  public:', formData.public, '→', String(formData.public))
+
+      if (hasChanges) {
         await updateProject.mutateAsync({ id: project.id, data })
       }
 
@@ -202,18 +246,28 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
     }
   }
 
+  // Calculate if there are unsaved changes
   const originalPartnerId = project.partner?.id?.toString() || ''
+  const originalPrice = project.priceFrom?.toString() || ''
+  const originalDeliveryDate = project.deliveryDate
+    ? project.deliveryDate.split('T')[0]
+    : ''
+  const originalFloors = project.numFloors?.toString() || ''
+  const originalApartments = project.numApartments?.toString() || ''
+  const originalHotSale = Boolean(project.hotSale)
+  const originalPublic = project.public ?? true
+
   const hasChanges =
     images.mainFile ||
     images.galleryFiles.length > 0 ||
     images.deletedGalleryIndices.length > 0 ||
-    (formData.partnerId && formData.partnerId !== originalPartnerId) ||
-    formData.projectLocation !== project.projectLocation ||
-    formData.priceFrom !== (project.priceFrom?.toString() || '') ||
-    formData.deliveryDate !==
-      (project.deliveryDate ? project.deliveryDate.split('T')[0] : '') ||
-    formData.numFloors !== (project.numFloors?.toString() || '') ||
-    formData.numApartments !== (project.numApartments?.toString() || '')
+    formData.partnerId !== originalPartnerId ||
+    formData.priceFrom !== originalPrice ||
+    formData.deliveryDate !== originalDeliveryDate ||
+    formData.numFloors !== originalFloors ||
+    formData.numApartments !== originalApartments ||
+    formData.hotSale !== originalHotSale ||
+    formData.public !== originalPublic
 
   const displayGallery =
     project.gallery?.filter(
@@ -297,25 +351,6 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
       <div className="space-y-6">
         {activeSection === 'details' && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label
-                htmlFor="projectLocation"
-                className="text-sm font-medium text-foreground"
-              >
-                Project Location
-              </Label>
-              <Input
-                id="projectLocation"
-                type="text"
-                value={formData.projectLocation}
-                onChange={e =>
-                  updateFormField('projectLocation', e.target.value)
-                }
-                placeholder="e.g., Downtown District"
-                className="bg-background border-border"
-              />
-            </div>
-
             <div className="space-y-2">
               <Label
                 htmlFor="partnerId"
@@ -409,6 +444,52 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
                   }
                   placeholder="e.g., 50"
                   className="bg-background border-border"
+                />
+              </div>
+            </div>
+
+            <div className="border border-border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="hotSale"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    🔥 Mark as Hot Sale
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Hot sale projects will be displayed prominently on the
+                    homepage
+                  </p>
+                </div>
+                <Switch
+                  id="hotSale"
+                  checked={formData.hotSale}
+                  onCheckedChange={checked =>
+                    updateFormField('hotSale', checked)
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="public"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    👁️ Make Publicly Visible
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Public projects are visible to all users. Uncheck to hide
+                    from clients.
+                  </p>
+                </div>
+                <Switch
+                  id="public"
+                  checked={formData.public}
+                  onCheckedChange={checked =>
+                    updateFormField('public', checked)
+                  }
                 />
               </div>
             </div>

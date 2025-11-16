@@ -24,12 +24,15 @@ model Projects {
   projectName     String    @map("project_name") @unique
   projectLocation String    @map("project_location")
   image           String?
-  gallery         String[]  @default([]) // New: Gallery images array
-  priceFrom       Int?      @map("price_from") // New: Optional price
-  deliveryDate    DateTime? @map("delivery_date") // New: Optional delivery date
-  numFloors       Int?      @map("num_floors") // New: Optional number of floors
-  numApartments   Int?      @map("num_apartments") // New: Optional number of apartments
+  gallery         String[]  @default([]) 
+  priceFrom       Int?      @map("price_from")  
+  deliveryDate    DateTime? @map("delivery_date")  
+  numFloors       Int?      @map("num_floors")  
+  numApartments   Int?      @map("num_apartments")  
+  hotSale         Boolean   @map("hot_sale") @default(false)
+  public          Boolean   @default(true)
   createdAt       DateTime  @map("created_at") @default(now())
+ updatedAt       DateTime  @map("updated_at") @updatedAt @default(now())
   partnerId       Int       @map("partner_id")
 
   partner      Partners              @relation(fields: [partnerId], references: [id], onDelete: Cascade)
@@ -45,7 +48,7 @@ model Apartments {
   area        Int
   floor       Int
   totalFloors Int      @map("total_floors")
-  images      String[] // Array of image URLs
+  images      String[]  
   createdAt   DateTime @map("created_at") @default(now())
   projectId   Int      @map("project_id")
 

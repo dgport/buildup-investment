@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 
 interface CreateProjectProps {
   onBack: () => void
@@ -29,6 +30,8 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
     deliveryDate: '',
     numFloors: '',
     numApartments: '',
+    hotSale: false,
+    public: true,
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -40,8 +43,6 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
   const { data: partnersResponse } = usePartners()
 
   const partners = partnersResponse?.data || []
-
-  console.log(partners)
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -91,10 +92,40 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
   const handleSubmit = async () => {
     if (!validateForm()) return
 
+    // ADD THIS DEBUG - BEFORE creating FormData
+    console.log('=== FRONTEND DEBUG - Before FormData ===')
+    console.log(
+      'formData.hotSale:',
+      formData.hotSale,
+      'type:',
+      typeof formData.hotSale
+    )
+    console.log(
+      'formData.public:',
+      formData.public,
+      'type:',
+      typeof formData.public
+    )
+
     const data = new FormData()
     data.append('projectName', formData.projectName)
     data.append('projectLocation', formData.projectLocation)
     data.append('partnerId', formData.partnerId)
+    data.append('hotSale', formData.hotSale.toString())
+    data.append('public', formData.public.toString())
+
+    // ADD THIS DEBUG - After creating FormData
+    console.log('=== FRONTEND DEBUG - After FormData ===')
+    console.log('hotSale.toString():', formData.hotSale.toString())
+    console.log('public.toString():', formData.public.toString())
+
+    // Print all FormData entries
+    console.log('=== FormData entries ===')
+    for (const [key, value] of data.entries()) {
+      if (key === 'hotSale' || key === 'public') {
+        console.log(`${key}: "${value}" (type: ${typeof value})`)
+      }
+    }
 
     if (formData.priceFrom) {
       data.append('priceFrom', formData.priceFrom)
@@ -124,7 +155,6 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
       setErrors({ submit: error.message || 'Failed to create project' })
     }
   }
-
   return (
     <div className="bg-background rounded-lg border border-border shadow-sm p-8">
       <div className="flex justify-between items-start mb-8">
@@ -305,6 +335,51 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
           </div>
         </div>
 
+        <div className="border border-border rounded-lg p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label
+                htmlFor="hotSale"
+                className="text-sm font-medium text-foreground"
+              >
+                🔥 Mark as Hot Sale
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Hot sale projects will be displayed prominently on the homepage
+              </p>
+            </div>
+            <Switch
+              id="hotSale"
+              checked={formData.hotSale}
+              onCheckedChange={checked =>
+                setFormData({ ...formData, hotSale: checked })
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label
+                htmlFor="public"
+                className="text-sm font-medium text-foreground"
+              >
+                👁️ Make Publicly Visible
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Public projects are visible to all users. Uncheck to hide from
+                clients.
+              </p>
+            </div>
+            <Switch
+              id="public"
+              checked={formData.public}
+              onCheckedChange={checked =>
+                setFormData({ ...formData, public: checked })
+              }
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label className="text-sm font-medium text-foreground">
             Main Project Image
@@ -313,7 +388,7 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
             {imagePreview ? (
               <div className="relative inline-block">
                 <img
-                  src={imagePreview}
+                  src={imagePreview || '/placeholder.svg'}
                   alt="Preview"
                   className="max-h-48 rounded-md border border-border"
                 />
@@ -378,7 +453,7 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
               {galleryPreviews.map((preview, index) => (
                 <div key={index} className="relative">
                   <img
-                    src={preview}
+                    src={preview || '/placeholder.svg'}
                     alt={`Gallery ${index + 1}`}
                     className="w-full h-24 object-cover rounded-md border border-border"
                   />
