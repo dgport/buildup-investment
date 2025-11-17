@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { Facebook, Instagram } from 'lucide-react'
+import { Facebook, Instagram, Mail, Phone, MapPin, Send } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -16,14 +20,8 @@ const Contact = () => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  interface SubmitEvent {
-    preventDefault: () => void
-  }
-
-  const handleSubmit = (e: SubmitEvent) => {
-    e.preventDefault()
+  const handleSubmit = () => {
     console.log('Form submitted:', formData)
-
     setFormData({
       fullName: '',
       email: '',
@@ -33,116 +31,164 @@ const Contact = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
-      <div className="relative h-[480px] flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              'url(https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&h=900&fit=crop)', // Use a high-res image or the one from the design
-          }}
-        >
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Hero Section */}
+       
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-between items-center px-6">
-          <div className="text-white text-left ml-10">
-            <h1 className="text-4xl lg:text-5xl font-bold mb-2">
-              LET'S FIND YOUR
-              <br />
-              DREAM HOME.
-            </h1>
-            <p className="text-2xl lg:text-3xl font-serif italic font-light">
-              Contact Us
-            </p>
-          </div>
-
-          <div className="bg-white  bg-opacity-70 p-8 rounded-lg shadow-xl w-full max-w-md mr-10">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-800"
-              />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email Address"
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-800"
-              />
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Phone Number"
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-800"
-              />
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                placeholder="Message"
-                rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none text-gray-800"
-              />
-              <button
-                type="submit"
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-3 rounded-md transition-colors duration-300 uppercase tracking-wide"
-              >
-                Send Inquiry
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white py-12 px-6 shadow-md">
-        <div className="max-w-7xl mx-auto flex justify-between items-start">
-          <div className="w-1/3">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 uppercase tracking-wider">
-              OUR OFFICE
-            </h2>
-            <div className="space-y-2 text-gray-600 text-sm">
-              <p className="leading-relaxed">
-                123 Realty Blvd, Suite 456,
-                <br />
-                Metropolis, CA 90210
+      {/* Contact Content */}
+      <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
+        <div className="grid md:grid-cols-5 gap-8 lg:gap-12">
+          {/* Contact Info Sidebar */}
+          <div className="md:col-span-2 space-y-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+                Contact Information
+              </h2>
+              <p className="text-gray-600 mb-8">
+                Reach out to us and we'll respond as soon as possible
               </p>
-              <p>Phone: (555) 123-467</p>
-              <p>Email: Info@realestates.com</p>
+            </div>
+
+            <Card className="border-none shadow-lg">
+              <CardContent className="p-6 space-y-6">
+                {/* Address */}
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                    <MapPin className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      Our Office
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      123 Realty Blvd, Suite 456
+                      <br />
+                      Metropolis, CA 90210
+                    </p>
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                    <Phone className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
+                    <p className="text-sm text-gray-600">(555) 123-467</p>
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
+                    <Mail className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                    <p className="text-sm text-gray-600">
+                      Info@realestates.com
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Social Media */}
+            <div className="pt-4">
+              <h3 className="font-semibold text-gray-900 mb-4">Follow Us</h3>
+              <div className="flex gap-3">
+                <a
+                  href="#"
+                  className="w-12 h-12 bg-white rounded-lg shadow-md hover:shadow-lg flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-all duration-300"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+                <a
+                  href="#"
+                  className="w-12 h-12 bg-white rounded-lg shadow-md hover:shadow-lg flex items-center justify-center text-pink-600 hover:bg-pink-50 transition-all duration-300"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              </div>
             </div>
           </div>
 
-          <div className="w-1/3 text-right">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 uppercase tracking-wider">
-              FOLLOW US
-            </h3>
-            <div className="flex justify-end gap-3">
-              <a
-                href="#"
-                className="flex flex-col items-center gap-1 text-gray-600 hover:text-blue-700 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                  <Facebook className="w-5 h-5" />
+          {/* Contact Form */}
+          <div className="md:col-span-3">
+            <Card className="border-none shadow-xl">
+              <CardContent className="p-6 md:p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                  Send us a message
+                </h2>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name
+                    </label>
+                    <Input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      placeholder="John Doe"
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                      </label>
+                      <Input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="john@example.com"
+                        className="h-12"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                      </label>
+                      <Input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+1 (555) 000-0000"
+                        className="h-12"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Message
+                    </label>
+                    <Textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      placeholder="Tell us about your property needs..."
+                      rows={6}
+                      className="resize-none"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSubmit}
+                    className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base"
+                  >
+                    <Send className="w-5 h-5 mr-2" />
+                    Send Message
+                  </Button>
                 </div>
-                <span className="text-xs">Facebook</span>
-              </a>
-              <a
-                href="#"
-                className="flex flex-col items-center gap-1 text-gray-600 hover:text-blue-700 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                  <Instagram className="w-5 h-5" />
-                </div>
-                <span className="text-xs">Instagram</span>
-              </a>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

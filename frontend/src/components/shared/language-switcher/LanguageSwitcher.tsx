@@ -6,12 +6,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Languages } from 'lucide-react'
+import { Globe } from 'lucide-react'
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'ka', name: 'ქართული', flag: '🇬🇪' },
   { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'he', name: 'עברית', flag: '🇮🇱' },
 ]
 
 export function LanguageSwitcher() {
@@ -27,20 +29,28 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Languages className="w-4 h-4 mr-2" />
-          {currentLanguage.flag} {currentLanguage.name}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 px-2.5 gap-1.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+        >
+          <Globe className="w-4 h-4" />
+          <span className="text-sm font-medium">{currentLanguage.flag}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-[160px]">
         {languages.map(lang => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => changeLanguage(lang.code)}
-            className={i18n.language === lang.code ? 'bg-gray-100' : ''}
+            className={
+              i18n.language === lang.code
+                ? 'bg-blue-50 text-blue-600 font-medium'
+                : 'hover:bg-gray-50'
+            }
           >
-            <span className="mr-2">{lang.flag}</span>
-            {lang.name}
+            <span className="mr-2 text-base">{lang.flag}</span>
+            <span className="text-sm">{lang.name}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
