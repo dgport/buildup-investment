@@ -1,22 +1,23 @@
 import { useState } from 'react'
 import { ArrowUpRight, MapPin } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils/image-utils'
+import type { Project } from '@/lib/types/projects'
+type TranslatableFields = 'projectName' | 'projectLocation'
 
-const ProjectCard = ({ project }: any) => {
+const ProjectCard = ({ project }: { project: Project }) => {
   const [imageError, setImageError] = useState(false)
 
-  const getTranslatedValue = (field: string) => {
-    return project?.translation?.[field] || project?.[field] || ''
+  const getTranslatedValue = (field: TranslatableFields) => {
+    return project.translation?.[field] ?? project[field] ?? ''
   }
-
-  const projectImage = getImageUrl(project.image)
+  const projectImage = getImageUrl(project.image ?? undefined)
   const projectName = getTranslatedValue('projectName')
   const projectLocation = getTranslatedValue('projectLocation')
   const partnerName =
     project?.partner?.translation?.companyName || project?.partner?.companyName
 
   return (
-    <div className="bg-white rounded-xl border border-gray-300 transition-all duration-300 h-full p-1 cursor-pointer">
+    <div className="bg-white rounded-xl border border-gray-300 transition-all duration-300 h-full p-1 cursor-pointer hover:shadow-lg">
       <div className="relative h-72 overflow-hidden rounded-lg">
         {!imageError ? (
           <img
@@ -43,6 +44,14 @@ const ProjectCard = ({ project }: any) => {
             </svg>
           </div>
         )}
+
+        {project.hotSale && (
+          <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none">
+            <div className="absolute top-4 -right-8 w-32 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold py-1.5 text-center shadow-lg transform rotate-45">
+              HOT SALE
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="p-2 sm:p-3">
@@ -65,8 +74,8 @@ const ProjectCard = ({ project }: any) => {
               </p>
             )}
           </div>
-          <div className="bg-gray-200 rounded-full p-2 hover:bg-blue-900 transition-colors flex-shrink-0">
-            <ArrowUpRight className="w-4 h-4 text-gray-700 hover:text-white transition-colors" />
+          <div className="bg-gray-200 rounded-full p-2 hover:bg-blue-900 transition-colors flex-shrink-0 group">
+            <ArrowUpRight className="w-4 h-4 text-gray-700 group-hover:text-white transition-colors" />
           </div>
         </div>
       </div>
