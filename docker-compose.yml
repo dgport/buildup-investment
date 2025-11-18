@@ -27,6 +27,8 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/realestate
       NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
     volumes:
       - ./backend:/app
       - /app/node_modules
