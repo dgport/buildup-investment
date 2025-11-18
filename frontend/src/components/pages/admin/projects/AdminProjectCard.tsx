@@ -56,7 +56,7 @@ export function AdminProjectCard({
       {/* Price From */}
       <div className="col-span-2">
         <p className="text-sm text-foreground font-medium">
-          {project.priceFrom ? `₾${project.priceFrom.toLocaleString()}` : '—'}
+          {project.priceFrom ? `$${project.priceFrom.toLocaleString()}` : '—'}
         </p>
       </div>
 

@@ -373,7 +373,7 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
                   htmlFor="priceFrom"
                   className="text-sm font-medium text-foreground"
                 >
-                  Price From (₾)
+                  Price From ($)
                 </Label>
                 <Input
                   id="priceFrom"

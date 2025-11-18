@@ -4,6 +4,10 @@ services:
     image: postgres:15-alpine
     container_name: real_estate_postgres
     restart: unless-stopped
+    # Use the shared variables if they are in a root .env,
+    # or keep them here if they are only used by postgres.
+    # If using backend/.env, adjust this path. Assuming core DB vars
+    # are needed by the backend.
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -24,11 +28,9 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/realestate
-      NODE_ENV: development
-      HOST: 0.0.0.0
-      PORT: 3000
+    # 💥 Point to the backend/.env file
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -38,40 +40,23 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:dev"
 
-  # STUDIO COMMENTED OUT TO SAVE RESOURCES (124MB RAM)
-  # Uncomment only when you need to access Prisma Studio for database management
-  # studio:
-  #   build: ./backend
-  #   container_name: real_estate_studio
+  # STUDIO service omitted for brevity...
+
+  # frontend:
+  #   build: ./frontend
+  #   container_name: real_estate_frontend
   #   restart: unless-stopped
   #   ports:
-  #     - "5555:5555"
-  #   environment:
-  #     DATABASE_URL: postgresql://postgres:postgres@postgres:5432/realestate
+  #     - "5173:5173"
+  #   # 💥 Point to the frontend/.env file
+  #   env_file:
+  #     - ./frontend/.env
   #   volumes:
-  #     - ./backend/prisma:/app/prisma
-  #     - studio_node_modules:/app/node_modules
+  #     - ./frontend:/app
+  #     - /app/node_modules
   #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   command: sh -c "npx prisma generate && npx prisma studio --hostname 0.0.0.0 --port 5555"
-
-  frontend:
-    build: ./frontend
-    container_name: real_estate_frontend
-    restart: unless-stopped
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_BASE_URL=http://3.126.82.5:3000/api
-      - VITE_API_IMAGE_URL=http://3.126.82.5:3000
-
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    command: npm run dev
+  #     - backend
+  #   command: npm run dev
 
 volumes:
   postgres_data:

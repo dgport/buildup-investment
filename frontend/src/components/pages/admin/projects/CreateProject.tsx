@@ -264,7 +264,7 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
               htmlFor="priceFrom"
               className="text-sm font-medium text-foreground"
             >
-              Price From (₾)
+              Price From ($)
             </Label>
             <Input
               id="priceFrom"

@@ -121,7 +121,7 @@ export default function Property() {
     if (currency === 'USD') {
       return `${priceUSD.toLocaleString()}`
     }
-    return `₾${priceGEL.toLocaleString()}`
+    return `$${priceGEL.toLocaleString()}`
   }
 
   const formatDate = (dateString: string): string => {

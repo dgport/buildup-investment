@@ -239,7 +239,7 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
                 </Label>
                 <span className="text-lg font-bold text-blue-600">
                   {filters.priceFrom > 0
-                    ? `₾${filters.priceFrom.toLocaleString()}`
+                    ? `$${filters.priceFrom.toLocaleString()}`
                     : t('projects.filters.any', { defaultValue: 'Any' })}
                 </span>
               </div>
@@ -259,9 +259,9 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
               </div>
 
               <div className="flex justify-between text-sm font-medium text-muted-foreground">
-                <span className="bg-muted px-3 py-1 rounded-full">₾0</span>
+                <span className="bg-muted px-3 py-1 rounded-full">$0</span>
                 <span className="bg-muted px-3 py-1 rounded-full">
-                  ₾{MAX_PRICE.toLocaleString()}
+                  ${MAX_PRICE.toLocaleString()}
                 </span>
               </div>
             </div>

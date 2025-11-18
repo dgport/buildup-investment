@@ -56,14 +56,11 @@ const ProjectCard = ({ project }: { project: Project }) => {
 
       <div className="p-3 sm:p-4">
         <div className="space-y-3">
-          {/* PROJECT NAME */}
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 hover:text-blue-900 transition-colors line-clamp-2">
             {projectName}
           </h3>
 
-          {/* LOCATION + PRICE */}
           <div className="flex items-center justify-between gap-2">
-            {/* Location */}
             {projectLocation && (
               <div className="flex items-center gap-2 min-w-0">
                 <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -73,7 +70,6 @@ const ProjectCard = ({ project }: { project: Project }) => {
               </div>
             )}
 
-            {/* Price */}
             {project.priceFrom && (
               <span className="text-sm font-semibold text-blue-900 whitespace-nowrap">
                 From: ${project.priceFrom.toLocaleString()}
