@@ -27,8 +27,8 @@ async function bootstrap() {
     origin: [
       'http://localhost:5173',
       'http://localhost:3000',
-      'http://35.158.188.62:5173', // Add your public IP
-      'http://35.158.188.62:3000', // Add your public IP
+      'http://3.126.82.5:5173', // Add your public IP
+      'http://3.126.82.5:3000', // Add your public IP
       // Or simply allow all for development:
       // '*'
     ],
