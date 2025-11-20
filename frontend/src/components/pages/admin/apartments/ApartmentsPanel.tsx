@@ -15,7 +15,7 @@ import { CreateApartment } from './CreateApartment'
 import { EditApartment } from './EditApartment'
 import { AdminApartmentCard } from './AdminApartmentCard'
 import type { Apartment } from '@/lib/types/apartments'
-import Pagination from '@/components/shared/pagination/Pagination'
+import { Pagination } from '@/components/shared/pagination/Pagination'
 
 const APARTMENTS_PER_PAGE = 10
 
@@ -194,7 +194,6 @@ export default function ApartmentsPanel() {
               totalPages={meta.totalPages}
               hasNextPage={meta.hasNextPage}
               hasPreviousPage={meta.hasPreviousPage}
-              onPageChange={handlePageChange}
             />
           )}
         </>

@@ -3,11 +3,13 @@ import { Plus } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { useProjects, useDeleteProject } from '@/lib/hooks/useProjects'
 import { Button } from '@/components/ui/button'
-import { CreateProject } from './CreateProject'
+
 import { EditProject } from './EditProject'
 import { AdminProjectCard } from './AdminProjectCard'
 import type { Project } from '@/lib/types/projects'
-import Pagination from '@/components/shared/pagination/Pagination'
+
+import { Pagination } from '@/components/shared/pagination/Pagination'
+import { CreateProject } from './CreateProject'
 
 const PROJECTS_PER_PAGE = 5
 
@@ -16,13 +18,14 @@ export default function ProjectsPanel() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const page = parseInt(searchParams.get('page') || '1', 10)
+  const page = Number(searchParams.get('page') || 1)
 
   const {
     data: projectsResponse,
     isLoading,
     error,
   } = useProjects({
+    lang: 'en',
     page,
     limit: PROJECTS_PER_PAGE,
   })
@@ -132,7 +135,6 @@ export default function ProjectsPanel() {
               totalPages={meta.totalPages}
               hasNextPage={meta.hasNextPage}
               hasPreviousPage={meta.hasPreviousPage}
-              onPageChange={handlePageChange}
             />
           )}
         </>

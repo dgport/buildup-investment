@@ -7,7 +7,7 @@ import type { Partner } from '@/lib/types/partners'
 import { CreatePartner } from './CreatePartner'
 import { EditPartner } from './EditPartner'
 import { AdminPartnerCard } from './AdminPartnerCard'
-import Pagination from '@/components/shared/pagination/Pagination'
+import { Pagination } from '@/components/shared/pagination/Pagination'
 
 const PARTNERS_PER_PAGE = 5
 
@@ -131,7 +131,6 @@ export default function PartnersPanel() {
               totalPages={meta.totalPages}
               hasNextPage={meta.hasNextPage}
               hasPreviousPage={meta.hasPreviousPage}
-              onPageChange={handlePageChange}
             />
           )}
         </>
