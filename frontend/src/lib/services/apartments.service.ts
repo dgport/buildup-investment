@@ -1,11 +1,18 @@
 import { api } from '../api/api'
 import { API_ENDPOINTS } from '@/constants/api'
-import type { Apartment, ApartmentTranslation } from '../types/apartments'
+import type {
+  Apartment,
+  ApartmentsResponse,
+  ApartmentTranslation,
+  GetApartmentsParams,
+  UpsertTranslationDto,
+} from '../types/apartments'
 
 export const apartmentsService = {
-  getAll: (lang?: string, projectId?: number) =>
-    api.get<Apartment[]>(API_ENDPOINTS.APARTMENTS.APARTMENTS, {
-      params: { lang, projectId },
+  // Updated to accept params object and return ApartmentsResponse
+  getAll: (params?: GetApartmentsParams) =>
+    api.get<ApartmentsResponse>(API_ENDPOINTS.APARTMENTS.APARTMENTS, {
+      params,
     }),
 
   getById: (id: number, lang?: string) =>
@@ -32,6 +39,7 @@ export const apartmentsService = {
       API_ENDPOINTS.APARTMENTS.APARTMENT_BY_ID(id)
     ),
 
+  // Backend: @Delete(':id/images/:imageIndex')
   deleteImage: (id: number, imageIndex: number) =>
     api.delete<{ message: string }>(
       API_ENDPOINTS.APARTMENTS.APARTMENT_IMAGE(id, imageIndex)
@@ -40,7 +48,8 @@ export const apartmentsService = {
   getTranslations: (id: number) =>
     api.get<ApartmentTranslation[]>(API_ENDPOINTS.APARTMENTS.TRANSLATIONS(id)),
 
-  upsertTranslation: (id: number, data: ApartmentTranslation) =>
+  // Backend: @Patch(':id/translations') with Body { language, description }
+  upsertTranslation: (id: number, data: UpsertTranslationDto) =>
     api.patch<ApartmentTranslation>(
       API_ENDPOINTS.APARTMENTS.TRANSLATIONS(id),
       data

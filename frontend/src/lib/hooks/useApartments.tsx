@@ -1,15 +1,24 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, keepPreviousData } from '@tanstack/react-query'
 import { queryClient } from '../tanstack/query-client'
 import { apartmentsService } from '../services/apartments.service'
-import type { Apartment } from '../types/apartments'
+import type {
+  Apartment,
+  ApartmentsResponse,
+  GetApartmentsParams,
+  UpsertTranslationDto,
+} from '../types/apartments'
 
-export const useApartments = (lang?: string, projectId?: number) => {
-  return useQuery<Apartment[]>({
-    queryKey: ['apartments', lang, projectId],
+// Updated to accept full params object
+export const useApartments = (params: GetApartmentsParams = {}) => {
+  return useQuery<ApartmentsResponse>({
+    // Include params in queryKey so changing page/lang triggers refetch
+    queryKey: ['apartments', params],
     queryFn: async () => {
-      const response = await apartmentsService.getAll(lang, projectId)
+      const response = await apartmentsService.getAll(params)
       return response.data
     },
+    // Useful for pagination to prevent UI flashing
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -42,8 +51,12 @@ export const useUpdateApartment = () => {
       const response = await apartmentsService.updateApartment(id, data)
       return response.data
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['apartments'] })
+      // Also invalidate specific apartment details
+      queryClient.invalidateQueries({
+        queryKey: ['apartments', variables.id],
+      })
     },
   })
 }
@@ -94,13 +107,23 @@ export const useApartmentTranslations = (id: number) => {
 
 export const useUpsertApartmentTranslation = () => {
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number
+      data: UpsertTranslationDto
+    }) => {
       const response = await apartmentsService.upsertTranslation(id, data)
       return response.data
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['apartments', variables.id, 'translations'],
+      })
+      // Invalidate specific apartment because the 'description' field might change
+      queryClient.invalidateQueries({
+        queryKey: ['apartments', variables.id],
       })
       queryClient.invalidateQueries({ queryKey: ['apartments'] })
     },
@@ -116,6 +139,10 @@ export const useDeleteApartmentTranslation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['apartments', variables.id, 'translations'],
+      })
+      // Invalidate details as description might fallback to default or change
+      queryClient.invalidateQueries({
+        queryKey: ['apartments', variables.id],
       })
       queryClient.invalidateQueries({ queryKey: ['apartments'] })
     },

@@ -1,14 +1,15 @@
 import { Phone, MessageCircle, Loader2 } from 'lucide-react'
 import { useApartments } from '@/lib/hooks/useApartments'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useProject } from '@/lib/hooks/useProjects'
 import { ProjectImageCarousel } from '@/components/pages/projects/ProjectImageCarousel'
 import { ProjectApartmentCard } from '@/components/pages/projects/ProjectApartmentCard'
 
-const getQuarter = (dateString: string | null): string | null => {
+const getQuarter = (dateString: string | null | undefined): string | null => {
   if (!dateString) return null
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return null
   const month = date.getMonth()
   const quarter = Math.floor(month / 3) + 1
   const year = date.getFullYear()
@@ -17,20 +18,28 @@ const getQuarter = (dateString: string | null): string | null => {
 
 export default function ProjectPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const projectId = Number(id)
 
-  const { data: apartments, isLoading: apartmentsLoading } = useApartments(
-    undefined,
-    projectId
-  )
+  // Fetch project details
   const {
     data: project,
     isLoading: projectLoading,
     error,
   } = useProject(projectId)
 
-  const isLoading = apartmentsLoading || projectLoading
+  // Fetch apartments for the project
+  const { data: apartmentsResponse, isLoading: apartmentsLoading } =
+    useApartments({
+      projectId,
+      lang: 'en', // or i18n.language if using translations
+    })
 
+  const apartments = apartmentsResponse?.data || []
+
+  const isLoading = projectLoading || apartmentsLoading
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -42,6 +51,7 @@ export default function ProjectPage() {
     )
   }
 
+  // Error / not found state
   if (error || !project) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -52,7 +62,11 @@ export default function ProjectPage() {
           <p className="text-gray-600 mb-4">
             The project you're looking for doesn't exist or has been removed.
           </p>
-          <Button variant="default" size="lg">
+          <Button
+            variant="default"
+            size="lg"
+            onClick={() => navigate('/projects')}
+          >
             Back to Projects
           </Button>
         </div>
@@ -60,28 +74,33 @@ export default function ProjectPage() {
     )
   }
 
+  // Main render
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-8">
+        {/* Project Details */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
           <div className="lg:col-span-2 h-[400px] lg:h-[500px]">
             <ProjectImageCarousel
-              gallery={project.gallery}
-              image={project.image}
-              projectName={project.projectName}
+              gallery={project.gallery || []}
+              image={project.image || ''}
+              projectName={project.projectName || ''}
             />
           </div>
+
           <div className="lg:col-span-1 h-[400px] lg:h-[500px]">
             <div className="bg-white rounded-xl shadow-sm p-5 h-full flex flex-col">
+              {/* Project Header */}
               <div className="mb-4 pb-4 border-b">
                 <h1 className="text-xl font-bold text-gray-900 mb-1">
-                  {project.projectName}
+                  {project.projectName || 'No name'}
                 </h1>
                 <p className="text-sm text-gray-600">
-                  {project.projectLocation}
+                  {project.projectLocation || 'No location'}
                 </p>
               </div>
 
+              {/* Project Info */}
               <div className="space-y-3 mb-4 flex-1">
                 <div className="flex items-center justify-between py-2.5 border-b border-gray-200">
                   <span className="text-sm font-medium text-gray-600">
@@ -124,6 +143,7 @@ export default function ProjectPage() {
                 </div>
               </div>
 
+              {/* Action Buttons */}
               <div className="space-y-2.5 pt-3 mt-auto">
                 <Button
                   size="lg"
@@ -145,7 +165,8 @@ export default function ProjectPage() {
           </div>
         </div>
 
-        {apartments && apartments.length > 0 && (
+        {/* Apartments Section */}
+        {apartments.length > 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Available Apartments
@@ -159,9 +180,7 @@ export default function ProjectPage() {
               ))}
             </div>
           </div>
-        )}
-
-        {apartments && apartments.length === 0 && (
+        ) : (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <p className="text-gray-600">
               No apartments available for this project yet.

@@ -1,6 +1,5 @@
-import { Edit, Trash2, Home } from 'lucide-react'
+import { Edit, Trash2, MapPin, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import type { Apartment } from '@/lib/types/apartments'
 
 interface ApartmentCardProps {
@@ -14,89 +13,89 @@ export function AdminApartmentCard({
   onEdit,
   onDelete,
 }: ApartmentCardProps) {
-  const imageUrl = apartment.images?.[0]
-    ? `${import.meta.env.VITE_API_IMAGE_URL}/${apartment.images[0]}`
+  // Handle image
+  const firstImage =
+    apartment.images && apartment.images.length > 0 ? apartment.images[0] : null
+  const imageUrl = firstImage
+    ? `${import.meta.env.VITE_API_IMAGE_URL}/${firstImage}`
     : null
 
   return (
-    <Card className="overflow-hidden border-border hover:shadow-md transition-shadow duration-200">
-      <div className="h-48 bg-muted flex items-center justify-center">
-        {imageUrl ? (
-          <img
-            src={imageUrl || '/placeholder.svg'}
-            alt={`Apartment ${apartment.room} rooms`}
-            className="h-full w-full object-cover"
-          />
+    <div className="grid grid-cols-12 gap-4 items-center p-4 border-b border-border hover:bg-muted/30 transition-colors last:border-0">
+      {/* Column 1: Image */}
+      <div className="col-span-1">
+        <div className="h-12 w-16 bg-muted rounded overflow-hidden border border-border relative">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={`Apt ${apartment.id}`}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center bg-muted text-muted-foreground/50">
+              <Building2 className="w-4 h-4" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Column 2: ID & Project Name (3 cols) */}
+      <div className="col-span-3">
+        <div className="font-medium text-foreground truncate">
+          {apartment.project?.projectName || (
+            <span className="text-muted-foreground italic">No Project</span>
+          )}
+        </div>
+        <div className="text-xs text-muted-foreground">
+          ID: <span className="font-mono">{apartment.id}</span>
+        </div>
+      </div>
+
+      {/* Column 3: Location (3 cols) */}
+      <div className="col-span-3 flex items-center text-sm text-muted-foreground">
+        {apartment.project?.projectLocation ? (
+          <>
+            <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span className="truncate">
+              {apartment.project.projectLocation}
+            </span>
+          </>
         ) : (
-          <div className="flex flex-col items-center justify-center text-muted-foreground">
-            <Home className="w-12 h-12 mb-2" />
-            <p className="text-sm">No image</p>
-          </div>
+          <span>-</span>
         )}
       </div>
-      <CardContent className="p-6 space-y-4">
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold text-foreground">
-            {apartment.room} Room{apartment.room > 1 ? 's' : ''}
-          </h3>
-          <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-            {apartment.area}m²
-          </span>
-        </div>
 
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            <span className="font-medium text-foreground">Floor:</span>{' '}
-            {apartment.floor} / {apartment.totalFloors}
-          </p>
+      {/* Column 4: Rooms (2 cols) */}
+      <div className="col-span-2 text-sm font-medium">
+        {apartment.room} Room{apartment.room > 1 ? 's' : ''}
+      </div>
 
-          {apartment.project && (
-            <>
-              <p>
-                <span className="font-medium text-foreground">Project:</span>{' '}
-                {apartment.project.projectName}
-              </p>
-              <p>
-                <span className="font-medium text-foreground">Location:</span>{' '}
-                {apartment.project.projectLocation}
-              </p>
-            </>
-          )}
+      {/* Column 5: Area (2 cols) */}
+      <div className="col-span-2">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+          {apartment.area} m²
+        </span>
+      </div>
 
-          {apartment.description && (
-            <p className="text-xs line-clamp-2 mt-2">{apartment.description}</p>
-          )}
-
-          <p className="text-xs pt-2">
-            <span className="font-medium">Images:</span>{' '}
-            {apartment.images?.length || 0}
-          </p>
-
-          <p className="text-xs">
-            <span className="font-medium">Created:</span>{' '}
-            {new Date(apartment.createdAt).toLocaleDateString()}
-          </p>
-        </div>
-
-        <div className="flex gap-2 pt-2">
-          <Button
-            onClick={() => onEdit(apartment)}
-            className="flex-1"
-            size="sm"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Edit
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => onDelete(apartment.id)}
-            size="icon"
-            className="h-10 w-10"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Column 6: Actions (1 col) */}
+      <div className="col-span-1 flex justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onEdit(apartment)}
+          className="h-8 w-8 text-muted-foreground hover:text-blue-600"
+        >
+          <Edit className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onDelete(apartment.id)}
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
   )
 }

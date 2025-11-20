@@ -23,9 +23,9 @@ const HomePage = () => {
     lang: i18n.language,
   })
 
-  const { data: apartments, isLoading: apartmentsLoading } = useApartments(
-    i18n.language
-  )
+  const { data: apartments, isLoading: apartmentsLoading } = useApartments({
+    lang: i18n.language,
+  })
 
   const partners = partnersResponse?.data || []
 
@@ -55,7 +55,7 @@ const HomePage = () => {
         </div>
       ) : apartments ? (
         <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
-          <ApartmentsCarousel apartments={apartments} />
+          <ApartmentsCarousel apartments={apartments?.data} />
         </section>
       ) : null}
 
