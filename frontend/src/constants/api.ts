@@ -31,4 +31,13 @@ export const API_ENDPOINTS = {
     TRANSLATION_BY_LANGUAGE: (id: number, language: string) =>
       `/apartments/${id}/translations/${language}`,
   },
+  PROPERTIES: {
+    PROPERTIES: '/properties',
+    PROPERTY_BY_ID: (id: string) => `/properties/${id}`,
+    TRANSLATIONS: (id: string) => `/properties/${id}/translations`,
+    TRANSLATION_BY_LANGUAGE: (id: string, language: string) =>
+      `/properties/${id}/translations/${language}`,
+    GALLERY_IMAGE: (propertyId: string, imageId: number) =>
+      `/properties/${propertyId}/images/${imageId}`,
+  },
 } as const

@@ -65,11 +65,6 @@ enum Occupancy {
 }
 
 export class CreatePropertyDto {
-  @ApiPropertyOptional({ description: 'External ID for the property' })
-  @IsOptional()
-  @IsString()
-  externalId?: string;
-
   @ApiProperty({
     description: 'Type of property',
     enum: PropertyType,

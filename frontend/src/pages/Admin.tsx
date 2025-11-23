@@ -4,15 +4,21 @@ import PartnersPanel from '@/components/pages/admin/partners/PartnersPanel'
 import ProjectsPanel from '@/components/pages/admin/projects/ProjectsPanel'
 import ApartmentsPanel from '@/components/pages/admin/apartments/ApartmentsPanel'
 import { Button } from '@/components/ui/button'
+import PropertiesPanel from '@/components/pages/admin/properties/PropertiesPanel'
 
-type MenuType = 'partners' | 'projects' | 'apartments'
+type MenuType = 'partners' | 'projects' | 'apartments' | 'properties'
 
 export default function Admin() {
   const [activeMenu, setActiveMenu] = useState<MenuType>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const tab = params.get('tab') as MenuType
-      if (tab === 'partners' || tab === 'projects' || tab === 'apartments') {
+      if (
+        tab === 'partners' ||
+        tab === 'projects' ||
+        tab === 'apartments' ||
+        tab === 'properties'
+      ) {
         return tab
       }
     }
@@ -32,7 +38,12 @@ export default function Admin() {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search)
       const tab = params.get('tab') as MenuType
-      if (tab === 'partners' || tab === 'projects' || tab === 'apartments') {
+      if (
+        tab === 'partners' ||
+        tab === 'projects' ||
+        tab === 'apartments' ||
+        tab === 'properties'
+      ) {
         setActiveMenu(tab)
       }
     }
@@ -124,6 +135,27 @@ export default function Admin() {
               Apartments
             </span>
           </Button>
+          <Button
+            onClick={() => setActiveMenu('properties')}
+            className={`w-full flex justify-start items-center group px-4 py-3 rounded-md transition-all duration-200 ${
+              activeMenu === 'properties'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-400/50 border-l-4 border-blue-400'
+                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+            }`}
+          >
+            <Home
+              className={`w-5 h-5 mr-3 transition-transform duration-200 ${
+                activeMenu === 'properties'
+                  ? 'scale-110'
+                  : 'group-hover:scale-105'
+              }`}
+            />
+            <span
+              className={`font-medium ${activeMenu === 'properties' ? 'font-semibold' : ''}`}
+            >
+              Properties
+            </span>
+          </Button>
         </nav>
 
         <div className="p-4 border-t border-gray-700">
@@ -143,6 +175,7 @@ export default function Admin() {
             {activeMenu === 'partners' && <PartnersPanel />}
             {activeMenu === 'projects' && <ProjectsPanel />}
             {activeMenu === 'apartments' && <ApartmentsPanel />}
+            {activeMenu === 'properties' && <PropertiesPanel />}
           </div>
         </div>
       </main>

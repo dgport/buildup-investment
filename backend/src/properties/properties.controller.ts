@@ -27,9 +27,6 @@ import { multerConfig } from '../common/config/multer.config';
 import { UpsertPropertyTranslationDto } from './dto/UpsertPropertyTranslation.dto';
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
-import { CreatePropertyUnitDto } from './dto/CreatePropertyUnit.dto';
-import { UpdatePropertyUnitDto } from './dto/UpdatePropertyUnit.dto';
-import { UpsertPropertyUnitTranslationDto } from './dto/UpsertPropertyUnitTranslation.dto';
 
 @ApiTags('Properties')
 @Controller('properties')
@@ -207,104 +204,5 @@ export class PropertiesController {
     @Param('imageId') imageId: number,
   ) {
     return this.propertiesService.deleteGalleryImage(id, +imageId);
-  }
-
-  // Property Unit endpoints
-  @Post(':id/units')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Create a new unit for a property' })
-  @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
-  @ApiResponse({ status: 201, description: 'Unit created successfully' })
-  @UseInterceptors(
-    FilesInterceptor('images', 20, multerConfig('property-units')),
-  )
-  @ApiBody({ type: CreatePropertyUnitDto })
-  async createUnit(
-    @Param('id') id: string,
-    @Body() dto: CreatePropertyUnitDto,
-    @UploadedFiles() images?: Express.Multer.File[],
-  ) {
-    return this.propertiesService.createUnit(id, dto, images);
-  }
-
-  @Get(':id/units')
-  @ApiOperation({ summary: 'Get all units for a property' })
-  @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
-  @ApiQuery({
-    name: 'lang',
-    required: false,
-    description: 'Language code',
-    example: 'en',
-  })
-  @ApiResponse({ status: 200, description: 'Units retrieved successfully' })
-  async getUnits(@Param('id') id: string, @Query('lang') lang?: string) {
-    return this.propertiesService.getUnits(id, lang);
-  }
-
-  @Patch(':id/units/:unitId')
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Update a property unit' })
-  @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
-  @ApiParam({ name: 'unitId', description: 'Unit ID', type: 'string' })
-  @ApiResponse({ status: 200, description: 'Unit updated successfully' })
-  @UseInterceptors(
-    FilesInterceptor('images', 20, multerConfig('property-units')),
-  )
-  @ApiBody({ type: UpdatePropertyUnitDto })
-  async updateUnit(
-    @Param('id') id: string,
-    @Param('unitId') unitId: string,
-    @Body() dto: UpdatePropertyUnitDto,
-    @UploadedFiles() images?: Express.Multer.File[],
-  ) {
-    return this.propertiesService.updateUnit(id, unitId, dto, images);
-  }
-
-  @Delete(':id/units/:unitId')
-  @ApiOperation({ summary: 'Delete a property unit' })
-  @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
-  @ApiParam({ name: 'unitId', description: 'Unit ID', type: 'string' })
-  @ApiResponse({ status: 200, description: 'Unit deleted successfully' })
-  async deleteUnit(@Param('id') id: string, @Param('unitId') unitId: string) {
-    return this.propertiesService.deleteUnit(id, unitId);
-  }
-
-  // Unit translation endpoints
-  @Patch(':id/units/:unitId/translations')
-  @ApiOperation({ summary: 'Add or update a unit translation' })
-  @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
-  @ApiParam({ name: 'unitId', description: 'Unit ID', type: 'string' })
-  @ApiResponse({
-    status: 200,
-    description: 'Translation added/updated successfully',
-  })
-  @ApiBody({ type: UpsertPropertyUnitTranslationDto })
-  async upsertUnitTranslation(
-    @Param('id') id: string,
-    @Param('unitId') unitId: string,
-    @Body() dto: UpsertPropertyUnitTranslationDto,
-  ) {
-    return this.propertiesService.upsertUnitTranslation(
-      id,
-      unitId,
-      dto.language,
-      dto.title,
-      dto.description,
-    );
-  }
-
-  @Delete(':id/units/:unitId/images/:imageId')
-  @ApiOperation({ summary: 'Delete a unit gallery image' })
-  @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
-  @ApiParam({ name: 'unitId', description: 'Unit ID', type: 'string' })
-  @ApiParam({ name: 'imageId', description: 'Image ID', type: 'number' })
-  @ApiResponse({ status: 200, description: 'Image deleted successfully' })
-  async deleteUnitGalleryImage(
-    @Param('id') id: string,
-    @Param('unitId') unitId: string,
-    @Param('imageId') imageId: number,
-  ) {
-    return this.propertiesService.deleteUnitGalleryImage(id, unitId, +imageId);
   }
 }

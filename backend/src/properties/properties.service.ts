@@ -8,8 +8,6 @@ import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { LANGUAGES } from '@/common/constants/language';
-import { CreatePropertyUnitDto } from './dto/CreatePropertyUnit.dto';
-import { UpdatePropertyUnitDto } from './dto/UpdatePropertyUnit.dto';
 
 interface FindAllParams {
   lang?: string;
@@ -22,6 +20,31 @@ interface FindAllParams {
 @Injectable()
 export class PropertiesService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  /**
+   * Helper function to generate a unique 6-digit external ID
+   */
+  private async generateUniqueExternalId(): Promise<string> {
+    let externalId = '';
+    let isUnique = false;
+
+    while (!isUnique) {
+      // Generate a random integer between 100000 and 999999
+      const randomNum = Math.floor(100000 + Math.random() * 900000);
+      externalId = randomNum.toString();
+
+      // Check if this ID already exists in the database
+      const existing = await this.prismaService.property.findUnique({
+        where: { externalId },
+      });
+
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
+    return externalId;
+  }
 
   async findAll(params: FindAllParams = {}) {
     const { lang = 'en', page = 1, limit = 10, propertyType, status } = params;
@@ -49,35 +72,13 @@ export class PropertiesService {
         galleryImages: {
           orderBy: { order: 'asc' },
         },
-        units: {
-          include: {
-            translations: {
-              where: { language: lang },
-              take: 1,
-            },
-          },
-        },
       },
     });
 
     const mappedProperties = properties.map((property) => ({
-      id: property.id,
-      externalId: property.externalId,
-      propertyType: property.propertyType,
-      status: property.status,
-      address: property.address,
-      price: property.price,
-      totalArea: property.totalArea,
-      rooms: property.rooms,
-      bedrooms: property.bedrooms,
-      bathrooms: property.bathrooms,
-      floors: property.floors,
-      floorsTotal: property.floorsTotal,
-      createdAt: property.createdAt,
-      updatedAt: property.updatedAt,
+      ...property, // This passes hasConditioner, isFenced, ceilingHeight, etc.
       translation: property.translations[0] || null,
-      images: property.galleryImages,
-      unitsCount: property.units.length,
+      galleryImages: property.galleryImages,
     }));
 
     return {
@@ -103,16 +104,6 @@ export class PropertiesService {
         galleryImages: {
           orderBy: { order: 'asc' },
         },
-        units: {
-          include: {
-            translations: {
-              where: { language: lang },
-            },
-            galleryImages: {
-              orderBy: { order: 'asc' },
-            },
-          },
-        },
       },
     });
 
@@ -127,21 +118,12 @@ export class PropertiesService {
   }
 
   async createProperty(dto: CreatePropertyDto, images?: Express.Multer.File[]) {
-    if (dto.externalId) {
-      const existingProperty = await this.prismaService.property.findUnique({
-        where: { externalId: dto.externalId },
-      });
-
-      if (existingProperty) {
-        throw new ConflictException(
-          `Property with external ID "${dto.externalId}" already exists`,
-        );
-      }
-    }
+    // Generate the unique 6-digit ID
+    const generatedExternalId = await this.generateUniqueExternalId();
 
     const property = await this.prismaService.property.create({
       data: {
-        externalId: dto.externalId,
+        externalId: generatedExternalId, // Automatically assigned
         propertyType: dto.propertyType,
         status: dto.status,
         address: dto.address,
@@ -345,11 +327,6 @@ export class PropertiesService {
       where: { id },
       include: {
         galleryImages: true,
-        units: {
-          include: {
-            galleryImages: true,
-          },
-        },
       },
     });
 
@@ -359,12 +336,6 @@ export class PropertiesService {
 
     for (const image of property.galleryImages) {
       await FileUtils.deleteFile(image.imageUrl);
-    }
-
-    for (const unit of property.units) {
-      for (const image of unit.galleryImages) {
-        await FileUtils.deleteFile(image.imageUrl);
-      }
     }
 
     await this.prismaService.property.delete({
@@ -466,243 +437,6 @@ export class PropertiesService {
     await FileUtils.deleteFile(image.imageUrl);
 
     await this.prismaService.propertyGalleryImage.delete({
-      where: { id: imageId },
-    });
-
-    return { message: 'Image deleted successfully' };
-  }
-
-  // Property Unit methods
-  async createUnit(
-    propertyId: string,
-    dto: CreatePropertyUnitDto,
-    images?: Express.Multer.File[],
-  ) {
-    const property = await this.prismaService.property.findUnique({
-      where: { id: propertyId },
-    });
-
-    if (!property) {
-      throw new NotFoundException(`Property with ID "${propertyId}" not found`);
-    }
-
-    const unit = await this.prismaService.propertyUnit.create({
-      data: {
-        propertyId,
-        unitNumber: dto.unitNumber,
-        floor: dto.floor ? parseInt(dto.floor as any) : null,
-        area: parseInt(dto.area as any),
-        rooms: dto.rooms ? parseInt(dto.rooms as any) : null,
-        bedrooms: dto.bedrooms ? parseInt(dto.bedrooms as any) : null,
-        bathrooms: dto.bathrooms ? parseInt(dto.bathrooms as any) : null,
-        price: dto.price ? parseInt(dto.price as any) : null,
-      },
-    });
-
-    await this.prismaService.propertyUnitTranslations.createMany({
-      data: LANGUAGES.map((lang) => ({
-        unitId: unit.id,
-        language: lang,
-        title: lang === 'en' && dto.title ? dto.title : null,
-        description: lang === 'en' && dto.description ? dto.description : null,
-      })),
-      skipDuplicates: true,
-    });
-
-    if (images && images.length > 0) {
-      const imageUrls = images
-        .map((image, index) => ({
-          url: FileUtils.generateImageUrl(image, 'property-units'),
-          order: index,
-        }))
-        .filter((item) => item.url !== null);
-
-      if (imageUrls.length > 0) {
-        await this.prismaService.propertyUnitGalleryImage.createMany({
-          data: imageUrls.map((item) => ({
-            unitId: unit.id,
-            imageUrl: item.url as string,
-            order: item.order,
-          })),
-        });
-      }
-    }
-
-    return unit;
-  }
-
-  async getUnits(propertyId: string, lang = 'en') {
-    const property = await this.prismaService.property.findUnique({
-      where: { id: propertyId },
-    });
-
-    if (!property) {
-      throw new NotFoundException(`Property with ID "${propertyId}" not found`);
-    }
-
-    const units = await this.prismaService.propertyUnit.findMany({
-      where: { propertyId },
-      include: {
-        translations: {
-          where: { language: lang },
-        },
-        galleryImages: {
-          orderBy: { order: 'asc' },
-        },
-      },
-    });
-
-    return units.map((unit) => ({
-      ...unit,
-      translation: unit.translations[0] || null,
-    }));
-  }
-
-  async updateUnit(
-    propertyId: string,
-    unitId: string,
-    dto: UpdatePropertyUnitDto,
-    images?: Express.Multer.File[],
-  ) {
-    const unit = await this.prismaService.propertyUnit.findUnique({
-      where: { id: unitId },
-    });
-
-    if (!unit || unit.propertyId !== propertyId) {
-      throw new NotFoundException(`Unit with ID "${unitId}" not found`);
-    }
-
-    const updateData: any = {};
-    if (dto.unitNumber !== undefined) updateData.unitNumber = dto.unitNumber;
-    if (dto.floor !== undefined)
-      updateData.floor = dto.floor ? parseInt(dto.floor as any) : null;
-    if (dto.area !== undefined) updateData.area = parseInt(dto.area as any);
-    if (dto.rooms !== undefined)
-      updateData.rooms = dto.rooms ? parseInt(dto.rooms as any) : null;
-    if (dto.bedrooms !== undefined)
-      updateData.bedrooms = dto.bedrooms ? parseInt(dto.bedrooms as any) : null;
-    if (dto.bathrooms !== undefined)
-      updateData.bathrooms = dto.bathrooms
-        ? parseInt(dto.bathrooms as any)
-        : null;
-    if (dto.price !== undefined)
-      updateData.price = dto.price ? parseInt(dto.price as any) : null;
-
-    const updatedUnit = await this.prismaService.propertyUnit.update({
-      where: { id: unitId },
-      data: updateData,
-    });
-
-    if (images && images.length > 0) {
-      const existingImages =
-        await this.prismaService.propertyUnitGalleryImage.findMany({
-          where: { unitId },
-        });
-      const maxOrder = existingImages.length;
-
-      const imageUrls = images
-        .map((image, index) => ({
-          url: FileUtils.generateImageUrl(image, 'property-units'),
-          order: maxOrder + index,
-        }))
-        .filter((item) => item.url !== null);
-
-      if (imageUrls.length > 0) {
-        await this.prismaService.propertyUnitGalleryImage.createMany({
-          data: imageUrls.map((item) => ({
-            unitId,
-            imageUrl: item.url as string,
-            order: item.order,
-          })),
-        });
-      }
-    }
-
-    return updatedUnit;
-  }
-
-  async deleteUnit(propertyId: string, unitId: string) {
-    const unit = await this.prismaService.propertyUnit.findUnique({
-      where: { id: unitId },
-      include: {
-        galleryImages: true,
-      },
-    });
-
-    if (!unit || unit.propertyId !== propertyId) {
-      throw new NotFoundException(`Unit with ID "${unitId}" not found`);
-    }
-
-    for (const image of unit.galleryImages) {
-      await FileUtils.deleteFile(image.imageUrl);
-    }
-
-    await this.prismaService.propertyUnit.delete({
-      where: { id: unitId },
-    });
-
-    return { message: 'Unit deleted successfully' };
-  }
-
-  async upsertUnitTranslation(
-    propertyId: string,
-    unitId: string,
-    language: string,
-    title?: string,
-    description?: string,
-  ) {
-    const unit = await this.prismaService.propertyUnit.findUnique({
-      where: { id: unitId },
-    });
-
-    if (!unit || unit.propertyId !== propertyId) {
-      throw new NotFoundException(`Unit with ID "${unitId}" not found`);
-    }
-
-    const translation =
-      await this.prismaService.propertyUnitTranslations.upsert({
-        where: {
-          unitId_language: {
-            unitId,
-            language,
-          },
-        },
-        update: {
-          title,
-          description,
-        },
-        create: {
-          unitId,
-          language,
-          title,
-          description,
-        },
-      });
-
-    return translation;
-  }
-
-  async deleteUnitGalleryImage(
-    propertyId: string,
-    unitId: string,
-    imageId: number,
-  ) {
-    const image = await this.prismaService.propertyUnitGalleryImage.findUnique({
-      where: { id: imageId },
-      include: { unit: true },
-    });
-
-    if (
-      !image ||
-      image.unitId !== unitId ||
-      image.unit.propertyId !== propertyId
-    ) {
-      throw new NotFoundException(`Image with ID "${imageId}" not found`);
-    }
-
-    await FileUtils.deleteFile(image.imageUrl);
-
-    await this.prismaService.propertyUnitGalleryImage.delete({
       where: { id: imageId },
     });
 

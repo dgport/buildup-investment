@@ -161,7 +161,7 @@ enum Occupancy {
 
 model Property {
   id              String        @id @default(cuid())
-  externalId      String?       @unique @map("external_id")
+  externalId      String      @unique @map("external_id")
   propertyType    PropertyType
   status          PropertyStatus  
   address         String
@@ -219,7 +219,6 @@ model Property {
 
   translations     PropertyTranslations[]
   galleryImages   PropertyGalleryImage[]
-  units           PropertyUnit[]
 
   @@map("properties")
   @@index([propertyType])
@@ -251,47 +250,4 @@ model PropertyGalleryImage {
   @@index([propertyId])
 }
 
-model PropertyUnit {
-  id              String    @id @default(cuid())
-  propertyId      String    @map("property_id")
-  property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  unitNumber      String    @map("unit_number")
-  floor           Int?
-  area            Int
-  rooms           Int?
-  bedrooms        Int?
-  bathrooms       Int?
-  price           Int?
-  translations    PropertyUnitTranslations[]
-  galleryImages   PropertyUnitGalleryImage[]
-  createdAt       DateTime  @map("created_at") @default(now())
-  updatedAt       DateTime  @map("updated_at") @updatedAt
-
-  @@map("property_units")
-  @@index([propertyId])
-}
-
-model PropertyUnitTranslations {
-  id              Int     @id @default(autoincrement())
-  unitId          String  @map("unit_id")
-  unit            PropertyUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  language        String
-  title           String?
-  description     String?
-
-  @@unique([unitId, language])
-  @@map("property_unit_translations")
-  @@index([unitId])
-}
-
-model PropertyUnitGalleryImage {
-  id          Int     @id @default(autoincrement())
-  unitId      String  @map("unit_id")
-  unit        PropertyUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  imageUrl    String  @map("image_url")
-  order       Int     @default(0)
-  createdAt   DateTime @map("created_at") @default(now())
-
-  @@map("property_unit_gallery_images")
-  @@index([unitId])
-}
+ 
