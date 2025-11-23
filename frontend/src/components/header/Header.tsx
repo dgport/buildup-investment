@@ -84,7 +84,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 top-0 z-50 w-full border-b border-gray-200 bg-[#F2F5FF] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <header className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28 top-0 z-50 w-full border-b border-gray-200 bg-[#F2F5FF] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="container mx-auto">
         <div className="flex h-20 items-center justify-between">
           <Link

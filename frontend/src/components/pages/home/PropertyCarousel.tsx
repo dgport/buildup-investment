@@ -133,7 +133,7 @@ const PropertyCarousel = () => {
   }
 
   return (
-    <div className="py-8 px-0 sm:px-6 md:px-8 lg:px-20 bg-white">
+    <div className="py-8  bg-white">
       <div className="w-full">
         <div className="flex justify-between items-center px-4">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">

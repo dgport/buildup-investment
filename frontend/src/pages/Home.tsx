@@ -32,18 +32,18 @@ const HomePage = () => {
 
   return (
     <main className="min-h-screen">
-      <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
+      <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
         <Cover />
       </section>
-
-      <PropertyCarousel />
-
+      <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
+        <PropertyCarousel />
+      </section>
       {projectsLoading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
       ) : projectsResponse ? (
-        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
+        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
           <ProjectsCarousel projectsResponse={projectsResponse} />
         </section>
       ) : null}
@@ -55,7 +55,7 @@ const HomePage = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
       ) : apartments ? (
-        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
+        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
           <ApartmentsCarousel apartments={apartments?.data} />
         </section>
       ) : null}
@@ -67,7 +67,7 @@ const HomePage = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
       ) : partners.length > 0 ? (
-        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
+        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
           <PartnersCarousel partners={partners} />
         </section>
       ) : null}

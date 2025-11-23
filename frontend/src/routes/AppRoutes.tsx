@@ -11,7 +11,7 @@ const Admin = lazy(() => import('@/pages/Admin'))
 const Unauthorized = lazy(() => import('@/pages/Unauthorized'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 const Contact = lazy(() => import('@/pages/Contact'))
-const Property = lazy(() => import('@/pages/Property'))
+const Properties = lazy(() => import('@/pages/Properties'))
 const PartnerProjects = lazy(() => import('@/pages/PartnerProjects'))
 const Project = lazy(() => import('@/pages/Project'))
 const Partners = lazy(() => import('@/pages/Partners'))
@@ -30,7 +30,7 @@ export const AppRoutes = () => {
         <Route path={ROUTES.PARTNER_PROJECTS} element={<PartnerProjects />} />
         <Route path={ROUTES.PROJECT} element={<Project />} />
         <Route path={ROUTES.ALL_PROJECTS} element={<AllProjects />} />
-        <Route path={ROUTES.PROPERTY} element={<Property />} />
+        <Route path={ROUTES.PROPERTY} element={<Properties />} />
         <Route path="/map" element={<InventoryMap />} />
         <Route path={ROUTES.ADMIN} element={<Admin />} />
         <Route element={<ProtectedRoutes redirectTo={ROUTES.SIGNIN} />}>

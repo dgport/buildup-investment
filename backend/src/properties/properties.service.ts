@@ -15,6 +15,22 @@ interface FindAllParams {
   limit?: number;
   propertyType?: string;
   status?: string;
+  priceFrom?: number;
+  priceTo?: number;
+  areaFrom?: number;
+  areaTo?: number;
+  rooms?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  floors?: number;
+  condition?: string;
+  heating?: string;
+  parking?: string;
+  hasConditioner?: boolean;
+  hasFurniture?: boolean;
+  hasBalcony?: boolean;
+  hasInternet?: boolean;
+  hasNaturalGas?: boolean;
 }
 
 @Injectable()
@@ -47,13 +63,88 @@ export class PropertiesService {
   }
 
   async findAll(params: FindAllParams = {}) {
-    const { lang = 'en', page = 1, limit = 10, propertyType, status } = params;
+    const {
+      lang = 'en',
+      page = 1,
+      limit = 10,
+      propertyType,
+      status,
+      priceFrom,
+      priceTo,
+      areaFrom,
+      areaTo,
+      rooms,
+      bedrooms,
+      bathrooms,
+      floors,
+      condition,
+      heating,
+      parking,
+      hasConditioner,
+      hasFurniture,
+      hasBalcony,
+      hasInternet,
+      hasNaturalGas,
+    } = params;
 
     const skip = (page - 1) * limit;
 
+    // Build where clause dynamically
     const where: any = {};
+
+    // Property type and status filters
     if (propertyType) where.propertyType = propertyType;
     if (status) where.status = status;
+
+    // Price range filter
+    if (priceFrom !== undefined || priceTo !== undefined) {
+      where.price = {};
+      if (priceFrom !== undefined) where.price.gte = priceFrom;
+      if (priceTo !== undefined) where.price.lte = priceTo;
+    }
+
+    // Area range filter
+    if (areaFrom !== undefined || areaTo !== undefined) {
+      where.totalArea = {};
+      if (areaFrom !== undefined) where.totalArea.gte = areaFrom;
+      if (areaTo !== undefined) where.totalArea.lte = areaTo;
+    }
+
+    // Numeric filters
+    if (rooms !== undefined) {
+      if (rooms >= 5) {
+        where.rooms = { gte: 5 };
+      } else {
+        where.rooms = rooms;
+      }
+    }
+    if (bedrooms !== undefined) {
+      if (bedrooms >= 4) {
+        where.bedrooms = { gte: 4 };
+      } else {
+        where.bedrooms = bedrooms;
+      }
+    }
+    if (bathrooms !== undefined) {
+      if (bathrooms >= 3) {
+        where.bathrooms = { gte: 3 };
+      } else {
+        where.bathrooms = bathrooms;
+      }
+    }
+    if (floors !== undefined) where.floors = floors;
+
+    // String enum filters
+    if (condition) where.condition = condition;
+    if (heating) where.heating = heating;
+    if (parking) where.parking = parking;
+
+    // Boolean filters
+    if (hasConditioner === true) where.hasConditioner = true;
+    if (hasFurniture === true) where.hasFurniture = true;
+    if (hasBalcony === true) where.hasBalcony = true;
+    if (hasInternet === true) where.hasInternet = true;
+    if (hasNaturalGas === true) where.hasNaturalGas = true;
 
     const total = await this.prismaService.property.count({ where });
 
@@ -76,7 +167,7 @@ export class PropertiesService {
     });
 
     const mappedProperties = properties.map((property) => ({
-      ...property, // This passes hasConditioner, isFenced, ceilingHeight, etc.
+      ...property,
       translation: property.translations[0] || null,
       galleryImages: property.galleryImages,
     }));
