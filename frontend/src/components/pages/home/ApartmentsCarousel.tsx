@@ -27,7 +27,7 @@ const ApartmentsCarousel = ({ apartments }: ApartmentsCarouselProps) => {
       <div className="w-full">
         <div className="flex justify-between items-center px-4">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-            {t('apartments.title')}
+            Apartments from developers
           </h1>
           <Link
             to="/apartments"

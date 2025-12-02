@@ -10,7 +10,7 @@ const PartnerCard = ({ partner }: { partner: Partner }) => {
 
   return (
     <div className="flex flex-col items-center group cursor-pointer">
-      <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4">
+      <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-4">
         <div
           className="w-full h-full rounded-full overflow-hidden bg-gray-100 transition-all duration-300
                      border-2 border-blue-500 shadow-[0px_5px_30px_#3B82F6]

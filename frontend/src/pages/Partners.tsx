@@ -21,7 +21,7 @@ export default function Partners() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 md:px-8 lg:px-20">
+      <div className="min-h-screen py-12 px-4 sm:px-6 md:px-8 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl text-center sm:text-4xl font-bold text-gray-800 mb-8">
             {t('partners.title')}
@@ -36,7 +36,7 @@ export default function Partners() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 md:px-8 lg:px-20">
+      <div className="min-h-screen py-12 px-4 sm:px-6 md:px-8 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl text-center sm:text-4xl font-bold text-gray-800 mb-8">
             {t('partners.title')}
@@ -50,17 +50,16 @@ export default function Partners() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 md:px-8 lg:px-20">
+    <div className="min-h-screen py-12 px-4 sm:px-6 md:px-8 lg:px-20">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl text-center sm:text-4xl font-bold text-gray-800 mb-8">
-          {t('partners.title')}
-        </h1>
-
         {partners.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10">
               {partners.map(partner => (
-                <Link key={partner.id} to={`/partners/${partner.id}`}>
+                <Link
+                  key={partner.id}
+                  to={`/projects?page=1&partnerId=${partner.id}`}
+                >
                   <PartnerCard partner={partner} />
                 </Link>
               ))}

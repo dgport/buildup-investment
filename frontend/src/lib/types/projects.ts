@@ -6,7 +6,7 @@ export interface ProjectFilters {
   limit?: number
   location?: string
   priceFrom?: number
-  partnerId?: string
+  partnerId?: number
 }
 
 export interface ProjectTranslation {

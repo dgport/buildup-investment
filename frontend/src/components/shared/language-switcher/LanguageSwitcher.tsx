@@ -38,15 +38,15 @@ export function LanguageSwitcher() {
           <span className="text-sm font-medium">{currentLanguage.flag}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-40">
+      <DropdownMenuContent align="end" className="min-w-44 shadow-2xl cursor-pointer">
         {languages.map(lang => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => changeLanguage(lang.code)}
             className={
               i18n.language === lang.code
-                ? 'bg-blue-50 text-blue-600 font-medium'
-                : 'hover:bg-gray-50'
+                ? 'bg-blue-50 text-blue-600 font-medium cursor-pointer'
+                : 'hover:bg-gray-50 cursor-pointer'
             }
           >
             <span className="mr-2 text-base">{lang.flag}</span>

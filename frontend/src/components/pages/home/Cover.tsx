@@ -34,13 +34,13 @@ export default function Cover() {
                 <Building2 className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900 leading-tight">
-                Construction Projects
+                Projecst from developers
               </h3>
             </div>
           </a>
 
           <a
-            href="/apartments"
+            href="/properties"
             className="group relative bg-linear-to-br from-emerald-50 to-emerald-100/50 hover:from-emerald-100 hover:to-emerald-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-4 border border-emerald-200/50 hover:border-emerald-300"
           >
             <div className="flex flex-col items-center text-center gap-2.5">
@@ -48,13 +48,13 @@ export default function Cover() {
                 <Building className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900 leading-tight">
-                Developer Apartments
+                Apartments for sale
               </h3>
             </div>
           </a>
 
           <a
-            href="/residential"
+            href="/properties"
             className="group relative bg-linear-to-br from-amber-50 to-amber-100/50 hover:from-amber-100 hover:to-amber-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-4 border border-amber-200/50 hover:border-amber-300"
           >
             <div className="flex flex-col items-center text-center gap-2.5">
@@ -62,13 +62,13 @@ export default function Cover() {
                 <Home className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900 leading-tight">
-                Residential
+                Apartments for rent
               </h3>
             </div>
           </a>
 
           <a
-            href="/commercial"
+            href="/propertis"
             className="group relative bg-linear-to-br from-purple-50 to-purple-100/50 hover:from-purple-100 hover:to-purple-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-4 border border-purple-200/50 hover:border-purple-300"
           >
             <div className="flex flex-col items-center text-center gap-2.5">
@@ -82,7 +82,7 @@ export default function Cover() {
           </a>
 
           <a
-            href="/lands"
+            href="/properties"
             className="group relative bg-linear-to-br from-teal-50 to-teal-100/50 hover:from-teal-100 hover:to-teal-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-4 border border-teal-200/50 hover:border-teal-300"
           >
             <div className="flex flex-col items-center text-center gap-2.5">

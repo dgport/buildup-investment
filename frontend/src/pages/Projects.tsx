@@ -6,7 +6,7 @@ import { useProjects } from '@/lib/hooks/useProjects'
 import { ProjectFilters } from '@/components/pages/projects/ProjectsFilter'
 import { Pagination } from '@/components/shared/pagination/Pagination'
 
-export default function AllProjects() {
+export default function Projects() {
   const { t, i18n } = useTranslation()
   const [searchParams, _] = useSearchParams()
 
@@ -15,7 +15,9 @@ export default function AllProjects() {
   const priceFrom = searchParams.get('priceFrom')
     ? parseInt(searchParams.get('priceFrom')!)
     : undefined
-
+  const partnerId = searchParams.get('partnerId')
+    ? parseInt(searchParams.get('partnerId')!)
+    : undefined
   const {
     data: projectsResponse,
     isLoading,
@@ -26,6 +28,7 @@ export default function AllProjects() {
     limit: 8,
     location,
     priceFrom,
+    partnerId, // ✅ Add this!
   })
 
   const projects = projectsResponse?.data || []
@@ -33,9 +36,9 @@ export default function AllProjects() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12">
-          <div className="mb-8">
+          <div className="mb-4">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {t('projects.title')}
             </h1>
@@ -51,9 +54,9 @@ export default function AllProjects() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12">
-          <div className="mb-8">
+          <div className="mb-4">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {t('projects.title')}
             </h1>
@@ -69,10 +72,10 @@ export default function AllProjects() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-32 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen">
+      <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {t('projects.title')}
           </h1>
           {meta && (
@@ -84,12 +87,12 @@ export default function AllProjects() {
             </p>
           )}
         </div>
-
-        <ProjectFilters />
-
+        <div className="mb-4">
+          <ProjectFilters />
+        </div>
         {projects.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-x-6 gap-y-10 mb-4">
               {projects.map(project => (
                 <Link key={project.id} to={`/projects/${project.id}`}>
                   <ProjectCard project={project} />
@@ -97,12 +100,14 @@ export default function AllProjects() {
               ))}
             </div>
             {meta && (
-              <Pagination
-                currentPage={meta.page}
-                totalPages={meta.totalPages}
-                hasNextPage={meta.hasNextPage}
-                hasPreviousPage={meta.hasPreviousPage}
-              />
+              <div className="flex justify-center mt-20 md:mt-28 pb-8">
+                <Pagination
+                  currentPage={meta.page}
+                  totalPages={meta.totalPages}
+                  hasNextPage={meta.hasNextPage}
+                  hasPreviousPage={meta.hasPreviousPage}
+                />
+              </div>
             )}
           </>
         ) : (

@@ -1,8 +1,17 @@
-import { defineConfig, env } from 'prisma/config';
+import { defineConfig } from 'prisma/config';
 import dotenv from 'dotenv';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 
-// ✅ Load your .env file manually
-dotenv.config({ path: './.env' });
+// Load .env.local first (Windows), then .env (Docker)
+const envLocalPath = resolve(__dirname, '.env.local');
+const envPath = resolve(__dirname, '.env');
+
+if (existsSync(envLocalPath)) {
+  dotenv.config({ path: envLocalPath });
+} else {
+  dotenv.config({ path: envPath });
+}
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -11,6 +20,8 @@ export default defineConfig({
   },
   engine: 'classic',
   datasource: {
-    url: env('DATABASE_URL'),
+    url:
+      process.env.DATABASE_URL ||
+      'postgresql://postgres:postgres@postgres:5432/realestate?schema=public',
   },
 });

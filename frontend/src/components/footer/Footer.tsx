@@ -1,11 +1,24 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
 const Logo = ({ className }: { className?: string }) => (
   <div
-    className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg ${className}`}
+    className={`h-10 w-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-md ${className}`}
   >
-    <span className="text-xl font-bold text-white">UC</span>
+    <svg
+      className="w-6 h-6 text-white"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2.5}
+        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+      />
+    </svg>
   </div>
 )
 
@@ -46,7 +59,8 @@ const TERMS_URL = '#'
 const PRIVACY_URL = '#'
 
 export default function Footer() {
-  const pathname = window.location.pathname
+  const location = useLocation()
+  const pathname = location.pathname
   const [email, setEmail] = useState('')
 
   const isAdminPath = pathname.includes('/admin')
@@ -66,8 +80,8 @@ export default function Footer() {
   const quickLinks = [
     { path: '/', label: 'Home' },
     { path: '/our-projects', label: 'Our Projects', comingSoon: true },
-    { path: '/all-projects', label: 'All Projects' },
-    { path: '/properties', label: 'Properties' },
+    { path: '/projects', label: 'Projects from developers' },
+    { path: '/properties', label: 'All property' },
   ]
 
   const companyLinks = [
@@ -78,15 +92,22 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="w-full bg-[#F2F5FF] border-t border-gray-200 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-      <div className="container mx-auto pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 group cursor-pointer">
+    <footer className="w-full bg-white border-t border-gray-200 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06)]">
+      <div className="container mx-auto pt-12 pb-6">
+        {/* 2 columns on mobile, 4 on desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-8">
+          {/* Company Info - spans 2 columns on mobile */}
+          <div className="space-y-5 col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-2.5 group cursor-pointer">
               <Logo />
-              <span className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
-                United Company
-              </span>
+              <div className="flex flex-col">
+                <span className="text-base font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors duration-200">
+                  United Construction
+                </span>
+                <span className="text-xs font-semibold text-blue-600 leading-tight">
+                  Company
+                </span>
+              </div>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed">
               Your trusted partner in real estate. We help you find the perfect
@@ -94,11 +115,13 @@ export default function Footer() {
             </p>
             <SocialIcons />
           </div>
+
+          {/* Quick Links */}
           <div>
-            <h3 className="text-base font-bold mb-6 text-gray-900">
+            <h3 className="text-base font-bold mb-5 text-gray-900">
               Quick Links
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {quickLinks.map(link => (
                 <li key={link.path}>
                   <a
@@ -119,7 +142,7 @@ export default function Footer() {
                       {link.label}
                     </span>
                     {link.comingSoon && (
-                      <span className="text-[9px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                      <span className="text-[9px] font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 px-2 py-0.5 rounded-full shadow-sm">
                         SOON
                       </span>
                     )}
@@ -128,9 +151,11 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Company Links */}
           <div>
-            <h3 className="text-base font-bold mb-6 text-gray-900">Company</h3>
-            <ul className="space-y-3">
+            <h3 className="text-base font-bold mb-5 text-gray-900">Company</h3>
+            <ul className="space-y-2.5">
               {companyLinks.map(link => (
                 <li key={link.path}>
                   <a
@@ -148,16 +173,18 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Contact Info */}
           <div>
-            <h3 className="text-base font-bold mb-6 text-gray-900">
+            <h3 className="text-base font-bold mb-5 text-gray-900">
               Get In Touch
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <a
                 href={`tel:${CONTACT_PHONE}`}
-                className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 group"
+                className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 group"
               >
-                <PhoneIcon className="text-xl group-hover:scale-110 transition-transform" />
+                <PhoneIcon className="text-lg group-hover:scale-110 transition-transform" />
                 <span className="text-sm font-medium text-gray-700">
                   {CONTACT_PHONE}
                 </span>
@@ -165,16 +192,16 @@ export default function Footer() {
 
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 group"
+                className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 group"
               >
-                <EmailIcon className="text-xl group-hover:scale-110 transition-transform" />
+                <EmailIcon className="text-lg group-hover:scale-110 transition-transform" />
                 <span className="text-sm font-medium text-gray-700">
                   {CONTACT_EMAIL}
                 </span>
               </a>
 
-              <div className="mt-6">
-                <p className="text-sm text-gray-600 mb-3">
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2.5">
                   Subscribe to our newsletter
                 </p>
                 <div className="flex gap-2">
@@ -198,11 +225,12 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Bottom Bar */}
       <div className="border-t border-gray-200">
-        <div className="container mx-auto px-4 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="container mx-auto py-5">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
             <p className="text-sm text-gray-500">
-              © 2024 United Company. All rights reserved.
+              © 2024 United Construction Company. All rights reserved.
             </p>
 
             <div className="flex items-center gap-6">

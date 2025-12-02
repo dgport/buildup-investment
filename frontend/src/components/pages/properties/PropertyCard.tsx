@@ -3,30 +3,35 @@ import {
   ArrowUpRight,
   Bed,
   Calendar,
-  DoorOpen,
   Home,
   MapPin,
+  Square,
+  Sofa,
+  Car,
 } from 'lucide-react'
-
-type Currency = 'USD' | 'GEL'
-
-interface Property {
-  image: string
-  priceUSD: number
-  priceGEL: number
-  location: string
-  floor: number
-  rooms: number
-  bedrooms: number
-  dateAdded: string
-}
+import { Badge } from '@/components/ui/badge'
+import { useNavigate } from 'react-router-dom'
 
 interface PropertyCardProps {
-  property: Property
-  currency: Currency
-  setCurrency: (currency: Currency) => void
-  formatPrice: (priceUSD: number, priceGEL: number) => string
-  formatDate: (dateString: string) => string
+  property: {
+    id: string
+    image: string
+    priceUSD: number | null
+    priceGEL: number
+    location: string
+    rooms: number
+    bedrooms: number
+    dateAdded: string
+    title: string
+    totalArea: number | null
+    propertyType: string
+    status: string
+    floors?: number
+  }
+  currency: 'USD' | 'GEL'
+  setCurrency: (currency: 'USD' | 'GEL') => void
+  formatPrice: (priceUSD: number | null) => string
+  formatDate: (date: string) => string
 }
 
 const PropertyCard = ({
@@ -36,71 +41,110 @@ const PropertyCard = ({
   formatPrice,
   formatDate,
 }: PropertyCardProps) => {
+  const navigate = useNavigate()
+
+  const handleCardClick = () => {
+    navigate(`/properties/${property.id}`)
+  }
+
   return (
-    <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.04),inset_0_0_0_1px_rgba(0,0,0,0.03)] transition-all duration-300 h-full">
-      <div className="relative h-48 sm:h-56 overflow-hidden rounded-t-xl">
+    <div
+      onClick={handleCardClick}
+      className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer"
+    >
+      {/* Image Section */}
+      <div className="relative h-52">
         <img
-          src={property.image || '/placeholder.svg'}
-          alt={property.location}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          src={property.image}
+          alt={property.title}
+          className="w-full h-full object-cover"
         />
-        <div className="absolute top-3 right-3 bg-white rounded-full p-2 hover:bg-blue-900 transition-colors cursor-pointer group/icon shadow-md">
-          <ArrowUpRight className="w-4 h-4 text-gray-700 group-hover/icon:text-white transition-colors" />
+
+        {/* Image Dots */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-white"></div>
+          <div className="w-2 h-2 rounded-full bg-white/50"></div>
+          <div className="w-2 h-2 rounded-full bg-white/50"></div>
+          <div className="w-2 h-2 rounded-full bg-white/50"></div>
         </div>
       </div>
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-            {formatPrice(property.priceUSD, property.priceGEL)}
+
+      {/* Content Section */}
+      <div className="p-4 space-y-3">
+        {/* Price Section */}
+        <div className="flex items-center gap-2">
+          <h3 className="text-2xl font-bold text-gray-900">
+            {property.priceUSD ? (
+              <>
+                {currency === 'USD' ? '$' : '₾'}
+                {currency === 'USD'
+                  ? property.priceUSD.toLocaleString()
+                  : Math.round(property.priceUSD * 2.8).toLocaleString()}
+              </>
+            ) : (
+              'Price on request'
+            )}
           </h3>
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`text-xs font-medium ${currency === 'USD' ? 'text-blue-600' : 'text-gray-400'}`}
-            >
-              USD
-            </span>
-            <Switch
-              checked={currency === 'GEL'}
-              onCheckedChange={(checked: boolean) =>
-                setCurrency(checked ? 'GEL' : 'USD')
-              }
-              className="scale-75"
-            />
-            <span
-              className={`text-xs font-medium ${currency === 'GEL' ? 'text-blue-600' : 'text-gray-400'}`}
-            >
-              GEL
-            </span>
+
+          {/* Currency Toggle */}
+          <div className="flex items-center gap-1 bg-green-500 text-white rounded-full px-2 py-1">
+            <span className="text-xs font-medium">$</span>
           </div>
+
+          {/* Price per m² */}
+          {property.priceUSD && property.totalArea && (
+            <span className="text-sm text-gray-500">
+              $ {Math.round(property.priceUSD / property.totalArea)} / m²
+            </span>
+          )}
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center text-gray-600 text-sm">
-            <MapPin className="w-4 h-4 mr-2 shrink-0" />
-            <span className="truncate">{property.location}</span>
-          </div>
+        {/* Title */}
+        <h4 className="text-base font-semibold text-gray-900 line-clamp-1">
+          {property.title}
+        </h4>
 
-          <div className="flex items-center gap-4 text-gray-600 text-sm">
-            <div className="flex items-center">
-              <Home className="w-4 h-4 mr-1 shrink-0" />
-              <span className="mr-1">Floor</span>
-              <span className="font-medium">{property.floor}</span>
-            </div>
-            <div className="flex items-center">
-              <DoorOpen className="w-4 h-4 mr-1 shrink-0" />
-              <span className="mr-1">Rooms</span>
-              <span className="font-medium">{property.rooms}</span>
-            </div>
-            <div className="flex items-center">
-              <Bed className="w-4 h-4 mr-1 shrink-0" />
-              <span className="mr-1">Beds</span>
-              <span className="font-medium">{property.bedrooms}</span>
-            </div>
-          </div>
+        {/* Address */}
+        <div className="flex items-start gap-2 text-gray-600 text-sm">
+          <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+          <span className="line-clamp-1">{property.location}</span>
+        </div>
 
-          <div className="flex items-center text-gray-500 text-xs pt-2 border-t border-gray-100">
-            <Calendar className="w-3.5 h-3.5 mr-1.5" />
-            <span>{formatDate(property.dateAdded)}</span>
+        {/* Property Details Icons */}
+        <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
+          {property.rooms > 0 && (
+            <div className="flex items-center gap-1.5 text-gray-700">
+              <Sofa className="w-4 h-4" />
+              <span className="text-sm font-medium">{property.rooms}</span>
+            </div>
+          )}
+
+          {property.bedrooms > 0 && (
+            <div className="flex items-center gap-1.5 text-gray-700">
+              <Bed className="w-4 h-4" />
+              <span className="text-sm font-medium">{property.bedrooms}</span>
+            </div>
+          )}
+
+          {property.floors && (
+            <div className="flex items-center gap-1.5 text-gray-700">
+              <Home className="w-4 h-4" />
+              <span className="text-sm font-medium">{property.floors}</span>
+            </div>
+          )}
+
+          {property.totalArea && (
+            <div className="flex items-center gap-1.5 text-gray-700">
+              <Square className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {property.totalArea} m²
+              </span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1.5 text-gray-500 ml-auto">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm">{formatDate(property.dateAdded)}</span>
           </div>
         </div>
       </div>

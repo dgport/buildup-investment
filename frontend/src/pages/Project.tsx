@@ -82,7 +82,7 @@ export default function ProjectPage() {
           </div>
 
           <div className="lg:col-span-1 h-[400px] lg:h-[500px]">
-            <div className="bg-white rounded-xl shadow-sm p-5 h-full flex flex-col">
+            <div className="bg-white rounded-xl shadow-sm p-5 h-full flex flex-col sticky top-8">
               <div className="mb-4 pb-4 border-b">
                 <h1 className="text-xl font-bold text-gray-900 mb-1">
                   {project.projectName || 'No name'}
@@ -155,27 +155,32 @@ export default function ProjectPage() {
           </div>
         </div>
 
-        {apartments.length > 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Available Apartments
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {apartments.map(apartment => (
-                <ProjectApartmentCard
-                  key={apartment.id}
-                  apartment={apartment}
-                />
-              ))}
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2">
+            {apartments.length > 0 ? (
+              <div className="bg-white rounded-xl shadow-sm p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                  Available Apartments
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {apartments.map(apartment => (
+                    <ProjectApartmentCard
+                      key={apartment.id}
+                      apartment={apartment}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                <p className="text-gray-600">
+                  No apartments available for this project yet.
+                </p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <p className="text-gray-600">
-              No apartments available for this project yet.
-            </p>
-          </div>
-        )}
+          <div className="lg:col-span-1"></div>
+        </div>
       </div>
     </div>
   )

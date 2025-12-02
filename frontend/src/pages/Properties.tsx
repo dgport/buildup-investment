@@ -1,66 +1,22 @@
 import PropertyCard from '@/components/pages/properties/PropertyCard'
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
 import { useProperties } from '@/lib/hooks/useProperties'
 import { Loader2 } from 'lucide-react'
-import { PropertyFilters } from '@/components/pages/properties/PropertyFilter'
- 
 
 type Currency = 'USD' | 'GEL'
 
 export default function Properties() {
   const [currency, setCurrency] = useState<Currency>('USD')
-  const [searchParams] = useSearchParams()
   const [page, setPage] = useState(1)
   const limit = 12
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1)
-  }, [searchParams])
-
-  // Build filter params from URL
-  const filterParams = {
+  const baseParams = {
     page,
     limit,
     lang: 'en',
-    propertyType: searchParams.get('propertyType') || undefined,
-    status: searchParams.get('status') || undefined,
-    priceFrom: searchParams.get('priceFrom')
-      ? parseInt(searchParams.get('priceFrom')!)
-      : undefined,
-    priceTo: searchParams.get('priceTo')
-      ? parseInt(searchParams.get('priceTo')!)
-      : undefined,
-    areaFrom: searchParams.get('areaFrom')
-      ? parseInt(searchParams.get('areaFrom')!)
-      : undefined,
-    areaTo: searchParams.get('areaTo')
-      ? parseInt(searchParams.get('areaTo')!)
-      : undefined,
-    rooms: searchParams.get('rooms')
-      ? parseInt(searchParams.get('rooms')!)
-      : undefined,
-    bedrooms: searchParams.get('bedrooms')
-      ? parseInt(searchParams.get('bedrooms')!)
-      : undefined,
-    bathrooms: searchParams.get('bathrooms')
-      ? parseInt(searchParams.get('bathrooms')!)
-      : undefined,
-    floors: searchParams.get('floors')
-      ? parseInt(searchParams.get('floors')!)
-      : undefined,
-    condition: searchParams.get('condition') || undefined,
-    heating: searchParams.get('heating') || undefined,
-    parking: searchParams.get('parking') || undefined,
-    hasConditioner: searchParams.get('hasConditioner') === 'true' || undefined,
-    hasFurniture: searchParams.get('hasFurniture') === 'true' || undefined,
-    hasBalcony: searchParams.get('hasBalcony') === 'true' || undefined,
-    hasInternet: searchParams.get('hasInternet') === 'true' || undefined,
-    hasNaturalGas: searchParams.get('hasNaturalGas') === 'true' || undefined,
   }
 
-  const { data, isLoading, error, refetch } = useProperties(filterParams)
+  const { data, isLoading, error } = useProperties(baseParams)
 
   const formatPrice = (priceUSD: number | null): string => {
     if (!priceUSD) return 'Price on request'
@@ -68,7 +24,6 @@ export default function Properties() {
     if (currency === 'USD') {
       return `$${priceUSD.toLocaleString()}`
     }
-    // Convert USD to GEL (approximate rate: 1 USD = 2.8 GEL)
     const priceGEL = Math.round(priceUSD * 2.8)
     return `₾${priceGEL.toLocaleString()}`
   }
@@ -98,7 +53,7 @@ export default function Properties() {
     )
   }
 
-  // Transform API data to match PropertyCard interface
+  // Transform API response for PropertyCard
   const transformedProperties =
     data?.data.map(property => ({
       id: property.id,
@@ -134,15 +89,13 @@ export default function Properties() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="py-8 px-4 sm:px-6 lg:px-28 mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
             Properties
           </h1>
-          <p className="text-gray-600">
-            Explore our collection of premium properties
-          </p>
+
           {data?.meta && (
             <p className="text-sm text-gray-500 mt-2">
               Showing {data.data.length} of {data.meta.total} properties
@@ -150,18 +103,13 @@ export default function Properties() {
           )}
         </div>
 
-        {/* Filter Component */}
-        <PropertyFilters onFilterChange={() => refetch()} />
-
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
           </div>
         ) : transformedProperties.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">
-              No properties found matching your criteria
-            </p>
+            <p className="text-gray-500 text-lg">No properties found</p>
           </div>
         ) : (
           <>
@@ -178,7 +126,6 @@ export default function Properties() {
               ))}
             </div>
 
-            {/* Pagination */}
             {data?.meta && data.meta.totalPages > 1 && (
               <div className="flex justify-center items-center gap-4 mt-12">
                 <button

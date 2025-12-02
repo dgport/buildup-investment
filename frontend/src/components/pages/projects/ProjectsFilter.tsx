@@ -42,13 +42,11 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
     limit: 1000,
   })
 
-  // Get unique locations from TRANSLATED fields
   const uniqueLocations = useMemo(() => {
     if (!allProjectsResponse?.data) return []
 
     const locations = allProjectsResponse.data
       .map(project => {
-        // Prioritize translation field
         const location =
           project.translation?.projectLocation || project.projectLocation
         return location?.trim()
@@ -74,8 +72,6 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
   const applyFilters = () => {
     const params = new URLSearchParams()
     params.set('page', '1')
-
-    // Store the TRANSLATED location value
     if (filters.location && filters.location !== 'all')
       params.set('location', filters.location)
 
@@ -111,7 +107,6 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            size="lg"
             className="w-full sm:w-auto gap-2 border-2 hover:border-blue-400 transition-colors"
           >
             <SlidersHorizontal className="w-5 h-5" />
@@ -146,7 +141,6 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
           </SheetHeader>
 
           <div className="mt-8 space-y-8">
-            {/* Location Filter - Uses translated locations */}
             <div className="space-y-3">
               <Label
                 htmlFor="location"
@@ -189,8 +183,6 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Partner/Developer Filter - Uses translated company names */}
             <div className="space-y-3">
               <Label
                 htmlFor="partner"
@@ -227,15 +219,12 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
                       value={partner.id.toString()}
                       className="cursor-pointer hover:bg-blue-50"
                     >
-                      {/* Display translated company name */}
                       {partner.translation?.companyName || partner.companyName}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Price Filter */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label
@@ -276,7 +265,6 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="pt-6 space-y-3 border-t">
               <Button
                 onClick={applyFilters}
