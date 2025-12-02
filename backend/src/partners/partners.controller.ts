@@ -11,6 +11,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PartnersService } from './partners.service';
@@ -24,16 +25,20 @@ import {
   ApiQuery,
   ApiResponse,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertTranslationDto } from './dto/UpsertTranslations.dto';
+import { AuthGuard } from '@/auth/guards/basic-auth.guard';
+ 
 
 @ApiTags('Partners')
 @Controller('partners')
 export class PartnersController {
   constructor(private readonly partnersService: PartnersService) {}
 
+  // Public route - anyone can view partners
   @Get()
   @ApiOperation({ summary: 'Get all partners with pagination' })
   @ApiQuery({
@@ -69,11 +74,15 @@ export class PartnersController {
     });
   }
 
+  // Protected route - admin only
   @Post()
+  @UseGuards(AuthGuard) // Add this
+  @ApiBearerAuth() // Add this for Swagger
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new partner' })
   @ApiResponse({ status: 201, description: 'Partner created successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 409, description: 'Partner already exists' })
   @UseInterceptors(FileInterceptor('image', multerConfig('partners')))
   @ApiBody({ type: CreatePartnerDto })
@@ -84,11 +93,15 @@ export class PartnersController {
     return this.partnersService.createPartner(dto, image);
   }
 
+  // Protected route - admin only
   @Patch(':id')
+  @UseGuards(AuthGuard) // Add this
+  @ApiBearerAuth() // Add this for Swagger
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a partner' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Partner updated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Partner not found' })
   @ApiResponse({ status: 409, description: 'Partner name already exists' })
   @UseInterceptors(FileInterceptor('image', multerConfig('partners')))
@@ -104,15 +117,20 @@ export class PartnersController {
     return this.partnersService.updatePartner(id, dto, image);
   }
 
+  // Protected route - admin only
   @Delete(':id')
+  @UseGuards(AuthGuard) // Add this
+  @ApiBearerAuth() // Add this for Swagger
   @ApiOperation({ summary: 'Delete a partner' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Partner deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Partner not found' })
   async deletePartner(@Param('id', ParseIntPipe) id: number) {
     return this.partnersService.deletePartner(id);
   }
 
+  // Public route - anyone can view translations
   @Get(':id/translations')
   @ApiOperation({ summary: 'Get all translations for a partner' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
@@ -125,13 +143,17 @@ export class PartnersController {
     return this.partnersService.getTranslations(id);
   }
 
+  // Protected route - admin only
   @Patch(':id/translations')
+  @UseGuards(AuthGuard) // Add this
+  @ApiBearerAuth() // Add this for Swagger
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
   @ApiResponse({
     status: 200,
     description: 'Translation added/updated successfully',
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Partner not found' })
   @ApiBody({ type: UpsertTranslationDto })
   async upsertTranslation(
@@ -145,7 +167,10 @@ export class PartnersController {
     );
   }
 
+  // Protected route - admin only
   @Delete(':id/translations/:language')
+  @UseGuards(AuthGuard) // Add this
+  @ApiBearerAuth() // Add this for Swagger
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
   @ApiParam({
@@ -154,6 +179,7 @@ export class PartnersController {
     example: 'ka',
   })
   @ApiResponse({ status: 200, description: 'Translation deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Translation not found' })
   async deleteTranslation(
     @Param('id', ParseIntPipe) id: number,

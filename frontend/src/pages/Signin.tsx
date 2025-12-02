@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -13,12 +12,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { signInSchema, type SignInFormData } from '@/lib/validations/auth'
-import { useSignIn } from '@/lib/hooks/useAuth'
-import { ROUTES } from '@/constants/routes'
-
+import { useAdminLogin } from '@/lib/hooks/useAuth'
+import { Lock } from 'lucide-react'
 
 const Signin = () => {
-  const { mutate: signIn, isPending, error } = useSignIn()
+  const { mutate: signIn, isPending, error } = useAdminLogin()
 
   const {
     register,
@@ -36,24 +34,35 @@ const Signin = () => {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-          <CardDescription>
-            Enter your email and password to sign in to your account
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-blue-900 p-3 rounded-full">
+              <Lock className="w-6 h-6 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">
+            Admin Login
+          </CardTitle>
+          <CardDescription className="text-center">
+            Enter your credentials to access the admin panel
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
+                id="username"
+                type="text"
+                placeholder="admin"
                 disabled={isPending}
-                {...register('email')}
+                autoComplete="username"
+                autoFocus
+                {...register('username')}
               />
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email.message}</p>
+              {errors.username && (
+                <p className="text-sm text-red-600">
+                  {errors.username.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -63,6 +72,7 @@ const Signin = () => {
                 type="password"
                 placeholder="••••••••"
                 disabled={isPending}
+                autoComplete="current-password"
                 {...register('password')}
               />
               {errors.password && (
@@ -72,24 +82,20 @@ const Signin = () => {
               )}
             </div>
             {error && (
-              <div className="text-sm text-red-600">
-                {error?.response?.data?.message || 'Invalid email or password'}
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                {error?.response?.data?.message ||
+                  'Invalid username or password'}
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isPending}>
+          <CardFooter>
+            <Button
+              type="submit"
+              className="w-full bg-blue-900 hover:bg-blue-800"
+              disabled={isPending}
+            >
               {isPending ? 'Signing in...' : 'Sign in'}
             </Button>
-            <p className="text-sm text-center text-gray-600">
-              Don't have an account?{' '}
-              <Link
-                to={ROUTES.SIGNUP}
-                className="font-medium text-primary hover:underline"
-              >
-                Sign up
-              </Link>
-            </p>
           </CardFooter>
         </form>
       </Card>

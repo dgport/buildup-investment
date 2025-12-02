@@ -31,9 +31,9 @@ export const AppRoutes = () => {
         <Route path={ROUTES.PROPERTIES} element={<Properties />} />
         <Route path={ROUTES.PROPERTY} element={<Property />} />
         <Route path="/map" element={<InventoryMap />} />
-        <Route path={ROUTES.ADMIN} element={<Admin />} />
+        {/* <Route path={ROUTES.ADMIN} element={<Admin />} /> */}
         <Route element={<ProtectedRoutes redirectTo={ROUTES.SIGNIN} />}>
-          {/* <Route path={ROUTES.ADMIN} element={<Admin />} /> */}
+          <Route path={ROUTES.ADMIN} element={<Admin />} />
         </Route>
         <Route path={ROUTES.UNAUTHORIZED} element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
