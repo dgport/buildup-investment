@@ -4,10 +4,6 @@ services:
     image: postgres:15-alpine
     container_name: real_estate_postgres
     restart: unless-stopped
-    # Use the shared variables if they are in a root .env,
-    # or keep them here if they are only used by postgres.
-    # If using backend/.env, adjust this path. Assuming core DB vars
-    # are needed by the backend.
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -28,7 +24,6 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    # 💥 Point to the backend/.env file
     env_file:
       - ./backend/.env
     volumes:
@@ -40,24 +35,20 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:dev"
 
-  # STUDIO service omitted for brevity...
-
-  # frontend:
-  #   build: ./frontend
-  #   container_name: real_estate_frontend
-  #   restart: unless-stopped
-  #   ports:
-  #     - "5173:5173"
-  #   # 💥 Point to the frontend/.env file
-  #   env_file:
-  #     - ./frontend/.env
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules
-  #   depends_on:
-  #     - backend
-  #   command: npm run dev
+  frontend:
+    build: ./frontend
+    container_name: real_estate_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev
 
 volumes:
   postgres_data:
-  studio_node_modules:

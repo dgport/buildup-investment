@@ -10,10 +10,12 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PropertiesService } from './properties.service';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
@@ -27,6 +29,7 @@ import { multerConfig } from '../common/config/multer.config';
 import { UpsertPropertyTranslationDto } from './dto/UpsertPropertyTranslation.dto';
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
+import { AuthGuard } from '@/auth/guards/basic-auth.guard';
 
 @ApiTags('Properties')
 @Controller('properties')
@@ -103,6 +106,8 @@ export class PropertiesController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new property' })
@@ -117,6 +122,8 @@ export class PropertiesController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a property' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
@@ -133,6 +140,8 @@ export class PropertiesController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a property' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Property deleted successfully' })
@@ -141,7 +150,6 @@ export class PropertiesController {
     return this.propertiesService.deleteProperty(id);
   }
 
-  // Translation endpoints
   @Get(':id/translations')
   @ApiOperation({ summary: 'Get all translations for a property' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
@@ -155,6 +163,8 @@ export class PropertiesController {
   }
 
   @Patch(':id/translations')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiResponse({
@@ -176,6 +186,8 @@ export class PropertiesController {
   }
 
   @Delete(':id/translations/:language')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiParam({
@@ -192,8 +204,9 @@ export class PropertiesController {
     return this.propertiesService.deleteTranslation(id, language);
   }
 
-  // Gallery image endpoints
   @Delete(':id/images/:imageId')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a gallery image' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiParam({ name: 'imageId', description: 'Image ID', type: 'number' })

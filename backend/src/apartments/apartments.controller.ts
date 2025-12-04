@@ -11,12 +11,14 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApartmentsService } from './apartments.service';
 import { CreateApartmentDto } from './dto/CreateApartment.dto';
 import { UpdateApartmentDto } from './dto/UpdateApartment.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
@@ -28,6 +30,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertApartmentTranslationDto } from './dto/UpsertApartmentTranslation.dto';
+import { AuthGuard } from '@/auth/guards/basic-auth.guard';
 
 @ApiTags('Apartments')
 @Controller('apartments')
@@ -103,6 +106,8 @@ export class ApartmentsController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new apartment' })
@@ -118,6 +123,8 @@ export class ApartmentsController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update an apartment' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
@@ -137,6 +144,8 @@ export class ApartmentsController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete an apartment' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Apartment deleted successfully' })
@@ -146,6 +155,8 @@ export class ApartmentsController {
   }
 
   @Delete(':id/images/:imageIndex')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific image from apartment' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
   @ApiParam({ name: 'imageIndex', description: 'Image index', type: 'number' })
@@ -171,6 +182,8 @@ export class ApartmentsController {
   }
 
   @Patch(':id/translations')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
   @ApiResponse({
@@ -191,6 +204,8 @@ export class ApartmentsController {
   }
 
   @Delete(':id/translations/:language')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
   @ApiParam({

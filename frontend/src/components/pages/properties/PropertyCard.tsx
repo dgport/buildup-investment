@@ -1,16 +1,7 @@
-import { Switch } from '@/components/ui/switch'
-import {
-  ArrowUpRight,
-  Bed,
-  Calendar,
-  Home,
-  MapPin,
-  Square,
-  Sofa,
-  Car,
-} from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Calendar, MapPin, Square, Sofa } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Switch } from '@/components/ui/switch'
 
 interface PropertyCardProps {
   property: {
@@ -28,123 +19,124 @@ interface PropertyCardProps {
     status: string
     floors?: number
   }
-  currency: 'USD' | 'GEL'
-  setCurrency: (currency: 'USD' | 'GEL') => void
-  formatPrice: (priceUSD: number | null) => string
-  formatDate: (date: string) => string
 }
 
-const PropertyCard = ({
-  property,
-  currency,
-  setCurrency,
-  formatPrice,
-  formatDate,
-}: PropertyCardProps) => {
+const PropertyCard = ({ property }: PropertyCardProps) => {
   const navigate = useNavigate()
+  const [currency, setCurrency] = useState<'USD' | 'GEL'>('USD')
 
   const handleCardClick = () => {
     navigate(`/properties/${property.id}`)
   }
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const year = String(date.getFullYear()).slice(-2)
+    return `${month}/${day}/${year}`
+  }
+
+  const imageUrl = property.image
+    ? `${import.meta.env.VITE_API_IMAGE_URL}/${property.image}`
+    : undefined
+
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer"
+      className="bg-white rounded-xl border border-gray-300 transition-all duration-300 h-full cursor-pointer hover:shadow-lg"
     >
       {/* Image Section */}
-      <div className="relative h-52">
+      <div className="relative h-52 overflow-hidden rounded-t-xl">
         <img
-          src={property.image}
+          src={imageUrl}
           alt={property.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-
-        {/* Image Dots */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-white"></div>
-          <div className="w-2 h-2 rounded-full bg-white/50"></div>
-          <div className="w-2 h-2 rounded-full bg-white/50"></div>
-          <div className="w-2 h-2 rounded-full bg-white/50"></div>
-        </div>
       </div>
 
       {/* Content Section */}
-      <div className="p-4 space-y-3">
-        {/* Price Section */}
-        <div className="flex items-center gap-2">
-          <h3 className="text-2xl font-bold text-gray-900">
-            {property.priceUSD ? (
-              <>
-                {currency === 'USD' ? '$' : '₾'}
-                {currency === 'USD'
-                  ? property.priceUSD.toLocaleString()
-                  : Math.round(property.priceUSD * 2.8).toLocaleString()}
-              </>
-            ) : (
-              'Price on request'
-            )}
-          </h3>
+      <div className="p-3 sm:p-4">
+        <div className="space-y-3">
+          {/* Price Section */}
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-bold text-gray-900">
+              {property.priceUSD ? (
+                <>
+                  {currency === 'USD' ? '$' : '₾'}
+                  {currency === 'USD'
+                    ? property.priceUSD.toLocaleString()
+                    : Math.round(property.priceUSD * 2.8).toLocaleString()}
+                </>
+              ) : (
+                'Price on request'
+              )}
+            </h3>
 
-          {/* Currency Toggle */}
-          <div className="flex items-center gap-1 bg-green-500 text-white rounded-full px-2 py-1">
-            <span className="text-xs font-medium">$</span>
+            {/* Currency Toggle Switch */}
+            <div
+              className="flex items-center gap-2"
+              onClick={e => e.stopPropagation()}
+            >
+              <span className="text-xs font-medium text-gray-600">$</span>
+              <Switch
+                checked={currency === 'GEL'}
+                onCheckedChange={checked =>
+                  setCurrency(checked ? 'GEL' : 'USD')
+                }
+              />
+              <span className="text-xs font-medium text-gray-600">₾</span>
+            </div>
+
+            {/* Price per m² */}
+            {property.priceUSD && property.totalArea && (
+              <span className="text-sm text-gray-500">
+                {currency === 'USD' ? '$' : '₾'}{' '}
+                {currency === 'USD'
+                  ? Math.round(property.priceUSD / property.totalArea)
+                  : Math.round(
+                      (property.priceUSD * 2.8) / property.totalArea
+                    )}{' '}
+                / m²
+              </span>
+            )}
           </div>
 
-          {/* Price per m² */}
-          {property.priceUSD && property.totalArea && (
-            <span className="text-sm text-gray-500">
-              $ {Math.round(property.priceUSD / property.totalArea)} / m²
-            </span>
-          )}
-        </div>
+          {/* Title */}
+          <h4 className="text-base sm:text-lg font-semibold text-gray-800 hover:text-blue-900 transition-colors line-clamp-1">
+            {property.title}
+          </h4>
 
-        {/* Title */}
-        <h4 className="text-base font-semibold text-gray-900 line-clamp-1">
-          {property.title}
-        </h4>
+          {/* Address */}
+          <div className="flex items-start gap-2 text-gray-600 text-sm">
+            <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
+            <span className="line-clamp-1">{property.location}</span>
+          </div>
 
-        {/* Address */}
-        <div className="flex items-start gap-2 text-gray-600 text-sm">
-          <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-          <span className="line-clamp-1">{property.location}</span>
-        </div>
+          {/* Property Details Icons */}
+          <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
+            {property.rooms > 0 && (
+              <div className="flex items-center gap-1.5 text-gray-700">
+                <Sofa className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  Rooms: {property.rooms}
+                </span>
+              </div>
+            )}
 
-        {/* Property Details Icons */}
-        <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
-          {property.rooms > 0 && (
-            <div className="flex items-center gap-1.5 text-gray-700">
-              <Sofa className="w-4 h-4" />
-              <span className="text-sm font-medium">{property.rooms}</span>
+            {property.totalArea && (
+              <div className="flex items-center gap-1.5 text-gray-700">
+                <Square className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  Area: {property.totalArea} m²
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-1.5 text-gray-500 ml-auto">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm">{formatDate(property.dateAdded)}</span>
             </div>
-          )}
-
-          {property.bedrooms > 0 && (
-            <div className="flex items-center gap-1.5 text-gray-700">
-              <Bed className="w-4 h-4" />
-              <span className="text-sm font-medium">{property.bedrooms}</span>
-            </div>
-          )}
-
-          {property.floors && (
-            <div className="flex items-center gap-1.5 text-gray-700">
-              <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">{property.floors}</span>
-            </div>
-          )}
-
-          {property.totalArea && (
-            <div className="flex items-center gap-1.5 text-gray-700">
-              <Square className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                {property.totalArea} m²
-              </span>
-            </div>
-          )}
-
-          <div className="flex items-center gap-1.5 text-gray-500 ml-auto">
-            <Calendar className="w-4 h-4" />
-            <span className="text-sm">{formatDate(property.dateAdded)}</span>
           </div>
         </div>
       </div>

@@ -11,12 +11,14 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/CreateProject.dto';
 import { UpdateProjectDto } from './dto/UpdateProject.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
@@ -28,6 +30,7 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertProjectTranslationDto } from './dto/UpsertProjectTranslations.dto';
+import { AuthGuard } from '@/auth/guards/basic-auth.guard';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -135,6 +138,8 @@ export class ProjectsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new project' })
   @ApiResponse({ status: 201, description: 'Project created successfully' })
@@ -165,6 +170,8 @@ export class ProjectsController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a project' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
@@ -201,6 +208,8 @@ export class ProjectsController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a project' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Project deleted successfully' })
@@ -210,6 +219,8 @@ export class ProjectsController {
   }
 
   @Delete(':id/gallery/:imageIndex')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific gallery image from project' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
   @ApiParam({ name: 'imageIndex', description: 'Image index', type: 'number' })
@@ -238,6 +249,8 @@ export class ProjectsController {
   }
 
   @Patch(':id/translations')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
   @ApiResponse({
@@ -259,6 +272,8 @@ export class ProjectsController {
   }
 
   @Delete(':id/translations/:language')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
   @ApiParam({
