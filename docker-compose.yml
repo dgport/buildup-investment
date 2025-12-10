@@ -35,20 +35,20 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:dev"
 
-  frontend:
-    build: ./frontend
-    container_name: real_estate_frontend
-    restart: unless-stopped
-    ports:
-      - "5173:5173"
-    env_file:
-      - ./frontend/.env
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    command: npm run dev
+  # frontend:
+  #   build: ./frontend
+  #   container_name: real_estate_frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5173:5173"
+  #   env_file:
+  #     - ./frontend/.env
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   depends_on:
+  #     - backend
+  #   command: npm run dev
 
 volumes:
   postgres_data:

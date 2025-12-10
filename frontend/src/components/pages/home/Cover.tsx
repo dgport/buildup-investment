@@ -225,7 +225,7 @@ export default function Cover() {
 function PropertyTypeCards() {
   return (
     <div className="w-full bg-white md:bg-transparent py-8 md:py-0">
-      <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-8 auto-rows-fr">
+      <div className="grid w-full px-6 md:px-0 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-8 auto-rows-fr">
         <a
           href="/projects"
           className="group relative w-full h-full bg-blue-50/90 md:bg-blue-50/95 md:backdrop-blur-sm hover:bg-blue-100/95 rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-3 md:p-4 border border-blue-200 hover:border-blue-300"

@@ -39,3 +39,26 @@ export interface UpdateMortgageRateDto {
   interestRate?: number
   isActive?: boolean
 }
+
+
+export interface MortgageRate {
+  id: number
+  yearFrom: number
+  yearTo: number
+  interestRate: number
+  description?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MortgageRatesResponse {
+  data: MortgageRate[]
+  meta: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+    hasNextPage: boolean
+    hasPreviousPage: boolean
+  }
+}

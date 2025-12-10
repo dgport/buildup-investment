@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react'
-import { Users, Building, Home, Image, LogOut } from 'lucide-react'
+import { Users, Building, Home, Image, LogOut, Calculator } from 'lucide-react'
 import PartnersPanel from '@/components/pages/admin/partners/PartnersPanel'
 import ProjectsPanel from '@/components/pages/admin/projects/ProjectsPanel'
 import ApartmentsPanel from '@/components/pages/admin/apartments/ApartmentsPanel'
 import SlidesPanel from '@/components/pages/admin/slides/SlidesPanel'
+import CalculatorPanel from '@/components/pages/admin/calculator/CalculatorPanel'
 import { Button } from '@/components/ui/button'
 import PropertiesPanel from '@/components/pages/admin/properties/PropertiesPanel'
 
-type MenuType = 'partners' | 'projects' | 'apartments' | 'properties' | 'slides'
+type MenuType =
+  | 'partners'
+  | 'projects'
+  | 'apartments'
+  | 'properties'
+  | 'slides'
+  | 'calculator'
 
 export default function Admin() {
   const [activeMenu, setActiveMenu] = useState<MenuType>(() => {
@@ -19,7 +26,8 @@ export default function Admin() {
         tab === 'projects' ||
         tab === 'apartments' ||
         tab === 'properties' ||
-        tab === 'slides'
+        tab === 'slides' ||
+        tab === 'calculator'
       ) {
         return tab
       }
@@ -45,7 +53,8 @@ export default function Admin() {
         tab === 'projects' ||
         tab === 'apartments' ||
         tab === 'properties' ||
-        tab === 'slides'
+        tab === 'slides' ||
+        tab === 'calculator'
       ) {
         setActiveMenu(tab)
       }
@@ -65,9 +74,9 @@ export default function Admin() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-linear-to-b from-gray-900 to-gray-800 text-white fixed left-0 top-0 h-screen flex flex-col shadow-2xl z-50">
+      <aside className="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white fixed left-0 top-0 h-screen flex flex-col shadow-2xl z-50">
         <div className="p-6 border-b border-gray-700">
-          <h1 className="text-2xl font-bold bg-linear-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
             Admin Panel
           </h1>
           <p className="text-gray-400 text-sm mt-1">Management Dashboard</p>
@@ -180,6 +189,28 @@ export default function Admin() {
               Slides
             </span>
           </Button>
+
+          <Button
+            onClick={() => setActiveMenu('calculator')}
+            className={`w-full flex justify-start items-center group px-4 py-3 rounded-md transition-all duration-200 ${
+              activeMenu === 'calculator'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-400/50 border-l-4 border-blue-400'
+                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+            }`}
+          >
+            <Calculator
+              className={`w-5 h-5 mr-3 transition-transform duration-200 ${
+                activeMenu === 'calculator'
+                  ? 'scale-110'
+                  : 'group-hover:scale-105'
+              }`}
+            />
+            <span
+              className={`font-medium ${activeMenu === 'calculator' ? 'font-semibold' : ''}`}
+            >
+              Calculator
+            </span>
+          </Button>
         </nav>
 
         <div className="p-4 border-t border-gray-700">
@@ -201,6 +232,7 @@ export default function Admin() {
             {activeMenu === 'apartments' && <ApartmentsPanel />}
             {activeMenu === 'properties' && <PropertiesPanel />}
             {activeMenu === 'slides' && <SlidesPanel />}
+            {activeMenu === 'calculator' && <CalculatorPanel />}
           </div>
         </div>
       </main>
