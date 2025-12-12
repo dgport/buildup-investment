@@ -9,9 +9,10 @@ import type {
 } from '../types/slides'
 import { slidesService } from '../services/slides.service'
 
-export const useSlides = (filters?: SlideFilters) => {
+/* ------------------- ADMIN (existing) ------------------- */
+export const useSlidesAdmin = (filters?: SlideFilters) => {
   return useQuery<SlidesResponse>({
-    queryKey: ['slides', filters],
+    queryKey: ['slides', 'admin', filters],
     queryFn: async () => {
       const response = await slidesService.getAllAdmin(filters)
 
@@ -34,6 +35,29 @@ export const useSlides = (filters?: SlideFilters) => {
   })
 }
 
+/* -------------------- PUBLIC (NEW) ---------------------- */
+export const useSlides = (filters?: SlideFilters) => {
+  return useQuery({
+    queryKey: ['slides', filters],
+    queryFn: async () => {
+      const response = await slidesService.getAll(filters)
+
+      // If backend returns array
+      if (Array.isArray(response.data)) {
+        return {
+          data: response.data,
+          meta: null,
+        }
+      }
+
+      // If backend returns object with data+meta
+      return response.data
+    },
+  })
+}
+
+/* -------------------------------------------------------- */
+
 export const useSlide = (id: number, lang?: string) => {
   return useQuery<Slide>({
     queryKey: ['slides', id, lang],
@@ -53,6 +77,7 @@ export const useCreateSlide = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['slides'] })
+      queryClient.invalidateQueries({ queryKey: ['slides', 'admin'] })
     },
   })
 }
@@ -65,6 +90,7 @@ export const useUpdateSlide = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['slides'] })
+      queryClient.invalidateQueries({ queryKey: ['slides', 'admin'] })
     },
   })
 }
@@ -77,6 +103,7 @@ export const useDeleteSlide = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['slides'] })
+      queryClient.invalidateQueries({ queryKey: ['slides', 'admin'] })
     },
   })
 }
@@ -109,6 +136,7 @@ export const useUpsertSlideTranslation = () => {
         queryKey: ['slides', variables.id, 'translations'],
       })
       queryClient.invalidateQueries({ queryKey: ['slides'] })
+      queryClient.invalidateQueries({ queryKey: ['slides', 'admin'] })
     },
   })
 }
@@ -124,6 +152,7 @@ export const useDeleteSlideTranslation = () => {
         queryKey: ['slides', variables.id, 'translations'],
       })
       queryClient.invalidateQueries({ queryKey: ['slides'] })
+      queryClient.invalidateQueries({ queryKey: ['slides', 'admin'] })
     },
   })
 }

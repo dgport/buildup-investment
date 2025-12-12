@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Pagination } from '@/components/shared/pagination/Pagination'
 import type { Slide } from '@/lib/types/slides'
-import { useDeleteSlide, useSlides } from '@/lib/hooks/useSlides'
+import { useDeleteSlide, useSlidesAdmin } from '@/lib/hooks/useSlides'
 import { CreateSlide } from './CreateSlide'
 import { EditSlide } from './EditSlide'
 import { AdminSlideCard } from './AdminSlideCard'
@@ -22,7 +22,7 @@ export default function SlidesPanel() {
     data: slidesResponse,
     isLoading,
     error,
-  } = useSlides({
+  } = useSlidesAdmin({
     page,
     limit: SLIDES_PER_PAGE,
   })
