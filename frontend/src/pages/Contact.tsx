@@ -1,4 +1,3 @@
- 
 import type React from 'react'
 
 import { useState } from 'react'
@@ -49,7 +48,6 @@ const Contact = () => {
 
       <div className="relative z-10 px-6 sm:px-8 md:px-12 lg:px-16 py-10 w-full xl:max-w-7xl">
         <div className="grid md:grid-cols-5 gap-8 lg:gap-12 md:items-start">
-          {/* Contact Info */}
           <div className="md:col-span-2 space-y-6 flex flex-col">
             <div className="flex flex-col gap-6 flex-1">
               {[
@@ -139,7 +137,6 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* Contact Form */}
           <div className="md:col-span-3 flex flex-col">
             <div className="bg-white/15 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/25 flex flex-col h-full">
               <div className="p-6 md:p-8 h-full flex flex-col">

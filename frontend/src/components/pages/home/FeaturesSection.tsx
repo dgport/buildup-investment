@@ -174,7 +174,6 @@ const FeaturesSection = () => {
         label={t('home.featuresNext')}
       />
 
-      {/* Desktop Sections */}
       <div className="relative z-10 hidden md:flex h-full">
         {sections.map((section, index) => (
           <Section
@@ -187,7 +186,6 @@ const FeaturesSection = () => {
         ))}
       </div>
 
-      {/* Mobile View */}
       <div className="relative z-10 md:hidden h-full">
         <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/50 to-transparent pointer-events-none" />
         <div className="relative z-20 flex flex-col justify-end pb-16 items-center h-full px-6 text-center">

@@ -175,8 +175,6 @@ export function PropertyTranslationsManager({
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-
-                      {/* ❌ DELETE REMOVED */}
                     </div>
                   </div>
                 )}

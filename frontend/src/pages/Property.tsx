@@ -236,9 +236,7 @@ export default function PropertyDetail() {
           </div>
         </div>
 
-        {/* Main Content - Full Width */}
         <div className="space-y-6">
-          {/* Title & Price */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -285,7 +283,6 @@ export default function PropertyDetail() {
             </div>
           </div>
 
-          {/* Description */}
           {property.translation?.description && (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
@@ -297,7 +294,6 @@ export default function PropertyDetail() {
             </div>
           )}
 
-          {/* Main Details */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Property Details
@@ -378,7 +374,6 @@ export default function PropertyDetail() {
             </div>
           </div>
 
-          {/* Condition & Utilities */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Condition & Utilities

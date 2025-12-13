@@ -5,7 +5,6 @@ import { ROUTES } from '@/constants/routes'
 import { LoadingScreen } from '@/components/shared/loaders/LoadingScreen'
 const Home = lazy(() => import('@/pages/Home'))
 const Signin = lazy(() => import('@/pages/Signin'))
-const Signup = lazy(() => import('@/pages/Signup'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const Unauthorized = lazy(() => import('@/pages/Unauthorized'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
@@ -22,7 +21,6 @@ export const AppRoutes = () => {
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
         <Route path={ROUTES.HOME} element={<Home />} />
-        <Route path={ROUTES.SIGNUP} element={<Signup />} />
         <Route path={ROUTES.SIGNIN} element={<Signin />} />
         <Route path={ROUTES.CONTACT} element={<Contact />} />
         <Route path={ROUTES.PARTNERS} element={<Partners />} />
@@ -31,7 +29,6 @@ export const AppRoutes = () => {
         <Route path={ROUTES.PROPERTIES} element={<Properties />} />
         <Route path={ROUTES.PROPERTY} element={<Property />} />
         <Route path="/map" element={<InventoryMap />} />
-        {/* <Route path={ROUTES.ADMIN} element={<Admin />} /> */}
         <Route element={<ProtectedRoutes redirectTo={ROUTES.SIGNIN} />}>
           <Route path={ROUTES.ADMIN} element={<Admin />} />
         </Route>

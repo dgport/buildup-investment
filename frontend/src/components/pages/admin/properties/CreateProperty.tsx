@@ -491,7 +491,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
           </div>
         </div>
 
-        {/* Utilities */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Utilities</h3>
 
