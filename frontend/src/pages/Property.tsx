@@ -126,7 +126,6 @@ export default function PropertyDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-              {/* Main Carousel */}
               <div className="relative h-96 md:h-[500px]">
                 <div className="overflow-hidden h-full" ref={emblaRef}>
                   <div className="flex h-full">
@@ -137,7 +136,6 @@ export default function PropertyDetail() {
                           key={index}
                         >
                           <div className="relative flex justify-center h-full">
-                            {/* Blurred background */}
                             <div
                               className="absolute inset-0 z-0"
                               style={{
@@ -147,7 +145,6 @@ export default function PropertyDetail() {
                                 filter: 'blur(15px)',
                               }}
                             />
-                            {/* Main image */}
                             <div className="relative z-10 w-full h-full flex items-center justify-center">
                               <img
                                 src={img}
@@ -165,8 +162,6 @@ export default function PropertyDetail() {
                     )}
                   </div>
                 </div>
-
-                {/* Navigation buttons */}
                 {images.length > 1 && (
                   <>
                     <button
@@ -185,8 +180,6 @@ export default function PropertyDetail() {
                 )}
               </div>
             </div>
-
-            {/* Thumbnails - Separate below */}
             {images.length > 1 && (
               <div className="relative">
                 <div className="overflow-hidden" ref={thumbsRef}>
@@ -214,8 +207,6 @@ export default function PropertyDetail() {
               </div>
             )}
           </div>
-
-          {/* Contact Card - Matches image height */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm h-96 md:h-[500px] flex flex-col">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
@@ -451,8 +442,6 @@ export default function PropertyDetail() {
               )}
             </div>
           </div>
-
-          {/* Amenities */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Amenities & Features
