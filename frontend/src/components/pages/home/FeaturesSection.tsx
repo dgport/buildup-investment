@@ -97,7 +97,6 @@ const FeaturesSection = () => {
   const backgroundImages = ['/Feature1.png', '/Feature2.png', '/Feature3.png']
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  // Dependency change here: added currentImageIndex to ensure re-calculation on slide change
   const sections = useMemo(
     () => [
       {
@@ -134,17 +133,17 @@ const FeaturesSection = () => {
     }, 6000)
 
     return () => clearInterval(interval)
-  }, [backgroundImages.length]) // Added dependency
+  }, [backgroundImages.length])
 
   const nextSlide = useCallback(() => {
     setCurrentImageIndex(prev => (prev + 1) % backgroundImages.length)
-  }, [backgroundImages.length]) // Added dependency
+  }, [backgroundImages.length])
 
   const prevSlide = useCallback(() => {
     setCurrentImageIndex(prev =>
       prev === 0 ? backgroundImages.length - 1 : prev - 1
     )
-  }, [backgroundImages.length]) // Added dependency
+  }, [backgroundImages.length])
 
   const goToSlide = useCallback(
     (index: number) => setCurrentImageIndex(index),

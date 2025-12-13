@@ -169,7 +169,7 @@ model Property {
   createdAt       DateTime      @map("created_at") @default(now())
   updatedAt       DateTime      @map("updated_at") @updatedAt
 
-  // Main details
+ 
   totalArea       Int?          @map("total_area")
   rooms           Int?
   bedrooms        Int?
@@ -178,19 +178,19 @@ model Property {
   floorsTotal     Int?          @map("floors_total")
   ceilingHeight   Float?        @map("ceiling_height")
 
-  // Condition & Status
+ 
   condition       PropertyCondition?
   isNonStandard   Boolean       @map("is_non_standard") @default(false)
 
-  // Occupancy
+ 
   occupancy       Occupancy?
 
-  // Utilities
+ 
   heating         HeatingType?
   hotWater        HotWaterType? @map("hot_water")
   parking         ParkingType?
 
-  // Booleans for amenities & features
+  
   hasConditioner      Boolean @map("has_conditioner") @default(false)
   hasFurniture        Boolean @map("has_furniture") @default(false)
   hasBed              Boolean @map("has_bed") @default(false)
@@ -281,9 +281,9 @@ model HomepageSlideTranslations {
 
 model MortgageRate {
   id            Int      @id @default(autoincrement())
-  yearFrom      Int      @map("year_from") // e.g., 1
-  yearTo        Int      @map("year_to")   // e.g., 10
-  interestRate  Float    @map("interest_rate") // e.g., 10.0 (percentage)
+  yearFrom      Int      @map("year_from")  
+  yearTo        Int      @map("year_to")   
+  interestRate  Float    @map("interest_rate")  
   isActive      Boolean  @map("is_active") @default(true)
   createdAt     DateTime @map("created_at") @default(now())
   updatedAt     DateTime @map("updated_at") @updatedAt

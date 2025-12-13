@@ -1,4 +1,3 @@
-// src/common/utils/translation-sync.util.ts
 import { PrismaService } from '@/prisma/prisma.service';
 import { LANGUAGES } from '@/common/constants/language';
 
@@ -31,13 +30,11 @@ export class TranslationSyncUtil {
       defaultFields = {},
     } = config;
 
-    // Find languages that don't have translations yet
     const existingLanguages = existingTranslations.map((t) => t.language);
     const missingLanguages = LANGUAGES.filter(
       (lang) => !existingLanguages.includes(lang),
     );
 
-    // Create missing translations if any
     if (missingLanguages.length > 0) {
       await translationModel.createMany({
         data: missingLanguages.map((lang) => ({

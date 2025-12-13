@@ -25,16 +25,13 @@ export default function ApartmentsPanel() {
     null
   )
 
-  // URL Params for Pagination
   const [searchParams, setSearchParams] = useSearchParams()
   const page = parseInt(searchParams.get('page') || '1', 10)
 
-  // Local state for filter (not usually stored in URL for simple admin panels, but can be)
   const [selectedProjectId, setSelectedProjectId] = useState<
     number | undefined
   >(undefined)
 
-  // Hooks
   const {
     data: apartmentsResponse,
     isLoading,
@@ -45,15 +42,13 @@ export default function ApartmentsPanel() {
     projectId: selectedProjectId,
   })
 
-  const { data: projectsResponse } = useProjects() // For the filter dropdown
+  const { data: projectsResponse } = useProjects()
   const deleteApartment = useDeleteApartment()
 
-  // Derived Data
   const apartments = apartmentsResponse?.data || []
   const meta = apartmentsResponse?.meta
   const projects = projectsResponse?.data || []
 
-  // Handlers
   const handlePageChange = (newPage: number) => {
     setSearchParams({ page: newPage.toString() })
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -61,7 +56,7 @@ export default function ApartmentsPanel() {
 
   const handleFilterChange = (value: string) => {
     setSelectedProjectId(value === 'all' ? undefined : Number(value))
-    handlePageChange(1) // Reset to page 1 on filter change
+    handlePageChange(1)
   }
 
   const handleEdit = (apartment: Apartment) => {
@@ -75,7 +70,6 @@ export default function ApartmentsPanel() {
 
     try {
       await deleteApartment.mutateAsync(id)
-      // If last item on page deleted, go back a page
       if (apartments.length === 1 && page > 1) {
         handlePageChange(page - 1)
       }
@@ -93,12 +87,10 @@ export default function ApartmentsPanel() {
     setSelectedApartment(null)
   }
 
-  // ---------------- CREATE ----------------
   if (view === 'create') {
     return <CreateApartment onBack={handleBack} onSuccess={handleBack} />
   }
 
-  // ---------------- EDIT ----------------
   if (view === 'edit' && selectedApartment) {
     return (
       <EditApartment
@@ -109,7 +101,6 @@ export default function ApartmentsPanel() {
     )
   }
 
-  // ---------------- LIST ----------------
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
@@ -123,7 +114,6 @@ export default function ApartmentsPanel() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          {/* Filter Dropdown */}
           <div className="w-full sm:w-[220px]">
             <Select
               value={selectedProjectId?.toString() || 'all'}
@@ -167,7 +157,6 @@ export default function ApartmentsPanel() {
       ) : apartments.length > 0 ? (
         <>
           <div className="border border-border rounded-lg overflow-hidden bg-card">
-            {/* Table Header */}
             <div className="grid grid-cols-12 gap-4 items-center p-4 bg-muted/50 border-b border-border font-medium text-sm text-muted-foreground">
               <div className="col-span-1">Image</div>
               <div className="col-span-3">Project & ID</div>
@@ -177,7 +166,6 @@ export default function ApartmentsPanel() {
               <div className="col-span-1 text-right">Actions</div>
             </div>
 
-            {/* Table Rows */}
             {apartments.map(apartment => (
               <AdminApartmentCard
                 key={apartment.id}

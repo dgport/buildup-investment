@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 
-// Load .env.local first (Windows), then .env (Docker)
 const envLocalPath = resolve(__dirname, '.env.local');
 const envPath = resolve(__dirname, '.env');
 

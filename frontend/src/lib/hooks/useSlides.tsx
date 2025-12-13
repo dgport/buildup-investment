@@ -1,4 +1,3 @@
-// lib/hooks/useSlides.ts
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '../tanstack/query-client'
 import type {
@@ -9,7 +8,6 @@ import type {
 } from '../types/slides'
 import { slidesService } from '../services/slides.service'
 
-/* ------------------- ADMIN (existing) ------------------- */
 export const useSlidesAdmin = (filters?: SlideFilters) => {
   return useQuery<SlidesResponse>({
     queryKey: ['slides', 'admin', filters],
@@ -35,14 +33,12 @@ export const useSlidesAdmin = (filters?: SlideFilters) => {
   })
 }
 
-/* -------------------- PUBLIC (NEW) ---------------------- */
 export const useSlides = (filters?: SlideFilters) => {
   return useQuery({
     queryKey: ['slides', filters],
     queryFn: async () => {
       const response = await slidesService.getAll(filters)
 
-      // If backend returns array
       if (Array.isArray(response.data)) {
         return {
           data: response.data,
@@ -50,13 +46,10 @@ export const useSlides = (filters?: SlideFilters) => {
         }
       }
 
-      // If backend returns object with data+meta
       return response.data
     },
   })
 }
-
-/* -------------------------------------------------------- */
 
 export const useSlide = (id: number, lang?: string) => {
   return useQuery<Slide>({

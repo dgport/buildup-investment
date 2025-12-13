@@ -52,7 +52,6 @@ export default function Cover() {
     setTimeout(() => setIsTransitioning(false), 500)
   }
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="w-full">

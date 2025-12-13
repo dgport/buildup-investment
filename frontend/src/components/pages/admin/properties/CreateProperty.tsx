@@ -51,7 +51,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
     heating: '' as HeatingType | '',
     hotWater: '' as HotWaterType | '',
     parking: '' as ParkingType | '',
-    // Amenities
     hasConditioner: false,
     hasFurniture: false,
     hasBed: false,
@@ -118,12 +117,10 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
 
     const data = new FormData()
 
-    // Required fields
     data.append('propertyType', formData.propertyType)
     data.append('status', formData.status)
     data.append('address', formData.address)
 
-    // Optional fields - only append if they have values
     if (formData.price) data.append('price', formData.price)
     if (formData.title) data.append('title', formData.title)
     if (formData.description) data.append('description', formData.description)
@@ -142,7 +139,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
     if (formData.parking) data.append('parking', formData.parking)
     if (formData.balconyArea) data.append('balconyArea', formData.balconyArea)
 
-    // Boolean fields
     data.append('isNonStandard', formData.isNonStandard.toString())
     data.append('hasConditioner', formData.hasConditioner.toString())
     data.append('hasFurniture', formData.hasFurniture.toString())
@@ -172,7 +168,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
     data.append('hasElectricity', formData.hasElectricity.toString())
     data.append('hasGate', formData.hasGate.toString())
 
-    // Images
     imageFiles.forEach(file => {
       data.append('images', file)
     })
@@ -207,7 +202,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
       </div>
 
       <div className="space-y-8">
-        {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
             Basic Information
@@ -330,8 +324,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             />
           </div>
         </div>
-
-        {/* Property Details */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
             Property Details
@@ -575,7 +567,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
           </div>
         </div>
 
-        {/* Amenities */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Amenities</h3>
 
@@ -625,8 +616,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             ))}
           </div>
         </div>
-
-        {/* Images */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
             Property Images

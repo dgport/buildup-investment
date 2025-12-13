@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react' // 👈 Added useEffect
+import { useState, useEffect } from 'react'
 import { X, Save, Home, ImageIcon } from 'lucide-react'
 import { useUpdateProperty } from '@/lib/hooks/useProperties'
 import { Button } from '@/components/ui/button'
@@ -38,7 +38,6 @@ export function EditProperty({
     'details' | 'images' | 'translations'
   >('details')
 
-  // Helper to safely parse values to string (handling 0 properly)
   const safeString = (val: number | null | undefined) =>
     val === null || val === undefined ? '' : val.toString()
 
@@ -60,7 +59,6 @@ export function EditProperty({
     parking: property.parking || '',
     balconyArea: safeString(property.balconyArea),
 
-    // Amenities
     hasConditioner: property.hasConditioner ?? false,
     hasFurniture: property.hasFurniture ?? false,
     hasBed: property.hasBed ?? false,
@@ -87,8 +85,6 @@ export function EditProperty({
     hasGate: property.hasGate ?? false,
   })
 
-  // 👇 THIS IS THE FIX
-  // This forces the form to update if the 'property' prop changes (e.g. finishes loading)
   useEffect(() => {
     setFormData({
       address: property.address,
@@ -108,7 +104,6 @@ export function EditProperty({
       parking: property.parking || '',
       balconyArea: safeString(property.balconyArea),
 
-      // Amenities
       hasConditioner: property.hasConditioner ?? false,
       hasFurniture: property.hasFurniture ?? false,
       hasBed: property.hasBed ?? false,
@@ -134,7 +129,7 @@ export function EditProperty({
       hasElectricity: property.hasElectricity ?? false,
       hasGate: property.hasGate ?? false,
     })
-  }, [property]) // Dependency array: Run this whenever 'property' changes
+  }, [property])
 
   const [hasChanges, setHasChanges] = useState(false)
   const updateProperty = useUpdateProperty()
@@ -147,7 +142,6 @@ export function EditProperty({
   const handleSubmit = async () => {
     const data = new FormData()
 
-    // Only append changed fields
     if (formData.address !== property.address)
       data.append('address', formData.address)
     if (formData.price) data.append('price', formData.price)
@@ -166,7 +160,6 @@ export function EditProperty({
     if (formData.parking) data.append('parking', formData.parking)
     if (formData.balconyArea) data.append('balconyArea', formData.balconyArea)
 
-    // Boolean fields - Ensure string conversion
     data.append('isNonStandard', String(formData.isNonStandard))
     data.append('hasConditioner', String(formData.hasConditioner))
     data.append('hasFurniture', String(formData.hasFurniture))
@@ -204,7 +197,6 @@ export function EditProperty({
 
   return (
     <div className="bg-background rounded-lg border border-border shadow-sm p-8">
-      {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>
           <h2 className="text-3xl font-bold text-foreground tracking-tight">
@@ -224,7 +216,6 @@ export function EditProperty({
         </Button>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 mb-8 border-b border-border pb-0 overflow-x-auto">
         <button
           onClick={() => setActiveSection('details')}
@@ -263,7 +254,6 @@ export function EditProperty({
       <div className="space-y-6">
         {activeSection === 'details' && (
           <div className="space-y-8">
-            {/* Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
                 Basic Information
@@ -303,7 +293,6 @@ export function EditProperty({
               </div>
             </div>
 
-            {/* Property Details */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
                 Property Details
@@ -444,7 +433,6 @@ export function EditProperty({
               </div>
             </div>
 
-            {/* Utilities */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
                 Utilities
@@ -522,7 +510,6 @@ export function EditProperty({
               </div>
             </div>
 
-            {/* Amenities */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
                 Amenities

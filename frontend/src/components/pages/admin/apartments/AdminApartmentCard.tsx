@@ -13,7 +13,6 @@ export function AdminApartmentCard({
   onEdit,
   onDelete,
 }: ApartmentCardProps) {
-  // Handle image
   const firstImage =
     apartment.images && apartment.images.length > 0 ? apartment.images[0] : null
   const imageUrl = firstImage
@@ -22,7 +21,6 @@ export function AdminApartmentCard({
 
   return (
     <div className="grid grid-cols-12 gap-4 items-center p-4 border-b border-border hover:bg-muted/30 transition-colors last:border-0">
-      {/* Column 1: Image */}
       <div className="col-span-1">
         <div className="h-12 w-16 bg-muted rounded overflow-hidden border border-border relative">
           {imageUrl ? (
@@ -38,8 +36,6 @@ export function AdminApartmentCard({
           )}
         </div>
       </div>
-
-      {/* Column 2: ID & Project Name (3 cols) */}
       <div className="col-span-3">
         <div className="font-medium text-foreground truncate">
           {apartment.project?.projectName || (
@@ -50,8 +46,6 @@ export function AdminApartmentCard({
           ID: <span className="font-mono">{apartment.id}</span>
         </div>
       </div>
-
-      {/* Column 3: Location (3 cols) */}
       <div className="col-span-3 flex items-center text-sm text-muted-foreground">
         {apartment.project?.projectLocation ? (
           <>
@@ -64,20 +58,14 @@ export function AdminApartmentCard({
           <span>-</span>
         )}
       </div>
-
-      {/* Column 4: Rooms (2 cols) */}
       <div className="col-span-2 text-sm font-medium">
         {apartment.room} Room{apartment.room > 1 ? 's' : ''}
       </div>
-
-      {/* Column 5: Area (2 cols) */}
       <div className="col-span-2">
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
           {apartment.area} m²
         </span>
       </div>
-
-      {/* Column 6: Actions (1 col) */}
       <div className="col-span-1 flex justify-end gap-2">
         <Button
           variant="ghost"

@@ -64,12 +64,10 @@ export default function PartnersPanel() {
     setSelectedPartner(null)
   }
 
-  // ---------------- CREATE ----------------
   if (view === 'create') {
     return <CreatePartner onBack={handleBack} onSuccess={handleBack} />
   }
 
-  // ---------------- EDIT ----------------
   if (view === 'edit' && selectedPartner) {
     return (
       <EditPartner
@@ -80,7 +78,6 @@ export default function PartnersPanel() {
     )
   }
 
-  // ---------------- LIST ----------------
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">

@@ -145,7 +145,6 @@ export function EditProject({ project, onBack, onSuccess }: EditProjectProps) {
 
   const handleSubmit = async () => {
     try {
-      // Delete marked gallery images first
       if (images.deletedGalleryIndices.length > 0) {
         for (const index of images.deletedGalleryIndices) {
           await deleteGalleryImage.mutateAsync({

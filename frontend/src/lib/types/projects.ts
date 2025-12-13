@@ -1,5 +1,3 @@
-// lib/types/projects.ts
-
 export interface ProjectFilters {
   lang: string
   page?: number

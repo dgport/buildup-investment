@@ -9,7 +9,6 @@ import type {
 } from '../types/properties'
 
 export const propertiesService = {
-  // Property CRUD
   getAll: (filters?: PropertyFilters) =>
     api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.PROPERTIES, {
       params: filters,
@@ -39,7 +38,6 @@ export const propertiesService = {
       API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id)
     ),
 
-  // Property translations
   getTranslations: (id: string) =>
     api.get<PropertyTranslation[]>(API_ENDPOINTS.PROPERTIES.TRANSLATIONS(id)),
 
@@ -54,7 +52,6 @@ export const propertiesService = {
       API_ENDPOINTS.PROPERTIES.TRANSLATION_BY_LANGUAGE(id, language)
     ),
 
-  // Property gallery images
   deleteGalleryImage: (propertyId: string, imageId: number) =>
     api.delete<{ message: string }>(
       API_ENDPOINTS.PROPERTIES.GALLERY_IMAGE(propertyId, imageId)

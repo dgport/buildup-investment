@@ -64,12 +64,10 @@ export default function SlidesPanel() {
     setSelectedSlide(null)
   }
 
-  // ---------------- CREATE ----------------
   if (view === 'create') {
     return <CreateSlide onBack={handleBack} onSuccess={handleBack} />
   }
 
-  // ---------------- EDIT ----------------
   if (view === 'edit' && selectedSlide) {
     return (
       <EditSlide
@@ -80,7 +78,6 @@ export default function SlidesPanel() {
     )
   }
 
-  // ---------------- LIST ----------------
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">

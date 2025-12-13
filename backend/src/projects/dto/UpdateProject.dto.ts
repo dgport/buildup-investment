@@ -9,7 +9,6 @@ import {
   IsBoolean,
 } from 'class-validator';
 
-// Same transformer for boolean conversion
 const toBoolean = ({ value }: { value: any }): boolean => {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {

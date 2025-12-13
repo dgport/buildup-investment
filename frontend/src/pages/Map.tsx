@@ -169,7 +169,7 @@ export default function InventoryMap() {
   const handleAddressFieldChange = async (field, value) => {
     if (field === 'city') {
       setCity(value)
-      // Clear street suggestions when city changes
+
       setSuggestions([])
       setShowSuggestions(false)
       return
@@ -182,7 +182,6 @@ export default function InventoryMap() {
         clearTimeout(debounceTimer.current)
       }
 
-      // Only show suggestions if city is entered and street has at least 2 characters
       if (!city || value.length < 2) {
         setSuggestions([])
         setShowSuggestions(false)
@@ -250,7 +249,6 @@ export default function InventoryMap() {
       setSelectedCoords(feature.center)
       setCoordsType('exact')
     } else if (feature.type === 'korter') {
-      // korter.ge provides street-level coordinates
       setStreet(feature.text)
       setSelectedCoords(feature.center)
       setCoordsType('street')

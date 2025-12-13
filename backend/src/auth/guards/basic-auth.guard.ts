@@ -1,4 +1,3 @@
-// auth.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -20,12 +19,10 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing authorization header');
     }
 
-    // Try JWT Bearer token first
     if (authHeader.startsWith('Bearer ')) {
       return this.validateJWT(request, authHeader);
     }
 
-    // Fallback to Basic Auth
     if (authHeader.startsWith('Basic ')) {
       return this.validateBasicAuth(request, authHeader);
     }

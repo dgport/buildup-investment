@@ -107,7 +107,6 @@ export class CreatePropertyDto {
   @IsString()
   description?: string;
 
-  // Main details
   @ApiPropertyOptional({ description: 'Total area in sq meters', example: 120 })
   @IsOptional()
   @Transform(({ value }) => (value ? parseInt(value) : null))
@@ -159,7 +158,6 @@ export class CreatePropertyDto {
   @IsNumber()
   ceilingHeight?: number;
 
-  // Condition & Status
   @ApiPropertyOptional({
     description: 'Property condition',
     enum: PropertyCondition,
@@ -178,7 +176,6 @@ export class CreatePropertyDto {
   @IsBoolean()
   isNonStandard?: boolean;
 
-  // Occupancy
   @ApiPropertyOptional({
     description: 'Occupancy capacity',
     enum: Occupancy,
@@ -188,7 +185,6 @@ export class CreatePropertyDto {
   @IsEnum(Occupancy)
   occupancy?: Occupancy;
 
-  // Utilities
   @ApiPropertyOptional({
     description: 'Heating type',
     enum: HeatingType,
@@ -216,7 +212,6 @@ export class CreatePropertyDto {
   @IsEnum(ParkingType)
   parking?: ParkingType;
 
-  // Amenities
   @ApiPropertyOptional({ description: 'Has air conditioner', example: true })
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)

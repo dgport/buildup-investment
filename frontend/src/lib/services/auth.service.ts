@@ -1,5 +1,3 @@
-// lib/services/auth.service.ts
-
 import { api } from '../api/api'
 
 export const authService = {

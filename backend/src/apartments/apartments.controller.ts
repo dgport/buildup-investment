@@ -75,7 +75,7 @@ export class ApartmentsController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('projectId') projectId?: string,
-    @Query('hotSale') hotSale?: string, // new query
+    @Query('hotSale') hotSale?: string,
   ) {
     return this.apartmentsService.findAll({
       lang,

@@ -1,4 +1,3 @@
-// lib/services/slides.service.ts
 import type {
   Slide,
   SlideFilters,

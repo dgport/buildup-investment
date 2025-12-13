@@ -103,7 +103,6 @@ export class HomepageSlidesController {
     return this.slidesService.createSlide(dto, image);
   }
 
-  // Protected route - update slide
   @Patch(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
@@ -123,7 +122,6 @@ export class HomepageSlidesController {
     return this.slidesService.updateSlide(id, dto, image);
   }
 
-  // Protected route - delete slide
   @Delete(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
@@ -136,7 +134,6 @@ export class HomepageSlidesController {
     return this.slidesService.deleteSlide(id);
   }
 
-  // Public route - get translations for a slide
   @Get(':id/translations')
   @ApiOperation({ summary: 'Get all translations for a slide' })
   @ApiParam({ name: 'id', description: 'Slide ID', type: 'number' })
@@ -149,7 +146,6 @@ export class HomepageSlidesController {
     return this.slidesService.getTranslations(id);
   }
 
-  // Protected route - upsert translation
   @Patch(':id/translations')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
@@ -169,7 +165,6 @@ export class HomepageSlidesController {
     return this.slidesService.upsertTranslation(id, dto.language, dto.title);
   }
 
-  // Protected route - delete translation
   @Delete(':id/translations/:language')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()

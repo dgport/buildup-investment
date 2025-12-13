@@ -1,4 +1,3 @@
-// Enums
 export enum PropertyType {
   APARTMENT = 'APARTMENT',
   VILLA = 'VILLA',
@@ -54,7 +53,6 @@ export enum Occupancy {
   TEN_PLUS = 'TEN_PLUS',
 }
 
-// Gallery Image
 export interface PropertyGalleryImage {
   id: number
   propertyId: string
@@ -63,7 +61,6 @@ export interface PropertyGalleryImage {
   createdAt: string
 }
 
-// Translation
 export interface PropertyTranslation {
   id: number
   propertyId: string
@@ -72,7 +69,6 @@ export interface PropertyTranslation {
   description: string | null
 }
 
-// Property
 export interface Property {
   id: string
   externalId: string | null
@@ -83,7 +79,6 @@ export interface Property {
   createdAt: string
   updatedAt: string
 
-  // Main details
   totalArea: number | null
   rooms: number | null
   bedrooms: number | null
@@ -92,19 +87,15 @@ export interface Property {
   floorsTotal: number | null
   ceilingHeight: number | null
 
-  // Condition & Status
   condition: PropertyCondition | null
   isNonStandard: boolean
 
-  // Occupancy
   occupancy: Occupancy | null
 
-  // Utilities
   heating: HeatingType | null
   hotWater: HotWaterType | null
   parking: ParkingType | null
 
-  // Amenities
   hasConditioner: boolean
   hasFurniture: boolean
   hasBed: boolean
@@ -131,13 +122,11 @@ export interface Property {
   hasElectricity: boolean
   hasGate: boolean
 
-  // Relations
   translations: PropertyTranslation[]
   galleryImages: PropertyGalleryImage[]
   translation?: PropertyTranslation | null
 }
 
-// Response types
 export interface PropertiesResponse {
   data: Property[]
   meta: {
@@ -150,7 +139,6 @@ export interface PropertiesResponse {
   }
 }
 
-// Filter types
 export interface PropertyFilters {
   lang?: string
   page?: number
@@ -159,7 +147,6 @@ export interface PropertyFilters {
   status?: PropertyStatus
 }
 
-// DTO types
 export interface UpsertPropertyTranslationDto {
   language: string
   title: string

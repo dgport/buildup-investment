@@ -1,4 +1,3 @@
-// lib/utils/auth.ts
 const TOKEN_KEY = 'admin_token'
 
 export const getAccessToken = (): string | null => {

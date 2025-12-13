@@ -92,21 +92,6 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
   const handleSubmit = async () => {
     if (!validateForm()) return
 
-    // ADD THIS DEBUG - BEFORE creating FormData
-    console.log('=== FRONTEND DEBUG - Before FormData ===')
-    console.log(
-      'formData.hotSale:',
-      formData.hotSale,
-      'type:',
-      typeof formData.hotSale
-    )
-    console.log(
-      'formData.public:',
-      formData.public,
-      'type:',
-      typeof formData.public
-    )
-
     const data = new FormData()
     data.append('projectName', formData.projectName)
     data.append('projectLocation', formData.projectLocation)
@@ -114,13 +99,6 @@ export function CreateProject({ onBack, onSuccess }: CreateProjectProps) {
     data.append('hotSale', formData.hotSale.toString())
     data.append('public', formData.public.toString())
 
-    // ADD THIS DEBUG - After creating FormData
-    console.log('=== FRONTEND DEBUG - After FormData ===')
-    console.log('hotSale.toString():', formData.hotSale.toString())
-    console.log('public.toString():', formData.public.toString())
-
-    // Print all FormData entries
-    console.log('=== FormData entries ===')
     for (const [key, value] of data.entries()) {
       if (key === 'hotSale' || key === 'public') {
         console.log(`${key}: "${value}" (type: ${typeof value})`)

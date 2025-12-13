@@ -16,7 +16,7 @@ export default defineConfig([
       ...tseslint.configs.recommended,
       reactHooks.configs['recommended-latest'],
       reactRefresh.configs.vite,
-      prettierConfig, // Disables ESLint rules that conflict with Prettier
+      prettierConfig,
     ],
     languageOptions: {
       ecmaVersion: 2020,
@@ -26,7 +26,7 @@ export default defineConfig([
       prettier: prettierPlugin,
     },
     rules: {
-      'prettier/prettier': 'error', // Shows Prettier errors as ESLint errors
+      'prettier/prettier': 'error',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'prefer-const': 'error',
       'no-var': 'error',

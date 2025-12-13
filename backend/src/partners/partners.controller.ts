@@ -31,14 +31,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertTranslationDto } from './dto/UpsertTranslations.dto';
 import { AuthGuard } from '@/auth/guards/basic-auth.guard';
- 
 
 @ApiTags('Partners')
 @Controller('partners')
 export class PartnersController {
   constructor(private readonly partnersService: PartnersService) {}
 
-  // Public route - anyone can view partners
   @Get()
   @ApiOperation({ summary: 'Get all partners with pagination' })
   @ApiQuery({
@@ -74,10 +72,9 @@ export class PartnersController {
     });
   }
 
-  // Protected route - admin only
   @Post()
-  @UseGuards(AuthGuard) // Add this
-  @ApiBearerAuth() // Add this for Swagger
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new partner' })
@@ -93,10 +90,9 @@ export class PartnersController {
     return this.partnersService.createPartner(dto, image);
   }
 
-  // Protected route - admin only
   @Patch(':id')
-  @UseGuards(AuthGuard) // Add this
-  @ApiBearerAuth() // Add this for Swagger
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a partner' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
@@ -117,10 +113,9 @@ export class PartnersController {
     return this.partnersService.updatePartner(id, dto, image);
   }
 
-  // Protected route - admin only
   @Delete(':id')
-  @UseGuards(AuthGuard) // Add this
-  @ApiBearerAuth() // Add this for Swagger
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a partner' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
   @ApiResponse({ status: 200, description: 'Partner deleted successfully' })
@@ -130,7 +125,6 @@ export class PartnersController {
     return this.partnersService.deletePartner(id);
   }
 
-  // Public route - anyone can view translations
   @Get(':id/translations')
   @ApiOperation({ summary: 'Get all translations for a partner' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
@@ -143,10 +137,9 @@ export class PartnersController {
     return this.partnersService.getTranslations(id);
   }
 
-  // Protected route - admin only
   @Patch(':id/translations')
-  @UseGuards(AuthGuard) // Add this
-  @ApiBearerAuth() // Add this for Swagger
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
   @ApiResponse({
@@ -167,10 +160,9 @@ export class PartnersController {
     );
   }
 
-  // Protected route - admin only
   @Delete(':id/translations/:language')
-  @UseGuards(AuthGuard) // Add this
-  @ApiBearerAuth() // Add this for Swagger
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
   @ApiParam({

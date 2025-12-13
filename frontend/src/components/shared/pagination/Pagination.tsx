@@ -35,25 +35,21 @@ export function Pagination({
     }
   }
 
-  // Generate page numbers to display
   const getPageNumbers = () => {
     const pages: (number | string)[] = []
     const maxVisible = 5
 
     if (totalPages <= maxVisible) {
-      // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i)
       }
     } else {
-      // Show first page
       pages.push(1)
 
       if (currentPage > 3) {
         pages.push('...')
       }
 
-      // Show pages around current
       const start = Math.max(2, currentPage - 1)
       const end = Math.min(totalPages - 1, currentPage + 1)
 
@@ -65,7 +61,6 @@ export function Pagination({
         pages.push('...')
       }
 
-      // Show last page
       pages.push(totalPages)
     }
 
@@ -76,7 +71,6 @@ export function Pagination({
 
   return (
     <div className="flex items-center gap-2">
-      {/* Previous Button */}
       <Button
         variant="outline"
         size="icon"
@@ -87,7 +81,6 @@ export function Pagination({
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      {/* Page Numbers */}
       <div className="flex items-center gap-1">
         {pageNumbers.map((page, index) => {
           if (page === '...') {
@@ -120,7 +113,6 @@ export function Pagination({
         })}
       </div>
 
-      {/* Next Button */}
       <Button
         variant="outline"
         size="icon"

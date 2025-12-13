@@ -62,7 +62,6 @@ export function ApartmentTranslationsManager({
             <Card key={translation.language} className="overflow-hidden group">
               <CardContent className="p-6">
                 {editingTranslation?.language === translation.language ? (
-                  // EDIT MODE
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm uppercase">
@@ -109,7 +108,6 @@ export function ApartmentTranslationsManager({
                     </div>
                   </div>
                 ) : (
-                  // VIEW MODE
                   <div className="flex items-start gap-4">
                     <div className="min-w-[40px]">
                       <span className="font-bold bg-slate-100 text-slate-700 border px-2 py-1 rounded text-sm uppercase block text-center">
@@ -127,7 +125,6 @@ export function ApartmentTranslationsManager({
                       </p>
                     </div>
 
-                    {/* EDIT ICON — delete is removed */}
                     <Button
                       variant="ghost"
                       size="icon"

@@ -1,7 +1,6 @@
-// lib/hooks/useAuth.ts
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
- 
+
 import { removeAccessToken, setAccessToken } from '../utils/auth'
 import { ROUTES } from '@/constants/routes'
 import { api } from '../api/api'
@@ -29,7 +28,7 @@ export const useAdminLogin = () => {
     },
     onSuccess: data => {
       setAccessToken(data.access_token)
-      navigate(ROUTES.HOME) // or '/admin/projects'
+      navigate(ROUTES.HOME)
     },
     onError: (error: any) => {
       console.error('Login failed:', error)

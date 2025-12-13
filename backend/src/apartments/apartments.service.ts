@@ -303,7 +303,6 @@ export class ApartmentsService {
       );
     }
 
-    // Auto-sync missing language translations using the utility
     await TranslationSyncUtil.syncMissingTranslations(this.prismaService, {
       entityId: apartmentId,
       entityIdField: 'apartmentId',
@@ -312,7 +311,6 @@ export class ApartmentsService {
       defaultFields: { description: '' },
     });
 
-    // Re-fetch to include newly created translations if any were added
     const updatedApartment = await this.prismaService.apartments.findUnique({
       where: { id: apartmentId },
       include: {

@@ -53,7 +53,6 @@ export default function Properties() {
     )
   }
 
-  // Transform API response for PropertyCard
   const transformedProperties =
     data?.data.map(property => ({
       id: property.id,

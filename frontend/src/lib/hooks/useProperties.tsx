@@ -67,7 +67,6 @@ export const useDeleteProperty = () => {
   })
 }
 
-// Property translation hooks
 export const usePropertyTranslations = (id: string) => {
   return useQuery<PropertyTranslation[]>({
     queryKey: ['properties', id, 'translations'],
@@ -117,7 +116,6 @@ export const useDeletePropertyTranslation = () => {
   })
 }
 
-// Property gallery image hooks
 export const useDeletePropertyImage = () => {
   return useMutation({
     mutationFn: async ({
