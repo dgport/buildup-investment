@@ -1,68 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsOptional,
   IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
   IsBoolean,
   IsNumber,
-  IsInt,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
-
-enum PropertyType {
-  APARTMENT = 'APARTMENT',
-  VILLA = 'VILLA',
-  COMMERCIAL = 'COMMERCIAL',
-  LAND = 'LAND',
-  HOTEL = 'HOTEL',
-}
-
-enum PropertyStatus {
-  OLD_BUILDING = 'OLD_BUILDING',
-  NEW_BUILDING = 'NEW_BUILDING',
-  UNDER_CONSTRUCTION = 'UNDER_CONSTRUCTION',
-}
-
-enum PropertyCondition {
-  NEWLY_RENOVATED = 'NEWLY_RENOVATED',
-  OLD_RENOVATED = 'OLD_RENOVATED',
-  REPAIRING = 'REPAIRING',
-}
-
-enum HeatingType {
-  CENTRAL_HEATING = 'CENTRAL_HEATING',
-  INDIVIDUAL = 'INDIVIDUAL',
-  GAS = 'GAS',
-  ELECTRIC = 'ELECTRIC',
-  NONE = 'NONE',
-}
-
-enum ParkingType {
-  PARKING_SPACE = 'PARKING_SPACE',
-  GARAGE = 'GARAGE',
-  OPEN_LOT = 'OPEN_LOT',
-  NONE = 'NONE',
-}
-
-enum HotWaterType {
-  CENTRAL_HEATING = 'CENTRAL_HEATING',
-  BOILER = 'BOILER',
-  SOLAR = 'SOLAR',
-  NONE = 'NONE',
-}
-
-enum Occupancy {
-  ONE = 'ONE',
-  TWO = 'TWO',
-  THREE = 'THREE',
-  FOUR = 'FOUR',
-  FIVE = 'FIVE',
-  SIX = 'SIX',
-  SEVEN = 'SEVEN',
-  EIGHT = 'EIGHT',
-  NINE = 'NINE',
-  TEN_PLUS = 'TEN_PLUS',
-}
+import {
+  PropertyType,
+  PropertyStatus,
+  PropertyCondition,
+  DealType,
+  HeatingType,
+  ParkingType,
+  HotWaterType,
+  Occupancy,
+} from '@prisma/client';
 
 export class CreatePropertyDto {
   @ApiProperty({
@@ -71,64 +25,98 @@ export class CreatePropertyDto {
     example: 'APARTMENT',
   })
   @IsEnum(PropertyType)
+  @IsNotEmpty()
   propertyType: PropertyType;
 
   @ApiProperty({
-    description: 'Status of the property',
-    enum: PropertyStatus,
-    example: 'NEW_BUILDING',
+    description: 'Property address',
+    example: '123 Main Street, Batumi',
   })
-  @IsEnum(PropertyStatus)
-  status: PropertyStatus;
-
-  @ApiProperty({ description: 'Property address', example: '123 Main Street' })
   @IsString()
+  @IsNotEmpty()
   address: string;
 
-  @ApiPropertyOptional({ description: 'Property price', example: 150000 })
-  @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
-  @IsInt()
-  price?: number;
-
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Property title (English)',
-    example: 'Luxury Apartment',
+    example: 'Luxury Apartment in Old Batumi',
   })
-  @IsOptional()
   @IsString()
-  title?: string;
+  @IsNotEmpty()
+  title: string;
 
   @ApiPropertyOptional({
     description: 'Property description (English)',
-    example: 'Beautiful apartment with sea view',
+    example: 'Beautiful apartment with sea view...',
   })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Total area in sq meters', example: 120 })
+  @ApiPropertyOptional({
+    description: 'Property status',
+    enum: PropertyStatus,
+  })
+  @IsEnum(PropertyStatus)
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
-  @IsInt()
+  status?: PropertyStatus;
+
+  @ApiPropertyOptional({
+    description: 'Deal type',
+    enum: DealType,
+  })
+  @IsEnum(DealType)
+  @IsOptional()
+  dealType?: DealType;
+
+  @ApiPropertyOptional({
+    description: 'Mark as hot sale',
+    example: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  hotSale?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Is property publicly visible',
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  public?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Property price',
+    example: 150000,
+  })
+  @IsOptional()
+  price?: number;
+
+  @ApiPropertyOptional({
+    description: 'Total area in square meters',
+    example: 85,
+  })
+  @IsOptional()
   totalArea?: number;
 
-  @ApiPropertyOptional({ description: 'Number of rooms', example: 3 })
+  @ApiPropertyOptional({
+    description: 'Number of rooms',
+    example: 3,
+  })
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
-  @IsInt()
   rooms?: number;
 
-  @ApiPropertyOptional({ description: 'Number of bedrooms', example: 2 })
+  @ApiPropertyOptional({
+    description: 'Number of bedrooms',
+    example: 2,
+  })
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
-  @IsInt()
   bedrooms?: number;
 
-  @ApiPropertyOptional({ description: 'Number of bathrooms', example: 2 })
+  @ApiPropertyOptional({
+    description: 'Number of bathrooms',
+    example: 1,
+  })
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
-  @IsInt()
   bathrooms?: number;
 
   @ApiPropertyOptional({
@@ -136,8 +124,6 @@ export class CreatePropertyDto {
     example: 5,
   })
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
-  @IsInt()
   floors?: number;
 
   @ApiPropertyOptional({
@@ -145,8 +131,6 @@ export class CreatePropertyDto {
     example: 10,
   })
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
-  @IsInt()
   floorsTotal?: number;
 
   @ApiPropertyOptional({
@@ -154,224 +138,185 @@ export class CreatePropertyDto {
     example: 3.0,
   })
   @IsOptional()
-  @Transform(({ value }) => (value ? parseFloat(value) : null))
-  @IsNumber()
   ceilingHeight?: number;
 
   @ApiPropertyOptional({
     description: 'Property condition',
     enum: PropertyCondition,
-    example: 'NEWLY_RENOVATED',
   })
-  @IsOptional()
   @IsEnum(PropertyCondition)
+  @IsOptional()
   condition?: PropertyCondition;
 
   @ApiPropertyOptional({
     description: 'Is non-standard layout',
     example: false,
   })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
+  @IsOptional()
   isNonStandard?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Occupancy capacity',
+    description: 'Occupancy status',
     enum: Occupancy,
-    example: 'FOUR',
   })
-  @IsOptional()
   @IsEnum(Occupancy)
+  @IsOptional()
   occupancy?: Occupancy;
 
   @ApiPropertyOptional({
     description: 'Heating type',
     enum: HeatingType,
-    example: 'CENTRAL_HEATING',
   })
-  @IsOptional()
   @IsEnum(HeatingType)
+  @IsOptional()
   heating?: HeatingType;
 
   @ApiPropertyOptional({
     description: 'Hot water type',
     enum: HotWaterType,
-    example: 'BOILER',
   })
-  @IsOptional()
   @IsEnum(HotWaterType)
+  @IsOptional()
   hotWater?: HotWaterType;
 
   @ApiPropertyOptional({
     description: 'Parking type',
     enum: ParkingType,
-    example: 'GARAGE',
   })
-  @IsOptional()
   @IsEnum(ParkingType)
+  @IsOptional()
   parking?: ParkingType;
 
-  @ApiPropertyOptional({ description: 'Has air conditioner', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  // Amenities - all optional boolean fields
+  @ApiPropertyOptional({ description: 'Has air conditioner' })
   @IsBoolean()
+  @IsOptional()
   hasConditioner?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has furniture', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has furniture' })
   @IsBoolean()
+  @IsOptional()
   hasFurniture?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has bed', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has bed' })
   @IsBoolean()
+  @IsOptional()
   hasBed?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has sofa', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has sofa' })
   @IsBoolean()
+  @IsOptional()
   hasSofa?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has table', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has table' })
   @IsBoolean()
+  @IsOptional()
   hasTable?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has chairs', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has chairs' })
   @IsBoolean()
+  @IsOptional()
   hasChairs?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has stove', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has stove' })
   @IsBoolean()
+  @IsOptional()
   hasStove?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has refrigerator', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has refrigerator' })
   @IsBoolean()
+  @IsOptional()
   hasRefrigerator?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has oven', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has oven' })
   @IsBoolean()
+  @IsOptional()
   hasOven?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has washing machine', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has washing machine' })
   @IsBoolean()
+  @IsOptional()
   hasWashingMachine?: boolean;
 
-  @ApiPropertyOptional({
-    description: 'Has kitchen appliances',
-    example: true,
-  })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has kitchen appliances' })
   @IsBoolean()
+  @IsOptional()
   hasKitchenAppliances?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has balcony', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has balcony' })
   @IsBoolean()
+  @IsOptional()
   hasBalcony?: boolean;
 
-  @ApiPropertyOptional({
-    description: 'Balcony area in sq meters',
-    example: 10.5,
-  })
+  @ApiPropertyOptional({ description: 'Balcony area in square meters' })
   @IsOptional()
-  @Transform(({ value }) => (value ? parseFloat(value) : null))
-  @IsNumber()
   balconyArea?: number;
 
-  @ApiPropertyOptional({ description: 'Has natural gas', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has natural gas' })
   @IsBoolean()
+  @IsOptional()
   hasNaturalGas?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has internet', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has internet' })
   @IsBoolean()
+  @IsOptional()
   hasInternet?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has TV', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has TV' })
   @IsBoolean()
+  @IsOptional()
   hasTV?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has sewerage', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has sewerage' })
   @IsBoolean()
+  @IsOptional()
   hasSewerage?: boolean;
 
-  @ApiPropertyOptional({ description: 'Is fenced', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Is fenced' })
   @IsBoolean()
+  @IsOptional()
   isFenced?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has yard lighting', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has yard lighting' })
   @IsBoolean()
+  @IsOptional()
   hasYardLighting?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has grill', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has grill' })
   @IsBoolean()
+  @IsOptional()
   hasGrill?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has alarm system', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has alarm system' })
   @IsBoolean()
+  @IsOptional()
   hasAlarm?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has ventilation', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has ventilation' })
   @IsBoolean()
+  @IsOptional()
   hasVentilation?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has water supply', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has water supply' })
   @IsBoolean()
+  @IsOptional()
   hasWater?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has electricity', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has electricity' })
   @IsBoolean()
+  @IsOptional()
   hasElectricity?: boolean;
 
-  @ApiPropertyOptional({ description: 'Has gate', example: true })
-  @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiPropertyOptional({ description: 'Has gate' })
   @IsBoolean()
+  @IsOptional()
   hasGate?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Property images',
+    description: 'Property images (max 20)',
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
-  images?: any[];
+  images?: any;
 }

@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpsertPropertyTranslationDto {
   @ApiProperty({
-    description: 'Language code (e.g., en, ka, ru)',
+    description: 'Language code',
     example: 'ka',
   })
   @IsString()
@@ -11,18 +11,26 @@ export class UpsertPropertyTranslationDto {
   language: string;
 
   @ApiProperty({
-    description: 'Property title in the specified language',
-    example: 'ლუქსუსური ბინა',
+    description: 'Property title in specified language',
+    example: 'ფუფუნებული ბინა ძველ ბათუმში',
   })
   @IsString()
   @IsNotEmpty()
   title: string;
 
-  @ApiPropertyOptional({
-    description: 'Property description in the specified language',
-    example: 'ულამაზესი ბინა ზღვის ხედით',
+  @ApiProperty({
+    description: 'Property address in specified language',
+    example: 'მთავარი ქუჩა 123, ბათუმი',
   })
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  address: string;
+
+  @ApiPropertyOptional({
+    description: 'Property description in specified language',
+    example: 'ლამაზი ბინა ზღვის ხედით...',
+  })
+  @IsString()
+  @IsOptional()
   description?: string;
 }

@@ -65,10 +65,124 @@ export class PropertiesController {
     enum: ['APARTMENT', 'VILLA', 'COMMERCIAL', 'LAND', 'HOTEL'],
   })
   @ApiQuery({
+    name: 'address',
+    required: false,
+    description: 'Filter by address (supports partial match)',
+    example: 'Batumi',
+  })
+  @ApiQuery({
+    name: 'priceFrom',
+    required: false,
+    description: 'Minimum price',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'priceTo',
+    required: false,
+    description: 'Maximum price',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'hotSale',
+    required: false,
+    description: 'Filter hot sale properties',
+    type: 'boolean',
+  })
+  @ApiQuery({
+    name: 'public',
+    required: false,
+    description: 'Filter public/private properties',
+    type: 'boolean',
+  })
+  @ApiQuery({
     name: 'status',
     required: false,
     description: 'Filter by property status',
     enum: ['OLD_BUILDING', 'NEW_BUILDING', 'UNDER_CONSTRUCTION'],
+  })
+  @ApiQuery({
+    name: 'dealType',
+    required: false,
+    description: 'Filter by deal type',
+    enum: ['RENT', 'SALE', 'DAILY_RENT'],
+  })
+  @ApiQuery({
+    name: 'areaFrom',
+    required: false,
+    description: 'Minimum total area',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'areaTo',
+    required: false,
+    description: 'Maximum total area',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'rooms',
+    required: false,
+    description: 'Number of rooms (5+ for 5 or more)',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'bedrooms',
+    required: false,
+    description: 'Number of bedrooms (4+ for 4 or more)',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'bathrooms',
+    required: false,
+    description: 'Number of bathrooms (3+ for 3 or more)',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'condition',
+    required: false,
+    description: 'Filter by property condition',
+    enum: ['NEWLY_RENOVATED', 'OLD_RENOVATED', 'REPAIRING'],
+  })
+  @ApiQuery({
+    name: 'heating',
+    required: false,
+    description: 'Filter by heating type',
+    enum: ['CENTRAL_HEATING', 'INDIVIDUAL', 'GAS', 'ELECTRIC', 'NONE'],
+  })
+  @ApiQuery({
+    name: 'parking',
+    required: false,
+    description: 'Filter by parking type',
+    enum: ['PARKING_SPACE', 'GARAGE', 'OPEN_LOT', 'NONE'],
+  })
+  @ApiQuery({
+    name: 'hasConditioner',
+    required: false,
+    description: 'Has air conditioner',
+    type: 'boolean',
+  })
+  @ApiQuery({
+    name: 'hasFurniture',
+    required: false,
+    description: 'Has furniture',
+    type: 'boolean',
+  })
+  @ApiQuery({
+    name: 'hasBalcony',
+    required: false,
+    description: 'Has balcony',
+    type: 'boolean',
+  })
+  @ApiQuery({
+    name: 'hasInternet',
+    required: false,
+    description: 'Has internet',
+    type: 'boolean',
+  })
+  @ApiQuery({
+    name: 'hasNaturalGas',
+    required: false,
+    description: 'Has natural gas',
+    type: 'boolean',
   })
   @ApiResponse({
     status: 200,
@@ -79,14 +193,57 @@ export class PropertiesController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('propertyType') propertyType?: string,
+    @Query('address') address?: string,
+    @Query('priceFrom') priceFrom?: string,
+    @Query('priceTo') priceTo?: string,
+    @Query('hotSale') hotSale?: string,
+    @Query('public') publicParam?: string,
     @Query('status') status?: string,
+    @Query('dealType') dealType?: string,
+    @Query('areaFrom') areaFrom?: string,
+    @Query('areaTo') areaTo?: string,
+    @Query('rooms') rooms?: string,
+    @Query('bedrooms') bedrooms?: string,
+    @Query('bathrooms') bathrooms?: string,
+    @Query('condition') condition?: string,
+    @Query('heating') heating?: string,
+    @Query('parking') parking?: string,
+    @Query('hasConditioner') hasConditioner?: string,
+    @Query('hasFurniture') hasFurniture?: string,
+    @Query('hasBalcony') hasBalcony?: string,
+    @Query('hasInternet') hasInternet?: string,
+    @Query('hasNaturalGas') hasNaturalGas?: string,
   ) {
     return this.propertiesService.findAll({
       lang,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       propertyType,
+      address,
+      priceFrom: priceFrom ? parseInt(priceFrom, 10) : undefined,
+      priceTo: priceTo ? parseInt(priceTo, 10) : undefined,
+      hotSale: hotSale === 'true',
+      public:
+        publicParam === 'true'
+          ? true
+          : publicParam === 'false'
+            ? false
+            : undefined,
       status,
+      dealType,
+      areaFrom: areaFrom ? parseInt(areaFrom, 10) : undefined,
+      areaTo: areaTo ? parseInt(areaTo, 10) : undefined,
+      rooms: rooms ? parseInt(rooms, 10) : undefined,
+      bedrooms: bedrooms ? parseInt(bedrooms, 10) : undefined,
+      bathrooms: bathrooms ? parseInt(bathrooms, 10) : undefined,
+      condition,
+      heating,
+      parking,
+      hasConditioner: hasConditioner === 'true',
+      hasFurniture: hasFurniture === 'true',
+      hasBalcony: hasBalcony === 'true',
+      hasInternet: hasInternet === 'true',
+      hasNaturalGas: hasNaturalGas === 'true',
     });
   }
 
@@ -181,6 +338,7 @@ export class PropertiesController {
       id,
       dto.language,
       dto.title,
+      dto.address,
       dto.description,
     );
   }

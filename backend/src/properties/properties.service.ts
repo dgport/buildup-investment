@@ -14,10 +14,18 @@ interface FindAllParams {
   lang?: string;
   page?: number;
   limit?: number;
+
+  // Main filters
   propertyType?: string;
-  status?: string;
+  address?: string;
   priceFrom?: number;
   priceTo?: number;
+  hotSale?: boolean;
+  public?: boolean;
+
+  // Additional filters
+  status?: string;
+  dealType?: string;
   areaFrom?: number;
   areaTo?: number;
   rooms?: number;
@@ -27,11 +35,14 @@ interface FindAllParams {
   condition?: string;
   heating?: string;
   parking?: string;
+
+  // Boolean filters
   hasConditioner?: boolean;
   hasFurniture?: boolean;
   hasBalcony?: boolean;
   hasInternet?: boolean;
   hasNaturalGas?: boolean;
+  hasParking?: boolean;
 }
 
 @Injectable()
@@ -64,9 +75,13 @@ export class PropertiesService {
       page = 1,
       limit = 10,
       propertyType,
-      status,
+      address,
       priceFrom,
       priceTo,
+      hotSale,
+      public: isPublic,
+      status,
+      dealType,
       areaFrom,
       areaTo,
       rooms,
@@ -84,17 +99,38 @@ export class PropertiesService {
     } = params;
 
     const skip = (page - 1) * limit;
-
     const where: any = {};
 
+    // Main filters
     if (propertyType) where.propertyType = propertyType;
-    if (status) where.status = status;
+    if (dealType) where.dealType = dealType;
+    if (hotSale !== undefined) where.hotSale = hotSale;
+    if (isPublic !== undefined) where.public = isPublic;
 
+    // Address filter (searches in base address and translations)
+    if (address) {
+      where.OR = [
+        { address: { contains: address, mode: 'insensitive' } },
+        {
+          translations: {
+            some: {
+              address: { contains: address, mode: 'insensitive' },
+              language: lang,
+            },
+          },
+        },
+      ];
+    }
+
+    // Price range filter
     if (priceFrom !== undefined || priceTo !== undefined) {
       where.price = {};
       if (priceFrom !== undefined) where.price.gte = priceFrom;
       if (priceTo !== undefined) where.price.lte = priceTo;
     }
+
+    // Additional filters
+    if (status) where.status = status;
 
     if (areaFrom !== undefined || areaTo !== undefined) {
       where.totalArea = {};
@@ -102,6 +138,7 @@ export class PropertiesService {
       if (areaTo !== undefined) where.totalArea.lte = areaTo;
     }
 
+    // Room filters with "or more" logic
     if (rooms !== undefined) {
       if (rooms >= 5) {
         where.rooms = { gte: 5 };
@@ -109,6 +146,7 @@ export class PropertiesService {
         where.rooms = rooms;
       }
     }
+
     if (bedrooms !== undefined) {
       if (bedrooms >= 4) {
         where.bedrooms = { gte: 4 };
@@ -116,6 +154,7 @@ export class PropertiesService {
         where.bedrooms = bedrooms;
       }
     }
+
     if (bathrooms !== undefined) {
       if (bathrooms >= 3) {
         where.bathrooms = { gte: 3 };
@@ -123,12 +162,13 @@ export class PropertiesService {
         where.bathrooms = bathrooms;
       }
     }
-    if (floors !== undefined) where.floors = floors;
 
+    if (floors !== undefined) where.floors = floors;
     if (condition) where.condition = condition;
     if (heating) where.heating = heating;
     if (parking) where.parking = parking;
 
+    // Boolean amenity filters
     if (hasConditioner === true) where.hasConditioner = true;
     if (hasFurniture === true) where.hasFurniture = true;
     if (hasBalcony === true) where.hasBalcony = true;
@@ -204,8 +244,11 @@ export class PropertiesService {
       data: {
         externalId: generatedExternalId,
         propertyType: dto.propertyType,
-        status: dto.status,
         address: dto.address,
+        status: dto.status,
+        dealType: dto.dealType,
+        hotSale: dto.hotSale || false,
+        public: dto.public !== undefined ? dto.public : true,
         price: dto.price ? parseInt(dto.price as any) : null,
         totalArea: dto.totalArea ? parseInt(dto.totalArea as any) : null,
         rooms: dto.rooms ? parseInt(dto.rooms as any) : null,
@@ -252,16 +295,19 @@ export class PropertiesService {
       },
     });
 
+    // Create translations for all languages
     await this.prismaService.propertyTranslations.createMany({
       data: LANGUAGES.map((lang) => ({
         propertyId: property.id,
         language: lang,
         title: lang === 'en' && dto.title ? dto.title : '',
+        address: lang === 'en' && dto.address ? dto.address : '',
         description: lang === 'en' && dto.description ? dto.description : null,
       })),
       skipDuplicates: true,
     });
 
+    // Handle gallery images
     if (images && images.length > 0) {
       const imageUrls = images
         .map((image, index) => ({
@@ -298,7 +344,15 @@ export class PropertiesService {
     }
 
     const updateData: any = {};
+
+    // Update all optional fields
+    if (dto.propertyType !== undefined)
+      updateData.propertyType = dto.propertyType;
     if (dto.address !== undefined) updateData.address = dto.address;
+    if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.dealType !== undefined) updateData.dealType = dto.dealType;
+    if (dto.hotSale !== undefined) updateData.hotSale = dto.hotSale;
+    if (dto.public !== undefined) updateData.public = dto.public;
     if (dto.price !== undefined)
       updateData.price = dto.price ? parseInt(dto.price as any) : null;
     if (dto.totalArea !== undefined)
@@ -330,6 +384,8 @@ export class PropertiesService {
     if (dto.heating !== undefined) updateData.heating = dto.heating;
     if (dto.hotWater !== undefined) updateData.hotWater = dto.hotWater;
     if (dto.parking !== undefined) updateData.parking = dto.parking;
+
+    // Boolean fields
     if (dto.hasConditioner !== undefined)
       updateData.hasConditioner = dto.hasConditioner;
     if (dto.hasFurniture !== undefined)
@@ -373,6 +429,7 @@ export class PropertiesService {
       data: updateData,
     });
 
+    // Handle additional images
     if (images && images.length > 0) {
       const existingImages =
         await this.prismaService.propertyGalleryImage.findMany({
@@ -443,7 +500,7 @@ export class PropertiesService {
       entityIdField: 'propertyId',
       translationModel: this.prismaService.propertyTranslations,
       existingTranslations: property.translations,
-      defaultFields: { title: '', description: null },
+      defaultFields: { title: '', address: '', description: null },
     });
 
     const updatedProperty = await this.prismaService.property.findUnique({
@@ -462,6 +519,7 @@ export class PropertiesService {
     propertyId: string,
     language: string,
     title: string,
+    address: string,
     description?: string,
   ) {
     const property = await this.prismaService.property.findUnique({
@@ -481,12 +539,14 @@ export class PropertiesService {
       },
       update: {
         title,
+        address,
         description,
       },
       create: {
         propertyId,
         language,
         title,
+        address,
         description,
       },
     });
@@ -551,7 +611,7 @@ export class PropertiesService {
       this.prismaService.property,
       'propertyId',
       this.prismaService.propertyTranslations,
-      () => ({ title: '', description: null }),
+      () => ({ title: '', address: '', description: null }),
     );
   }
 }
