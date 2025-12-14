@@ -7,6 +7,11 @@ export enum PropertyType {
   HOTEL = 'HOTEL',
 }
 
+export enum City {
+  BATUMI = 'BATUMI',
+  TBILISI = 'TBILISI',
+}
+
 export enum DealType {
   RENT = 'RENT',
   SALE = 'SALE',
@@ -73,7 +78,8 @@ export interface PropertyTranslation {
   propertyId: string
   language: string
   title: string
-  address: string // Added translatable address
+  address: string | null
+  location: string | null
   description: string | null
 }
 
@@ -83,7 +89,11 @@ export interface Property {
 
   // Required fields
   propertyType: PropertyType
-  address: string
+
+  // Location fields (all optional)
+  city: City | null
+  address: string | null
+  location: string | null
 
   // Optional fields
   status: PropertyStatus | null
@@ -160,32 +170,35 @@ export interface PropertiesResponse {
 }
 
 export interface PropertyFilters {
-  lang?: string
+  // Pagination
   page?: number
   limit?: number
+  lang?: string
+  externalId?: string
 
   // Main filters
-  propertyType?: PropertyType
+  city?: string
+  propertyType?: string
   address?: string
   priceFrom?: number
   priceTo?: number
   hotSale?: boolean
-  public?: boolean
+  public?: boolean // For admin: show all properties or only public ones
 
   // Additional filters
-  status?: PropertyStatus
-  dealType?: DealType
+  status?: string
+  dealType?: string
   areaFrom?: number
   areaTo?: number
-  rooms?: number
-  bedrooms?: number
-  bathrooms?: number
+  rooms?: number // 5+ will query >= 5
+  bedrooms?: number // 4+ will query >= 4
+  bathrooms?: number // 3+ will query >= 3
   floors?: number
-  condition?: PropertyCondition
-  heating?: HeatingType
-  parking?: ParkingType
+  condition?: string
+  heating?: string
+  parking?: string
 
-  // Boolean amenity filters
+  // Boolean amenity filters (only true values are considered)
   hasConditioner?: boolean
   hasFurniture?: boolean
   hasBalcony?: boolean
@@ -193,18 +206,32 @@ export interface PropertyFilters {
   hasNaturalGas?: boolean
 }
 
+export interface PropertyTranslation {
+  id: number
+  language: string
+  title: string
+  address: string | null
+  description: string | null
+  propertyId: string
+}
+
 export interface UpsertPropertyTranslationDto {
   language: string
   title: string
-  address: string // Added translatable address
+  address?: string
   description?: string
+  // Note: location is NOT included - it's non-translatable
 }
 
 export interface CreatePropertyDto {
   // Required fields
   propertyType: PropertyType
-  address: string
   title: string
+
+  // Location fields (all optional)
+  city?: City
+  address?: string
+  location?: string
 
   // Optional fields
   description?: string
@@ -254,3 +281,5 @@ export interface CreatePropertyDto {
   hasElectricity?: boolean
   hasGate?: boolean
 }
+
+export type UpdatePropertyDto = Partial<CreatePropertyDto>

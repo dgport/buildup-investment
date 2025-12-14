@@ -159,13 +159,24 @@ enum Occupancy {
   TEN_PLUS
 }
 
+// Add this enum near the top with other enums
+enum City {
+  BATUMI
+  TBILISI
+}
+
+// Updated Property model
 model Property {
   id              String           @id @default(cuid())
   externalId      String           @unique @map("external_id")
   
   // Required fields
   propertyType    PropertyType     @map("property_type")
-  address         String           // Keep base address for indexing/searching
+  
+  // Location fields (all optional)
+  city            City?
+  address         String?          // Now optional
+  location        String?          // New field for coordinates or specific location
   
   // Optional fields
   status          PropertyStatus?
@@ -229,9 +240,9 @@ model Property {
 
   @@map("properties")
   @@index([propertyType])
+  @@index([city])
   @@index([status])
   @@index([price])
-  @@index([address])
   @@index([dealType])
   @@index([hotSale])
   @@index([public])
@@ -245,7 +256,7 @@ model PropertyTranslations {
   
   // Translatable fields
   title           String
-  address         String   // Translated address
+  address         String?  // Optional translated address
   description     String?  @db.Text
 
   @@unique([propertyId, language])

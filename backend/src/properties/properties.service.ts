@@ -15,8 +15,10 @@ interface FindAllParams {
   page?: number;
   limit?: number;
 
-  // Main filters
+  externalId?: string; // ADD THIS
+  city?: string;
   propertyType?: string;
+
   address?: string;
   priceFrom?: number;
   priceTo?: number;
@@ -72,8 +74,10 @@ export class PropertiesService {
   async findAll(params: FindAllParams = {}) {
     const {
       lang = 'en',
+      externalId,
       page = 1,
       limit = 10,
+      city,
       propertyType,
       address,
       priceFrom,
@@ -101,7 +105,12 @@ export class PropertiesService {
     const skip = (page - 1) * limit;
     const where: any = {};
 
+    if (externalId) {
+      where.externalId = { contains: externalId, mode: 'insensitive' };
+    }
+
     // Main filters
+    if (city) where.city = city;
     if (propertyType) where.propertyType = propertyType;
     if (dealType) where.dealType = dealType;
     if (hotSale !== undefined) where.hotSale = hotSale;
@@ -244,7 +253,9 @@ export class PropertiesService {
       data: {
         externalId: generatedExternalId,
         propertyType: dto.propertyType,
-        address: dto.address,
+        city: dto.city || null,
+        address: dto.address || null,
+        location: dto.location || null,
         status: dto.status,
         dealType: dto.dealType,
         hotSale: dto.hotSale || false,
@@ -301,8 +312,9 @@ export class PropertiesService {
         propertyId: property.id,
         language: lang,
         title: lang === 'en' && dto.title ? dto.title : '',
-        address: lang === 'en' && dto.address ? dto.address : '',
+        address: lang === 'en' && dto.address ? dto.address : null,
         description: lang === 'en' && dto.description ? dto.description : null,
+        // Remove: location
       })),
       skipDuplicates: true,
     });
@@ -348,7 +360,9 @@ export class PropertiesService {
     // Update all optional fields
     if (dto.propertyType !== undefined)
       updateData.propertyType = dto.propertyType;
-    if (dto.address !== undefined) updateData.address = dto.address;
+    if (dto.city !== undefined) updateData.city = dto.city || null;
+    if (dto.address !== undefined) updateData.address = dto.address || null;
+    if (dto.location !== undefined) updateData.location = dto.location || null;
     if (dto.status !== undefined) updateData.status = dto.status;
     if (dto.dealType !== undefined) updateData.dealType = dto.dealType;
     if (dto.hotSale !== undefined) updateData.hotSale = dto.hotSale;
@@ -500,7 +514,12 @@ export class PropertiesService {
       entityIdField: 'propertyId',
       translationModel: this.prismaService.propertyTranslations,
       existingTranslations: property.translations,
-      defaultFields: { title: '', address: '', description: null },
+      defaultFields: {
+        title: '',
+        address: null,
+        description: null,
+        // Remove: location: null
+      },
     });
 
     const updatedProperty = await this.prismaService.property.findUnique({
@@ -519,8 +538,9 @@ export class PropertiesService {
     propertyId: string,
     language: string,
     title: string,
-    address: string,
+    address?: string,
     description?: string,
+    // Remove: location?: string
   ) {
     const property = await this.prismaService.property.findUnique({
       where: { id: propertyId },
@@ -539,15 +559,17 @@ export class PropertiesService {
       },
       update: {
         title,
-        address,
-        description,
+        address: address || null,
+        description: description || null,
+        // Remove: location
       },
       create: {
         propertyId,
         language,
         title,
-        address,
-        description,
+        address: address || null,
+        description: description || null,
+        // Remove: location
       },
     });
 
@@ -611,7 +633,12 @@ export class PropertiesService {
       this.prismaService.property,
       'propertyId',
       this.prismaService.propertyTranslations,
-      () => ({ title: '', address: '', description: null }),
+      () => ({
+        title: '',
+        address: null,
+        description: null,
+        // Remove: location: null
+      }),
     );
   }
 }

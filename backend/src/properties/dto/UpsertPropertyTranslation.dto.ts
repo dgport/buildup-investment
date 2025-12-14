@@ -18,13 +18,13 @@ export class UpsertPropertyTranslationDto {
   @IsNotEmpty()
   title: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Property address in specified language',
     example: 'მთავარი ქუჩა 123, ბათუმი',
   })
   @IsString()
-  @IsNotEmpty()
-  address: string;
+  @IsOptional()
+  address?: string;
 
   @ApiPropertyOptional({
     description: 'Property description in specified language',

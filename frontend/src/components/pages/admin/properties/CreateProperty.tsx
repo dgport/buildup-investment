@@ -24,6 +24,7 @@ import {
   ParkingType,
   HotWaterType,
   Occupancy,
+  City,
   type CreatePropertyDto,
 } from '@/lib/types/properties'
 
@@ -32,78 +33,133 @@ interface CreatePropertyProps {
   onSuccess: () => void
 }
 
+const INITIAL_FORM_STATE: CreatePropertyDto = {
+  propertyType: PropertyType.APARTMENT,
+  title: '',
+  hotSale: false,
+  public: true,
+  isNonStandard: false,
+}
+
+const PROPERTY_TYPES = [
+  { value: PropertyType.APARTMENT, label: 'Apartment' },
+  { value: PropertyType.VILLA, label: 'Villa' },
+  { value: PropertyType.COMMERCIAL, label: 'Commercial' },
+  { value: PropertyType.LAND, label: 'Land' },
+  { value: PropertyType.HOTEL, label: 'Hotel' },
+]
+
+const CITIES = [
+  { value: City.BATUMI, label: 'Batumi' },
+  { value: City.TBILISI, label: 'Tbilisi' },
+]
+
+const DEAL_TYPES = [
+  { value: DealType.SALE, label: 'Sale' },
+  { value: DealType.RENT, label: 'Rent' },
+  { value: DealType.DAILY_RENT, label: 'Daily Rent' },
+]
+
+const PROPERTY_STATUSES = [
+  { value: PropertyStatus.OLD_BUILDING, label: 'Old Building' },
+  { value: PropertyStatus.NEW_BUILDING, label: 'New Building' },
+  { value: PropertyStatus.UNDER_CONSTRUCTION, label: 'Under Construction' },
+]
+
+const PROPERTY_CONDITIONS = [
+  { value: PropertyCondition.NEWLY_RENOVATED, label: 'Newly Renovated' },
+  { value: PropertyCondition.OLD_RENOVATED, label: 'Old Renovated' },
+  { value: PropertyCondition.REPAIRING, label: 'Repairing' },
+]
+
+const HEATING_TYPES = [
+  { value: HeatingType.CENTRAL_HEATING, label: 'Central Heating' },
+  { value: HeatingType.INDIVIDUAL, label: 'Individual' },
+  { value: HeatingType.GAS, label: 'Gas' },
+  { value: HeatingType.ELECTRIC, label: 'Electric' },
+  { value: HeatingType.NONE, label: 'None' },
+]
+
+const HOT_WATER_TYPES = [
+  { value: HotWaterType.CENTRAL_HEATING, label: 'Central Heating' },
+  { value: HotWaterType.BOILER, label: 'Boiler' },
+  { value: HotWaterType.SOLAR, label: 'Solar' },
+  { value: HotWaterType.NONE, label: 'None' },
+]
+
+const PARKING_TYPES = [
+  { value: ParkingType.PARKING_SPACE, label: 'Parking Space' },
+  { value: ParkingType.GARAGE, label: 'Garage' },
+  { value: ParkingType.OPEN_LOT, label: 'Open Lot' },
+  { value: ParkingType.NONE, label: 'None' },
+]
+
+const OCCUPANCY_OPTIONS = [
+  { value: Occupancy.ONE, label: '1 Person' },
+  { value: Occupancy.TWO, label: '2 People' },
+  { value: Occupancy.THREE, label: '3 People' },
+  { value: Occupancy.FOUR, label: '4 People' },
+  { value: Occupancy.FIVE, label: '5 People' },
+  { value: Occupancy.SIX, label: '6 People' },
+  { value: Occupancy.TEN_PLUS, label: '10+ People' },
+]
+
+const AMENITIES = [
+  { key: 'hasConditioner', label: 'Air Conditioner' },
+  { key: 'hasFurniture', label: 'Furniture' },
+  { key: 'hasBed', label: 'Bed' },
+  { key: 'hasSofa', label: 'Sofa' },
+  { key: 'hasTable', label: 'Table' },
+  { key: 'hasChairs', label: 'Chairs' },
+  { key: 'hasStove', label: 'Stove' },
+  { key: 'hasRefrigerator', label: 'Refrigerator' },
+  { key: 'hasOven', label: 'Oven' },
+  { key: 'hasWashingMachine', label: 'Washing Machine' },
+  { key: 'hasKitchenAppliances', label: 'Kitchen Appliances' },
+  { key: 'hasBalcony', label: 'Balcony' },
+  { key: 'hasNaturalGas', label: 'Natural Gas' },
+  { key: 'hasInternet', label: 'Internet' },
+  { key: 'hasTV', label: 'TV' },
+  { key: 'hasSewerage', label: 'Sewerage' },
+  { key: 'isFenced', label: 'Fenced' },
+  { key: 'hasYardLighting', label: 'Yard Lighting' },
+  { key: 'hasGrill', label: 'Grill' },
+  { key: 'hasAlarm', label: 'Alarm' },
+  { key: 'hasVentilation', label: 'Ventilation' },
+  { key: 'hasWater', label: 'Water' },
+  { key: 'hasElectricity', label: 'Electricity' },
+  { key: 'hasGate', label: 'Gate' },
+  { key: 'isNonStandard', label: 'Non-Standard Layout' },
+]
+
 export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
-  const [formData, setFormData] = useState<CreatePropertyDto>({
-    // Required fields
-    propertyType: PropertyType.APARTMENT,
-    address: '',
-    title: '',
-
-    // Optional fields
-    description: '',
-    status: undefined,
-    dealType: undefined,
-    hotSale: false,
-    public: true,
-    price: undefined,
-    totalArea: undefined,
-    rooms: undefined,
-    bedrooms: undefined,
-    bathrooms: undefined,
-    floors: undefined,
-    floorsTotal: undefined,
-    ceilingHeight: undefined,
-    condition: undefined,
-    isNonStandard: false,
-    occupancy: undefined,
-    heating: undefined,
-    hotWater: undefined,
-    parking: undefined,
-    hasConditioner: false,
-    hasFurniture: false,
-    hasBed: false,
-    hasSofa: false,
-    hasTable: false,
-    hasChairs: false,
-    hasStove: false,
-    hasRefrigerator: false,
-    hasOven: false,
-    hasWashingMachine: false,
-    hasKitchenAppliances: false,
-    hasBalcony: false,
-    balconyArea: undefined,
-    hasNaturalGas: false,
-    hasInternet: false,
-    hasTV: false,
-    hasSewerage: false,
-    isFenced: false,
-    hasYardLighting: false,
-    hasGrill: false,
-    hasAlarm: false,
-    hasVentilation: false,
-    hasWater: false,
-    hasElectricity: false,
-    hasGate: false,
-  })
-
+  const [formData, setFormData] =
+    useState<CreatePropertyDto>(INITIAL_FORM_STATE)
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const createProperty = useCreateProperty()
 
+  const updateField = <K extends keyof CreatePropertyDto>(
+    field: K,
+    value: CreatePropertyDto[K]
+  ) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    if (files.length > 0) {
-      setImageFiles(prev => [...prev, ...files])
-      files.forEach(file => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          setImagePreviews(prev => [...prev, reader.result as string])
-        }
-        reader.readAsDataURL(file)
-      })
-    }
+    if (files.length === 0) return
+
+    setImageFiles(prev => [...prev, ...files])
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string])
+      }
+      reader.readAsDataURL(file)
+    })
   }
 
   const removeImage = (index: number) => {
@@ -113,15 +169,9 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    if (!formData.propertyType) {
+    if (!formData.propertyType)
       newErrors.propertyType = 'Property type is required'
-    }
-    if (!formData.address?.trim()) {
-      newErrors.address = 'Address is required'
-    }
-    if (!formData.title?.trim()) {
-      newErrors.title = 'Title is required'
-    }
+    if (!formData.title?.trim()) newErrors.title = 'Title is required'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -163,550 +213,314 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
 
       <div className="space-y-8">
         {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">
-            Basic Information
-          </h3>
-
+        <Section title="Basic Information">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="propertyType">
-                Property Type <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.propertyType}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    propertyType: value as PropertyType,
-                  })
-                }
-              >
-                <SelectTrigger
-                  className={errors.propertyType ? 'border-red-500' : ''}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={PropertyType.APARTMENT}>
-                    Apartment
-                  </SelectItem>
-                  <SelectItem value={PropertyType.VILLA}>Villa</SelectItem>
-                  <SelectItem value={PropertyType.COMMERCIAL}>
-                    Commercial
-                  </SelectItem>
-                  <SelectItem value={PropertyType.LAND}>Land</SelectItem>
-                  <SelectItem value={PropertyType.HOTEL}>Hotel</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.propertyType && (
-                <p className="text-red-500 text-sm">{errors.propertyType}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dealType">Deal Type</Label>
-              <Select
-                value={formData.dealType || ''}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    dealType: value ? (value as DealType) : undefined,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select deal type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={DealType.SALE}>Sale</SelectItem>
-                  <SelectItem value={DealType.RENT}>Rent</SelectItem>
-                  <SelectItem value={DealType.DAILY_RENT}>
-                    Daily Rent
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Property Status</Label>
-              <Select
-                value={formData.status || ''}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    status: value ? (value as PropertyStatus) : undefined,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={PropertyStatus.OLD_BUILDING}>
-                    Old Building
-                  </SelectItem>
-                  <SelectItem value={PropertyStatus.NEW_BUILDING}>
-                    New Building
-                  </SelectItem>
-                  <SelectItem value={PropertyStatus.UNDER_CONSTRUCTION}>
-                    Under Construction
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
-              <Input
-                id="price"
-                type="number"
-                value={formData.price || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    price: e.target.value ? Number(e.target.value) : undefined,
-                  })
-                }
-                placeholder="e.g., 150000"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address">
-              Address <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={e =>
-                setFormData({ ...formData, address: e.target.value })
+            <SelectField
+              label="Property Type"
+              required
+              value={formData.propertyType}
+              onValueChange={value =>
+                updateField('propertyType', value as PropertyType)
               }
-              placeholder="e.g., 123 Main Street, Batumi"
-              className={errors.address ? 'border-red-500' : ''}
+              options={PROPERTY_TYPES}
+              error={errors.propertyType}
             />
-            {errors.address && (
-              <p className="text-red-500 text-sm">{errors.address}</p>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">
-              Title (English) <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={e =>
-                setFormData({ ...formData, title: e.target.value })
+            <SelectField
+              label="City"
+              value={formData.city || ''}
+              onValueChange={value =>
+                updateField('city', value ? (value as City) : undefined)
               }
-              placeholder="e.g., Luxury Apartment in Old Batumi"
-              className={errors.title ? 'border-red-500' : ''}
+              options={CITIES}
+              placeholder="Select city"
             />
-            {errors.title && (
-              <p className="text-red-500 text-sm">{errors.title}</p>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (English)</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={e =>
-                setFormData({ ...formData, description: e.target.value })
+            <SelectField
+              label="Deal Type"
+              value={formData.dealType || ''}
+              onValueChange={value =>
+                updateField('dealType', value ? (value as DealType) : undefined)
               }
-              placeholder="Property description..."
-              rows={4}
+              options={DEAL_TYPES}
+              placeholder="Select deal type"
+            />
+
+            <SelectField
+              label="Property Status"
+              value={formData.status || ''}
+              onValueChange={value =>
+                updateField(
+                  'status',
+                  value ? (value as PropertyStatus) : undefined
+                )
+              }
+              options={PROPERTY_STATUSES}
+              placeholder="Select status"
+            />
+
+            <InputField
+              label="Price ($)"
+              type="number"
+              value={formData.price || ''}
+              onChange={e =>
+                updateField(
+                  'price',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="e.g., 150000"
             />
           </div>
 
-          {/* Hot Sale and Public toggles */}
+          <InputField
+            label="Address"
+            value={formData.address || ''}
+            onChange={e => updateField('address', e.target.value || undefined)}
+            placeholder="e.g., 123 Main Street, Batumi"
+            error={errors.address}
+          />
+
+          <InputField
+            label="Location"
+            value={formData.location || ''}
+            onChange={e => updateField('location', e.target.value || undefined)}
+            placeholder="e.g., 41.6168° N, 41.6367° E"
+          />
+
+          <InputField
+            label="Title (English)"
+            required
+            value={formData.title}
+            onChange={e => updateField('title', e.target.value)}
+            placeholder="e.g., Luxury Apartment in Old Batumi"
+            error={errors.title}
+          />
+
+          <TextareaField
+            label="Description (English)"
+            value={formData.description || ''}
+            onChange={e =>
+              updateField('description', e.target.value || undefined)
+            }
+            placeholder="Property description..."
+            rows={4}
+          />
+
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hotSale"
-                checked={formData.hotSale}
-                onCheckedChange={checked =>
-                  setFormData({ ...formData, hotSale: checked as boolean })
-                }
-              />
-              <Label
-                htmlFor="hotSale"
-                className="text-sm font-medium cursor-pointer"
-              >
-                🔥 Mark as Hot Sale
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="public"
-                checked={formData.public}
-                onCheckedChange={checked =>
-                  setFormData({ ...formData, public: checked as boolean })
-                }
-              />
-              <Label
-                htmlFor="public"
-                className="text-sm font-medium cursor-pointer"
-              >
-                👁️ Make Public
-              </Label>
-            </div>
+            <CheckboxField
+              id="hotSale"
+              label="🔥 Mark as Hot Sale"
+              checked={formData.hotSale || false}
+              onCheckedChange={checked =>
+                updateField('hotSale', checked as boolean)
+              }
+            />
+            <CheckboxField
+              id="public"
+              label="👁️ Make Public"
+              checked={formData.public ?? true}
+              onCheckedChange={checked =>
+                updateField('public', checked as boolean)
+              }
+            />
           </div>
-        </div>
+        </Section>
 
         {/* Property Details */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">
-            Property Details
-          </h3>
-
+        <Section title="Property Details">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="totalArea">Total Area (m²)</Label>
-              <Input
-                id="totalArea"
-                type="number"
-                value={formData.totalArea || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    totalArea: e.target.value
-                      ? Number(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="120"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="rooms">Rooms</Label>
-              <Input
-                id="rooms"
-                type="number"
-                value={formData.rooms || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    rooms: e.target.value ? Number(e.target.value) : undefined,
-                  })
-                }
-                placeholder="3"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bedrooms">Bedrooms</Label>
-              <Input
-                id="bedrooms"
-                type="number"
-                value={formData.bedrooms || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    bedrooms: e.target.value
-                      ? Number(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="2"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bathrooms">Bathrooms</Label>
-              <Input
-                id="bathrooms"
-                type="number"
-                value={formData.bathrooms || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    bathrooms: e.target.value
-                      ? Number(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="2"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="floors">Floor</Label>
-              <Input
-                id="floors"
-                type="number"
-                value={formData.floors || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    floors: e.target.value ? Number(e.target.value) : undefined,
-                  })
-                }
-                placeholder="5"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="floorsTotal">Total Floors</Label>
-              <Input
-                id="floorsTotal"
-                type="number"
-                value={formData.floorsTotal || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    floorsTotal: e.target.value
-                      ? Number(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="10"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ceilingHeight">Ceiling Height (m)</Label>
-              <Input
-                id="ceilingHeight"
-                type="number"
-                step="0.1"
-                value={formData.ceilingHeight || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    ceilingHeight: e.target.value
-                      ? Number(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="3.0"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="balconyArea">Balcony Area (m²)</Label>
-              <Input
-                id="balconyArea"
-                type="number"
-                step="0.1"
-                value={formData.balconyArea || ''}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    balconyArea: e.target.value
-                      ? Number(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="10.5"
-              />
-            </div>
+            <InputField
+              label="Total Area (m²)"
+              type="number"
+              value={formData.totalArea || ''}
+              onChange={e =>
+                updateField(
+                  'totalArea',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="120"
+            />
+            <InputField
+              label="Rooms"
+              type="number"
+              value={formData.rooms || ''}
+              onChange={e =>
+                updateField(
+                  'rooms',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="3"
+            />
+            <InputField
+              label="Bedrooms"
+              type="number"
+              value={formData.bedrooms || ''}
+              onChange={e =>
+                updateField(
+                  'bedrooms',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="2"
+            />
+            <InputField
+              label="Bathrooms"
+              type="number"
+              value={formData.bathrooms || ''}
+              onChange={e =>
+                updateField(
+                  'bathrooms',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="2"
+            />
+            <InputField
+              label="Floor"
+              type="number"
+              value={formData.floors || ''}
+              onChange={e =>
+                updateField(
+                  'floors',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="5"
+            />
+            <InputField
+              label="Total Floors"
+              type="number"
+              value={formData.floorsTotal || ''}
+              onChange={e =>
+                updateField(
+                  'floorsTotal',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="10"
+            />
+            <InputField
+              label="Ceiling Height (m)"
+              type="number"
+              step="0.1"
+              value={formData.ceilingHeight || ''}
+              onChange={e =>
+                updateField(
+                  'ceilingHeight',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="3.0"
+            />
+            <InputField
+              label="Balcony Area (m²)"
+              type="number"
+              step="0.1"
+              value={formData.balconyArea || ''}
+              onChange={e =>
+                updateField(
+                  'balconyArea',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              placeholder="10.5"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Condition</Label>
-              <Select
-                value={formData.condition || ''}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    condition: value ? (value as PropertyCondition) : undefined,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select condition" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={PropertyCondition.NEWLY_RENOVATED}>
-                    Newly Renovated
-                  </SelectItem>
-                  <SelectItem value={PropertyCondition.OLD_RENOVATED}>
-                    Old Renovated
-                  </SelectItem>
-                  <SelectItem value={PropertyCondition.REPAIRING}>
-                    Repairing
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Occupancy</Label>
-              <Select
-                value={formData.occupancy || ''}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    occupancy: value ? (value as Occupancy) : undefined,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select occupancy" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={Occupancy.ONE}>1 Person</SelectItem>
-                  <SelectItem value={Occupancy.TWO}>2 People</SelectItem>
-                  <SelectItem value={Occupancy.THREE}>3 People</SelectItem>
-                  <SelectItem value={Occupancy.FOUR}>4 People</SelectItem>
-                  <SelectItem value={Occupancy.FIVE}>5 People</SelectItem>
-                  <SelectItem value={Occupancy.SIX}>6 People</SelectItem>
-                  <SelectItem value={Occupancy.TEN_PLUS}>10+ People</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectField
+              label="Condition"
+              value={formData.condition || ''}
+              onValueChange={value =>
+                updateField(
+                  'condition',
+                  value ? (value as PropertyCondition) : undefined
+                )
+              }
+              options={PROPERTY_CONDITIONS}
+              placeholder="Select condition"
+            />
+            <SelectField
+              label="Occupancy"
+              value={formData.occupancy || ''}
+              onValueChange={value =>
+                updateField(
+                  'occupancy',
+                  value ? (value as Occupancy) : undefined
+                )
+              }
+              options={OCCUPANCY_OPTIONS}
+              placeholder="Select occupancy"
+            />
           </div>
-        </div>
+        </Section>
 
         {/* Utilities */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">Utilities</h3>
-
+        <Section title="Utilities">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Heating</Label>
-              <Select
-                value={formData.heating || ''}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    heating: value ? (value as HeatingType) : undefined,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select heating" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={HeatingType.CENTRAL_HEATING}>
-                    Central Heating
-                  </SelectItem>
-                  <SelectItem value={HeatingType.INDIVIDUAL}>
-                    Individual
-                  </SelectItem>
-                  <SelectItem value={HeatingType.GAS}>Gas</SelectItem>
-                  <SelectItem value={HeatingType.ELECTRIC}>Electric</SelectItem>
-                  <SelectItem value={HeatingType.NONE}>None</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Hot Water</Label>
-              <Select
-                value={formData.hotWater || ''}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    hotWater: value ? (value as HotWaterType) : undefined,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select hot water" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={HotWaterType.CENTRAL_HEATING}>
-                    Central Heating
-                  </SelectItem>
-                  <SelectItem value={HotWaterType.BOILER}>Boiler</SelectItem>
-                  <SelectItem value={HotWaterType.SOLAR}>Solar</SelectItem>
-                  <SelectItem value={HotWaterType.NONE}>None</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Parking</Label>
-              <Select
-                value={formData.parking || ''}
-                onValueChange={value =>
-                  setFormData({
-                    ...formData,
-                    parking: value ? (value as ParkingType) : undefined,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select parking" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ParkingType.PARKING_SPACE}>
-                    Parking Space
-                  </SelectItem>
-                  <SelectItem value={ParkingType.GARAGE}>Garage</SelectItem>
-                  <SelectItem value={ParkingType.OPEN_LOT}>Open Lot</SelectItem>
-                  <SelectItem value={ParkingType.NONE}>None</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectField
+              label="Heating"
+              value={formData.heating || ''}
+              onValueChange={value =>
+                updateField(
+                  'heating',
+                  value ? (value as HeatingType) : undefined
+                )
+              }
+              options={HEATING_TYPES}
+              placeholder="Select heating"
+            />
+            <SelectField
+              label="Hot Water"
+              value={formData.hotWater || ''}
+              onValueChange={value =>
+                updateField(
+                  'hotWater',
+                  value ? (value as HotWaterType) : undefined
+                )
+              }
+              options={HOT_WATER_TYPES}
+              placeholder="Select hot water"
+            />
+            <SelectField
+              label="Parking"
+              value={formData.parking || ''}
+              onValueChange={value =>
+                updateField(
+                  'parking',
+                  value ? (value as ParkingType) : undefined
+                )
+              }
+              options={PARKING_TYPES}
+              placeholder="Select parking"
+            />
           </div>
-        </div>
+        </Section>
 
         {/* Amenities */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">Amenities</h3>
-
+        <Section title="Amenities">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { key: 'hasConditioner', label: 'Air Conditioner' },
-              { key: 'hasFurniture', label: 'Furniture' },
-              { key: 'hasBed', label: 'Bed' },
-              { key: 'hasSofa', label: 'Sofa' },
-              { key: 'hasTable', label: 'Table' },
-              { key: 'hasChairs', label: 'Chairs' },
-              { key: 'hasStove', label: 'Stove' },
-              { key: 'hasRefrigerator', label: 'Refrigerator' },
-              { key: 'hasOven', label: 'Oven' },
-              { key: 'hasWashingMachine', label: 'Washing Machine' },
-              { key: 'hasKitchenAppliances', label: 'Kitchen Appliances' },
-              { key: 'hasBalcony', label: 'Balcony' },
-              { key: 'hasNaturalGas', label: 'Natural Gas' },
-              { key: 'hasInternet', label: 'Internet' },
-              { key: 'hasTV', label: 'TV' },
-              { key: 'hasSewerage', label: 'Sewerage' },
-              { key: 'isFenced', label: 'Fenced' },
-              { key: 'hasYardLighting', label: 'Yard Lighting' },
-              { key: 'hasGrill', label: 'Grill' },
-              { key: 'hasAlarm', label: 'Alarm' },
-              { key: 'hasVentilation', label: 'Ventilation' },
-              { key: 'hasWater', label: 'Water' },
-              { key: 'hasElectricity', label: 'Electricity' },
-              { key: 'hasGate', label: 'Gate' },
-              { key: 'isNonStandard', label: 'Non-Standard Layout' },
-            ].map(({ key, label }) => (
-              <div key={key} className="flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof typeof formData] as boolean}
-                  onCheckedChange={checked =>
-                    setFormData({ ...formData, [key]: checked })
-                  }
-                />
-                <Label
-                  htmlFor={key}
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  {label}
-                </Label>
-              </div>
+            {AMENITIES.map(({ key, label }) => (
+              <CheckboxField
+                key={key}
+                id={key}
+                label={label}
+                checked={
+                  (formData[key as keyof typeof formData] as boolean) || false
+                }
+                onCheckedChange={checked =>
+                  updateField(key as keyof CreatePropertyDto, checked as any)
+                }
+              />
             ))}
           </div>
-        </div>
+        </Section>
 
         {/* Property Images */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">
-            Property Images
-          </h3>
-
+        <Section title="Property Images">
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-foreground/40 transition-colors relative bg-muted/30">
             <input
               type="file"
@@ -746,7 +560,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               ))}
             </div>
           )}
-        </div>
+        </Section>
 
         {errors.submit && (
           <Alert variant="destructive">
@@ -768,6 +582,124 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
           </Button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Reusable Components
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      {children}
+    </div>
+  )
+}
+
+function InputField({
+  label,
+  required,
+  error,
+  ...props
+}: {
+  label: string
+  required?: boolean
+  error?: string
+} & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={props.id}>
+        {label} {required && <span className="text-red-500">*</span>}
+      </Label>
+      <Input {...props} className={error ? 'border-red-500' : ''} />
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  )
+}
+
+function TextareaField({
+  label,
+  required,
+  error,
+  ...props
+}: {
+  label: string
+  required?: boolean
+  error?: string
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={props.id}>
+        {label} {required && <span className="text-red-500">*</span>}
+      </Label>
+      <Textarea {...props} className={error ? 'border-red-500' : ''} />
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  )
+}
+
+function SelectField({
+  label,
+  required,
+  error,
+  options,
+  placeholder,
+  value,
+  onValueChange,
+}: {
+  label: string
+  required?: boolean
+  error?: string
+  options: Array<{ value: string; label: string }>
+  placeholder?: string
+  value: string
+  onValueChange: (value: string) => void
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>
+        {label} {required && <span className="text-red-500">*</span>}
+      </Label>
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className={error ? 'border-red-500' : ''}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(opt => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  )
+}
+
+function CheckboxField({
+  id,
+  label,
+  checked,
+  onCheckedChange,
+}: {
+  id: string
+  label: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}) {
+  return (
+    <div className="flex items-center space-x-2">
+      <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
+      <Label htmlFor={id} className="text-sm font-normal cursor-pointer">
+        {label}
+      </Label>
     </div>
   )
 }

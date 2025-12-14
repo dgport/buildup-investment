@@ -30,6 +30,7 @@ import { getImageUrl } from '@/lib/utils/image-utils'
 import MortgageCalculator from '@/components/shared/calculator/MortgageCalculator'
 import Lightbox from 'yet-another-react-lightbox'
 import 'yet-another-react-lightbox/styles.css'
+import { useTranslation } from 'react-i18next'
 
 type Currency = 'USD' | 'GEL'
 
@@ -37,6 +38,7 @@ const PHONE_NUMBER = '+995 595 80 47 95'
 const PHONE_NUMBER_CLEAN = '995595804795'
 
 export default function PropertyDetail() {
+  const { t, i18n } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const [currency, setCurrency] = useState<Currency>('USD')
@@ -46,7 +48,7 @@ export default function PropertyDetail() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
-  const { data: property, isLoading, error } = useProperty(id!)
+  const { data: property, isLoading, error } = useProperty(id!, i18n.language)
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [thumbsRef, thumbsApi] = useEmblaCarousel({

@@ -16,6 +16,7 @@ import {
   ParkingType,
   HotWaterType,
   Occupancy,
+  City,
 } from '@prisma/client';
 
 export class CreatePropertyDto {
@@ -28,13 +29,30 @@ export class CreatePropertyDto {
   @IsNotEmpty()
   propertyType: PropertyType;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
+    description: 'City where property is located',
+    enum: City,
+    example: 'BATUMI',
+  })
+  @IsEnum(City)
+  @IsOptional()
+  city?: City;
+
+  @ApiPropertyOptional({
     description: 'Property address',
     example: '123 Main Street, Batumi',
   })
   @IsString()
-  @IsNotEmpty()
-  address: string;
+  @IsOptional()
+  address?: string;
+
+  @ApiPropertyOptional({
+    description: 'Specific location details (e.g., coordinates, landmarks)',
+    example: '41.6168° N, 41.6367° E',
+  })
+  @IsString()
+  @IsOptional()
+  location?: string;
 
   @ApiProperty({
     description: 'Property title (English)',

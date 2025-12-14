@@ -1,399 +1,440 @@
-// components/PropertyFilters.tsx
-import { useProperties } from '@/lib/hooks/useProperties'
-import { DealType, PropertyStatus, PropertyType, type PropertyFilters } from '@/lib/types/properties'
-import React, { useState } from 'react'
-import PropertyCard from './PropertyCard'
- 
+import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Search, X, SlidersHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import { PropertyType, DealType, City } from '@/lib/types/properties'
 
 interface PropertyFiltersProps {
-  onFilterChange: (filters: PropertyFilters) => void
-  initialFilters?: PropertyFilters
+  onFilterChange?: () => void
 }
 
-export const PropertyFiltersComponent: React.FC<PropertyFiltersProps> = ({
-  onFilterChange,
-  initialFilters = {},
-}) => {
-  const [filters, setFilters] = useState<PropertyFilters>(initialFilters)
+export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
+  const { t, i18n } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [isOpen, setIsOpen] = useState(false)
 
-  const handleFilterChange = (key: keyof PropertyFilters, value: any) => {
-    const newFilters = { ...filters, [key]: value }
-    setFilters(newFilters)
-    onFilterChange(newFilters)
-  }
-
-  const handleReset = () => {
-    setFilters({})
-    onFilterChange({})
-  }
-
-  return (
-    <div className="space-y-4 p-4 bg-white rounded-lg shadow">
-      <h3 className="text-lg font-semibold">Filters</h3>
-
-      {/* Property Type */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Property Type</label>
-        <select
-          value={filters.propertyType || ''}
-          onChange={e =>
-            handleFilterChange('propertyType', e.target.value || undefined)
-          }
-          className="w-full px-3 py-2 border rounded-md"
-        >
-          <option value="">All Types</option>
-          {Object.values(PropertyType).map(type => (
-            <option key={type} value={type}>
-              {type.replace('_', ' ')}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Deal Type */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Deal Type</label>
-        <select
-          value={filters.dealType || ''}
-          onChange={e =>
-            handleFilterChange('dealType', e.target.value || undefined)
-          }
-          className="w-full px-3 py-2 border rounded-md"
-        >
-          <option value="">All Deals</option>
-          {Object.values(DealType).map(type => (
-            <option key={type} value={type}>
-              {type.replace('_', ' ')}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Address Search */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Address</label>
-        <input
-          type="text"
-          value={filters.address || ''}
-          onChange={e =>
-            handleFilterChange('address', e.target.value || undefined)
-          }
-          placeholder="Search by address..."
-          className="w-full px-3 py-2 border rounded-md"
-        />
-      </div>
-
-      {/* Price Range */}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-sm font-medium mb-2">Price From</label>
-          <input
-            type="number"
-            value={filters.priceFrom || ''}
-            onChange={e =>
-              handleFilterChange(
-                'priceFrom',
-                e.target.value ? Number(e.target.value) : undefined
-              )
-            }
-            placeholder="Min price"
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Price To</label>
-          <input
-            type="number"
-            value={filters.priceTo || ''}
-            onChange={e =>
-              handleFilterChange(
-                'priceTo',
-                e.target.value ? Number(e.target.value) : undefined
-              )
-            }
-            placeholder="Max price"
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-      </div>
-
-      {/* Area Range */}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Area From (m²)
-          </label>
-          <input
-            type="number"
-            value={filters.areaFrom || ''}
-            onChange={e =>
-              handleFilterChange(
-                'areaFrom',
-                e.target.value ? Number(e.target.value) : undefined
-              )
-            }
-            placeholder="Min area"
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Area To (m²)</label>
-          <input
-            type="number"
-            value={filters.areaTo || ''}
-            onChange={e =>
-              handleFilterChange(
-                'areaTo',
-                e.target.value ? Number(e.target.value) : undefined
-              )
-            }
-            placeholder="Max area"
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-      </div>
-
-      {/* Rooms */}
-      <div className="grid grid-cols-3 gap-2">
-        <div>
-          <label className="block text-sm font-medium mb-2">Rooms</label>
-          <select
-            value={filters.rooms || ''}
-            onChange={e =>
-              handleFilterChange(
-                'rooms',
-                e.target.value ? Number(e.target.value) : undefined
-              )
-            }
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="">Any</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5+</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Bedrooms</label>
-          <select
-            value={filters.bedrooms || ''}
-            onChange={e =>
-              handleFilterChange(
-                'bedrooms',
-                e.target.value ? Number(e.target.value) : undefined
-              )
-            }
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="">Any</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4+</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Bathrooms</label>
-          <select
-            value={filters.bathrooms || ''}
-            onChange={e =>
-              handleFilterChange(
-                'bathrooms',
-                e.target.value ? Number(e.target.value) : undefined
-              )
-            }
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="">Any</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3+</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Status */}
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Property Status
-        </label>
-        <select
-          value={filters.status || ''}
-          onChange={e =>
-            handleFilterChange('status', e.target.value || undefined)
-          }
-          className="w-full px-3 py-2 border rounded-md"
-        >
-          <option value="">All Statuses</option>
-          {Object.values(PropertyStatus).map(status => (
-            <option key={status} value={status}>
-              {status.replace('_', ' ')}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Boolean Filters */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium mb-2">Amenities</label>
-        <div className="space-y-2">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.hotSale || false}
-              onChange={e =>
-                handleFilterChange('hotSale', e.target.checked || undefined)
-              }
-              className="mr-2"
-            />
-            <span className="text-sm">Hot Sale</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.hasFurniture || false}
-              onChange={e =>
-                handleFilterChange(
-                  'hasFurniture',
-                  e.target.checked || undefined
-                )
-              }
-              className="mr-2"
-            />
-            <span className="text-sm">Furnished</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.hasBalcony || false}
-              onChange={e =>
-                handleFilterChange('hasBalcony', e.target.checked || undefined)
-              }
-              className="mr-2"
-            />
-            <span className="text-sm">Balcony</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.hasConditioner || false}
-              onChange={e =>
-                handleFilterChange(
-                  'hasConditioner',
-                  e.target.checked || undefined
-                )
-              }
-              className="mr-2"
-            />
-            <span className="text-sm">Air Conditioner</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.hasInternet || false}
-              onChange={e =>
-                handleFilterChange('hasInternet', e.target.checked || undefined)
-              }
-              className="mr-2"
-            />
-            <span className="text-sm">Internet</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.hasNaturalGas || false}
-              onChange={e =>
-                handleFilterChange(
-                  'hasNaturalGas',
-                  e.target.checked || undefined
-                )
-              }
-              className="mr-2"
-            />
-            <span className="text-sm">Natural Gas</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Reset Button */}
-      <button
-        onClick={handleReset}
-        className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-      >
-        Reset Filters
-      </button>
-    </div>
-  )
-}
-
-// Example usage in a page component
-export const PropertiesPage = () => {
-  const [filters, setFilters] = useState<PropertyFilters>({
-    page: 1,
-    limit: 12,
+  const [filters, setFilters] = useState({
+    propertyType: searchParams.get('propertyType') || 'all',
+    dealType: searchParams.get('dealType') || 'all',
+    city: searchParams.get('city') || 'all',
+    externalId: searchParams.get('externalId') || '',
+    priceFrom: searchParams.get('priceFrom')
+      ? parseInt(searchParams.get('priceFrom')!)
+      : 0,
+    priceTo: searchParams.get('priceTo')
+      ? parseInt(searchParams.get('priceTo')!)
+      : 1000000,
+    areaFrom: searchParams.get('areaFrom')
+      ? parseInt(searchParams.get('areaFrom')!)
+      : 0,
+    areaTo: searchParams.get('areaTo')
+      ? parseInt(searchParams.get('areaTo')!)
+      : 500,
+    rooms: searchParams.get('rooms') || 'all',
+    bedrooms: searchParams.get('bedrooms') || 'all',
   })
 
-  const { data, isLoading } = useProperties(filters)
+  const MAX_PRICE = 1000000
+  const PRICE_STEP = 10000
+  const MAX_AREA = 500
+  const AREA_STEP = 10
 
-  const handleFilterChange = (newFilters: PropertyFilters) => {
-    setFilters({ ...newFilters, page: 1 }) // Reset to page 1 when filters change
+  const applyFilters = () => {
+    const params = new URLSearchParams()
+    params.set('page', '1')
+
+    // Main filters
+    if (filters.propertyType && filters.propertyType !== 'all')
+      params.set('propertyType', filters.propertyType)
+    if (filters.dealType && filters.dealType !== 'all')
+      params.set('dealType', filters.dealType)
+    if (filters.city && filters.city !== 'all') params.set('city', filters.city)
+    if (filters.externalId && filters.externalId.trim())
+      params.set('externalId', filters.externalId.trim())
+
+    // Price range
+    if (filters.priceFrom > 0)
+      params.set('priceFrom', filters.priceFrom.toString())
+    if (filters.priceTo < MAX_PRICE)
+      params.set('priceTo', filters.priceTo.toString())
+
+    // Area range
+    if (filters.areaFrom > 0)
+      params.set('areaFrom', filters.areaFrom.toString())
+    if (filters.areaTo < MAX_AREA)
+      params.set('areaTo', filters.areaTo.toString())
+
+    // Room counts
+    if (filters.rooms && filters.rooms !== 'all')
+      params.set('rooms', filters.rooms)
+    if (filters.bedrooms && filters.bedrooms !== 'all')
+      params.set('bedrooms', filters.bedrooms)
+
+    setSearchParams(params)
+    onFilterChange?.()
+    setIsOpen(false)
   }
 
-  const handlePageChange = (page: number) => {
-    setFilters({ ...filters, page })
+  const clearFilters = () => {
+    setFilters({
+      propertyType: 'all',
+      dealType: 'all',
+      city: 'all',
+      externalId: '',
+      priceFrom: 0,
+      priceTo: MAX_PRICE,
+      areaFrom: 0,
+      areaTo: MAX_AREA,
+      rooms: 'all',
+      bedrooms: 'all',
+    })
+    setSearchParams({ page: '1' })
+    onFilterChange?.()
   }
 
-  if (isLoading) return <div>Loading...</div>
+  const hasActiveFilters =
+    (filters.propertyType && filters.propertyType !== 'all') ||
+    (filters.dealType && filters.dealType !== 'all') ||
+    (filters.city && filters.city !== 'all') ||
+    (filters.externalId && filters.externalId.trim()) ||
+    filters.priceFrom > 0 ||
+    filters.priceTo < MAX_PRICE ||
+    filters.areaFrom > 0 ||
+    filters.areaTo < MAX_AREA ||
+    (filters.rooms && filters.rooms !== 'all') ||
+    (filters.bedrooms && filters.bedrooms !== 'all')
+
+  const formatEnumValue = (value: string): string => {
+    return value
+      .split('_')
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(' ')
+  }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filters Sidebar */}
-        <div className="lg:col-span-1">
-          <PropertyFiltersComponent
-            onFilterChange={handleFilterChange}
-            initialFilters={filters}
-          />
-        </div>
-
-        {/* Properties Grid */}
-        <div className="lg:col-span-3">
-          <div className="mb-4">
-            <p className="text-gray-600">Found {data?.meta.total} properties</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {data?.data.map(property => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {data && data.meta.totalPages > 1 && (
-            <div className="mt-8 flex justify-center gap-2">
-              <button
-                onClick={() => handlePageChange(filters.page! - 1)}
-                disabled={!data.meta.hasPreviousPage}
-                className="px-4 py-2 border rounded disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <span className="px-4 py-2">
-                Page {data.meta.page} of {data.meta.totalPages}
+    <div className="mb-6">
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto gap-2 border-2 hover:border-blue-400 transition-colors"
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+            <span className="font-semibold">
+              {t('filters.title', { defaultValue: 'Filters' })}
+            </span>
+            {hasActiveFilters && (
+              <span className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                {t('filters.active', { defaultValue: 'Active' })}
               </span>
-              <button
-                onClick={() => handlePageChange(filters.page! + 1)}
-                disabled={!data.meta.hasNextPage}
-                className="px-4 py-2 border rounded disabled:opacity-50"
-              >
-                Next
-              </button>
+            )}
+          </Button>
+        </SheetTrigger>
+
+        <SheetContent
+          side="left"
+          className="w-full sm:w-[440px] overflow-y-auto z-50"
+        >
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2 text-2xl">
+              <div className="p-2 bg-blue-500 rounded-lg">
+                <SlidersHorizontal className="w-6 h-6 text-white" />
+              </div>
+              {t('filters.propertyFilters', {
+                defaultValue: 'Property Filters',
+              })}
+            </SheetTitle>
+            <SheetDescription>
+              {t('filters.description', {
+                defaultValue:
+                  'Customize your property search with these filters',
+              })}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="mt-8 space-y-6">
+            {/* Property ID Search */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
+                <div className="w-1 h-5 bg-orange-500 rounded-full" />
+                {t('filters.propertyId', { defaultValue: 'Property ID' })}
+              </Label>
+              <Input
+                type="text"
+                placeholder={t('filters.enterPropertyId', {
+                  defaultValue: 'Enter property ID...',
+                })}
+                value={filters.externalId}
+                onChange={e =>
+                  setFilters({ ...filters, externalId: e.target.value })
+                }
+                className="h-12 border-2 focus:border-orange-500"
+              />
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Property Type */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
+                <div className="w-1 h-5 bg-blue-500 rounded-full" />
+                {t('filters.propertyType', { defaultValue: 'Property Type' })}
+              </Label>
+              <Select
+                value={filters.propertyType}
+                onValueChange={value =>
+                  setFilters({ ...filters, propertyType: value })
+                }
+              >
+                <SelectTrigger className="h-12 border-2 focus:border-blue-500">
+                  <SelectValue
+                    placeholder={t('filters.allTypes', {
+                      defaultValue: 'All Types',
+                    })}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="font-medium">
+                    {t('filters.allTypes', { defaultValue: 'All Types' })}
+                  </SelectItem>
+                  {Object.values(PropertyType).map(type => (
+                    <SelectItem key={type} value={type}>
+                      {formatEnumValue(type)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Deal Type */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
+                <div className="w-1 h-5 bg-blue-400 rounded-full" />
+                {t('filters.dealType', { defaultValue: 'Deal Type' })}
+              </Label>
+              <Select
+                value={filters.dealType}
+                onValueChange={value =>
+                  setFilters({ ...filters, dealType: value })
+                }
+              >
+                <SelectTrigger className="h-12 border-2 focus:border-blue-400">
+                  <SelectValue
+                    placeholder={t('filters.allDeals', {
+                      defaultValue: 'All Deals',
+                    })}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="font-medium">
+                    {t('filters.allDeals', { defaultValue: 'All Deals' })}
+                  </SelectItem>
+                  {Object.values(DealType).map(type => (
+                    <SelectItem key={type} value={type}>
+                      {formatEnumValue(type)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* City */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
+                <div className="w-1 h-5 bg-green-500 rounded-full" />
+                {t('filters.city', { defaultValue: 'City' })}
+              </Label>
+              <Select
+                value={filters.city}
+                onValueChange={value => setFilters({ ...filters, city: value })}
+              >
+                <SelectTrigger className="h-12 border-2 focus:border-green-500">
+                  <SelectValue
+                    placeholder={t('filters.allCities', {
+                      defaultValue: 'All Cities',
+                    })}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="font-medium">
+                    {t('filters.allCities', { defaultValue: 'All Cities' })}
+                  </SelectItem>
+                  {Object.values(City).map(city => (
+                    <SelectItem key={city} value={city}>
+                      {formatEnumValue(city)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Price Range */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <div className="w-1 h-5 bg-blue-500 rounded-full" />
+                  {t('filters.priceRange', { defaultValue: 'Price Range' })}
+                </Label>
+                <span className="text-lg font-bold text-blue-600">
+                  {filters.priceFrom > 0 || filters.priceTo < MAX_PRICE
+                    ? `$${filters.priceFrom.toLocaleString()} - $${filters.priceTo.toLocaleString()}`
+                    : t('filters.any', { defaultValue: 'Any' })}
+                </span>
+              </div>
+
+              <div className="relative pt-2 pb-4">
+                <Slider
+                  min={0}
+                  max={MAX_PRICE}
+                  step={PRICE_STEP}
+                  value={[filters.priceFrom, filters.priceTo]}
+                  onValueChange={([from, to]) =>
+                    setFilters({ ...filters, priceFrom: from, priceTo: to })
+                  }
+                  className="w-full [&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-blue-500/30 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&>.bg-primary]:bg-blue-500 [&>.bg-primary]:h-2"
+                />
+              </div>
+
+              <div className="flex justify-between text-sm font-medium text-muted-foreground">
+                <span className="bg-muted px-3 py-1 rounded-full">$0</span>
+                <span className="bg-muted px-3 py-1 rounded-full">
+                  ${MAX_PRICE.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Area Range */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <div className="w-1 h-5 bg-purple-500 rounded-full" />
+                  {t('filters.area', { defaultValue: 'Area (m²)' })}
+                </Label>
+                <span className="text-lg font-bold text-purple-600">
+                  {filters.areaFrom > 0 || filters.areaTo < MAX_AREA
+                    ? `${filters.areaFrom} - ${filters.areaTo} m²`
+                    : t('filters.any', { defaultValue: 'Any' })}
+                </span>
+              </div>
+
+              <div className="relative pt-2 pb-4">
+                <Slider
+                  min={0}
+                  max={MAX_AREA}
+                  step={AREA_STEP}
+                  value={[filters.areaFrom, filters.areaTo]}
+                  onValueChange={([from, to]) =>
+                    setFilters({ ...filters, areaFrom: from, areaTo: to })
+                  }
+                  className="w-full [&_[role=slider]]:bg-purple-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-purple-500/30 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&>.bg-primary]:bg-purple-500 [&>.bg-primary]:h-2"
+                />
+              </div>
+
+              <div className="flex justify-between text-sm font-medium text-muted-foreground">
+                <span className="bg-muted px-3 py-1 rounded-full">0 m²</span>
+                <span className="bg-muted px-3 py-1 rounded-full">
+                  {MAX_AREA} m²
+                </span>
+              </div>
+            </div>
+
+            {/* Rooms and Bedrooms */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  {t('filters.rooms', { defaultValue: 'Rooms' })}
+                </Label>
+                <Select
+                  value={filters.rooms}
+                  onValueChange={value =>
+                    setFilters({ ...filters, rooms: value })
+                  }
+                >
+                  <SelectTrigger className="h-12 border-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {t('filters.any', { defaultValue: 'Any' })}
+                    </SelectItem>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                    <SelectItem value="5">5+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">
+                  {t('filters.bedrooms', { defaultValue: 'Bedrooms' })}
+                </Label>
+                <Select
+                  value={filters.bedrooms}
+                  onValueChange={value =>
+                    setFilters({ ...filters, bedrooms: value })
+                  }
+                >
+                  <SelectTrigger className="h-12 border-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {t('filters.any', { defaultValue: 'Any' })}
+                    </SelectItem>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-6 space-y-3 border-t">
+              <Button
+                onClick={applyFilters}
+                className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-base font-semibold shadow-lg"
+                size="lg"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                {t('filters.apply', { defaultValue: 'Apply Filters' })}
+              </Button>
+
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="w-full h-12 border-2 text-base font-semibold hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
+                  size="lg"
+                >
+                  <X className="w-5 h-5 mr-2" />
+                  {t('filters.clear', { defaultValue: 'Clear All Filters' })}
+                </Button>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

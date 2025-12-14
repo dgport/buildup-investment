@@ -59,6 +59,18 @@ export class PropertiesController {
     type: 'number',
   })
   @ApiQuery({
+    name: 'externalId',
+    required: false,
+    description: 'Filter by property external ID',
+    example: '591595',
+  })
+  @ApiQuery({
+    name: 'city',
+    required: false,
+    description: 'Filter by city',
+    enum: ['BATUMI', 'TBILISI'],
+  })
+  @ApiQuery({
     name: 'propertyType',
     required: false,
     description: 'Filter by property type',
@@ -192,6 +204,8 @@ export class PropertiesController {
     @Query('lang') lang?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('externalId') externalId?: string,
+    @Query('city') city?: string,
     @Query('propertyType') propertyType?: string,
     @Query('address') address?: string,
     @Query('priceFrom') priceFrom?: string,
@@ -218,6 +232,8 @@ export class PropertiesController {
       lang,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
+      externalId,
+      city,
       propertyType,
       address,
       priceFrom: priceFrom ? parseInt(priceFrom, 10) : undefined,
@@ -334,6 +350,7 @@ export class PropertiesController {
     @Param('id') id: string,
     @Body() dto: UpsertPropertyTranslationDto,
   ) {
+    // Remove location parameter - it's no longer translatable
     return this.propertiesService.upsertTranslation(
       id,
       dto.language,

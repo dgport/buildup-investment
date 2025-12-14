@@ -23,7 +23,7 @@ interface PropertyCardProps {
     galleryImages?: Array<{ imageUrl: string; order?: number }>
     priceUSD: number | null
     priceGEL: number
-    location: string
+    location: string | null
     rooms: number
     bedrooms: number
     dateAdded: string

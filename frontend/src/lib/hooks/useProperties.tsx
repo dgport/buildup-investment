@@ -10,10 +10,15 @@ import type {
   CreatePropertyDto,
 } from '../types/properties'
 import { propertiesService } from '../services/properties.service'
- 
 
 /**
  * Get all properties with filters
+ * Supports:
+ * - Pagination (page, limit)
+ * - Language selection (lang)
+ * - Main filters (city, propertyType, address, priceFrom, priceTo, hotSale, public)
+ * - Additional filters (status, dealType, areaFrom, areaTo, rooms, bedrooms, bathrooms, etc.)
+ * - Boolean amenity filters (hasConditioner, hasFurniture, hasBalcony, etc.)
  */
 export const useProperties = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
@@ -26,7 +31,9 @@ export const useProperties = (filters?: PropertyFilters) => {
 }
 
 /**
- * Get single property by ID
+ * Get single property by ID with optional language
+ * @param id - Property ID
+ * @param lang - Language code (default: 'en')
  */
 export const useProperty = (id: string, lang?: string) => {
   return useQuery<Property>({
@@ -40,7 +47,9 @@ export const useProperty = (id: string, lang?: string) => {
 }
 
 /**
- * Create a new property
+ * Create a new property with optional images
+ * Automatically generates a unique externalId
+ * Creates default translations for all languages
  */
 export const useCreateProperty = () => {
   return useMutation({
@@ -55,6 +64,7 @@ export const useCreateProperty = () => {
       return response.data
     },
     onSuccess: () => {
+      // Invalidate all property queries to refresh lists
       queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
@@ -62,6 +72,7 @@ export const useCreateProperty = () => {
 
 /**
  * Update an existing property
+ * Can update property fields and/or add new gallery images
  */
 export const useUpdateProperty = () => {
   return useMutation({
@@ -78,6 +89,7 @@ export const useUpdateProperty = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
+      // Invalidate specific property and all property lists
       queryClient.invalidateQueries({ queryKey: ['properties'] })
       queryClient.invalidateQueries({ queryKey: ['properties', variables.id] })
     },
@@ -86,6 +98,7 @@ export const useUpdateProperty = () => {
 
 /**
  * Delete a property
+ * Also deletes all related translations and gallery images
  */
 export const useDeleteProperty = () => {
   return useMutation({
@@ -94,6 +107,7 @@ export const useDeleteProperty = () => {
       return response.data
     },
     onSuccess: () => {
+      // Invalidate all property queries
       queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
@@ -101,6 +115,7 @@ export const useDeleteProperty = () => {
 
 /**
  * Get all translations for a property
+ * Returns translations for all languages
  */
 export const usePropertyTranslations = (id: string) => {
   return useQuery<PropertyTranslation[]>({
@@ -115,6 +130,8 @@ export const usePropertyTranslations = (id: string) => {
 
 /**
  * Create or update a translation
+ * Fields: language, title, address (optional), description (optional)
+ * Note: location is NOT translatable (stored on main Property model)
  */
 export const useUpsertPropertyTranslation = () => {
   return useMutation({
@@ -129,6 +146,7 @@ export const useUpsertPropertyTranslation = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
+      // Invalidate translations, specific property, and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id, 'translations'],
       })
@@ -140,6 +158,7 @@ export const useUpsertPropertyTranslation = () => {
 
 /**
  * Delete a translation
+ * Cannot delete English (en) translation - it's required
  */
 export const useDeletePropertyTranslation = () => {
   return useMutation({
@@ -148,6 +167,7 @@ export const useDeletePropertyTranslation = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
+      // Invalidate translations, specific property, and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id, 'translations'],
       })
@@ -158,7 +178,7 @@ export const useDeletePropertyTranslation = () => {
 }
 
 /**
- * Delete a gallery image
+ * Delete a gallery image from a property
  */
 export const useDeletePropertyImage = () => {
   return useMutation({
@@ -176,6 +196,7 @@ export const useDeletePropertyImage = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
+      // Invalidate specific property and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.propertyId],
       })
@@ -186,6 +207,7 @@ export const useDeletePropertyImage = () => {
 
 /**
  * Add images to an existing property
+ * Uses the update endpoint with only images (no data updates)
  */
 export const useAddPropertyImages = () => {
   return useMutation({
@@ -194,6 +216,7 @@ export const useAddPropertyImages = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
+      // Invalidate specific property and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id],
       })
