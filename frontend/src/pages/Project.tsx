@@ -177,27 +177,15 @@ export default function ProjectPage() {
                         key={index}
                       >
                         <div
-                          className="relative flex justify-center h-full cursor-zoom-in"
+                          className="relative flex justify-center items-center h-full cursor-zoom-in bg-black/5"
                           onClick={handleImageClick}
                         >
-                          {/* Blurred background */}
-                          <div
-                            className="absolute inset-0 z-0"
-                            style={{
-                              backgroundImage: `url(${img})`,
-                              backgroundSize: '150%',
-                              backgroundPosition: 'center',
-                              filter: 'blur(15px)',
-                            }}
+                          {/* Main image ONLY (no blur background) */}
+                          <img
+                            src={img || '/placeholder.svg'}
+                            alt={project.projectName || 'Project'}
+                            className="w-full h-full object-cover"
                           />
-                          {/* Main image */}
-                          <div className="relative z-10 w-full h-full flex items-center justify-center">
-                            <img
-                              src={img || '/placeholder.svg'}
-                              alt={project.projectName || 'Project'}
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          </div>
                         </div>
                       </div>
                     ))
@@ -236,7 +224,11 @@ export default function ProjectPage() {
                             key={index}
                             onClick={() => handleThumbClick(index)}
                             className={`flex-[0_0_auto] cursor-pointer rounded-lg overflow-hidden transition-all border-4
-                ${index === selectedIndex ? 'border-blue-600 scale-105 shadow-xl' : 'border-white/50 opacity-70 hover:opacity-100 hover:border-blue-500/50'}`}
+                    ${
+                      index === selectedIndex
+                        ? 'border-blue-600 scale-105 shadow-xl'
+                        : 'border-white/50 opacity-70 hover:opacity-100 hover:border-blue-500/50'
+                    }`}
                             style={{ width: '64px', height: '48px' }}
                           >
                             <img
