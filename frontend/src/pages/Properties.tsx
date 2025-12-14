@@ -3,10 +3,7 @@ import { useState } from 'react'
 import { useProperties } from '@/lib/hooks/useProperties'
 import { Loader2 } from 'lucide-react'
 
-type Currency = 'USD' | 'GEL'
-
 export default function Properties() {
-  const [currency, setCurrency] = useState<Currency>('USD')
   const [page, setPage] = useState(1)
   const limit = 12
 
@@ -18,56 +15,23 @@ export default function Properties() {
 
   const { data, isLoading, error } = useProperties(baseParams)
 
-  const formatPrice = (priceUSD: number | null): string => {
-    if (!priceUSD) return 'Price on request'
-
-    if (currency === 'USD') {
-      return `$${priceUSD.toLocaleString()}`
-    }
-    const priceGEL = Math.round(priceUSD * 2.8)
-    return `₾${priceGEL.toLocaleString()}`
-  }
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) return 'Today'
-    if (diffDays === 1) return 'Yesterday'
-    if (diffDays < 7) return `${diffDays} days ago`
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
-
-    return (
-      date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      }) +
-      ' at ' +
-      date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
-    )
-  }
-
   const transformedProperties =
     data?.data.map(property => ({
       id: property.id,
+      externalId: property.externalId,
       image: property.galleryImages?.[0]?.imageUrl
-        ? `${import.meta.env.VITE_API_IMAGE_URL}/${property.galleryImages[0].imageUrl}`
+        ? property.galleryImages[0].imageUrl
         : 'https://via.placeholder.com/800x600?text=No+Image',
-      priceUSD: property.price || 0,
+      galleryImages: property.galleryImages, // ADD THIS LINE
+      priceUSD: property.price ?? null,
       priceGEL: property.price ? property.price * 2.8 : 0,
       location: property.address,
-      floor: property.floors || 0,
-      rooms: property.rooms || 0,
-      bedrooms: property.bedrooms || 0,
+      floors: property.floors ?? 0,
+      rooms: property.rooms ?? 0,
+      bedrooms: property.bedrooms ?? 0,
       dateAdded: property.createdAt,
-      title: property.translation?.title || 'Untitled Property',
-      totalArea: property.totalArea,
+      title: property.translation?.title ?? 'Untitled Property',
+      totalArea: property.totalArea ?? null,
       propertyType: property.propertyType,
       status: property.status,
     })) || []
@@ -114,14 +78,7 @@ export default function Properties() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {transformedProperties.map(property => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  currency={currency}
-                  setCurrency={setCurrency}
-                  formatPrice={formatPrice}
-                  formatDate={formatDate}
-                />
+                <PropertyCard key={property.id} property={property} />
               ))}
             </div>
 

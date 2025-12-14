@@ -17,10 +17,10 @@ const Projects = lazy(() => import('@/pages/Projects'))
 const Property = lazy(() => import('@/pages/Property'))
 
 export const AppRoutes = () => {
-  return (
+  return ( 
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
-        <Route path={ROUTES.HOME} element={<Home />} />
+        <Route path={ROUTES.HOME}   element={<Home />} />
         <Route path={ROUTES.SIGNIN} element={<Signin />} />
         <Route path={ROUTES.CONTACT} element={<Contact />} />
         <Route path={ROUTES.PARTNERS} element={<Partners />} />

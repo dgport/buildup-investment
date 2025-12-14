@@ -20,6 +20,7 @@ interface Translation {
   id: number
   language: string
   title: string
+  address: string // Added address field
   description: string | null
   propertyId: string
 }
@@ -35,7 +36,12 @@ export function PropertyTranslationsManager({
   const upsertTranslation = useUpsertPropertyTranslation()
 
   const handleSaveTranslation = async () => {
-    if (!editingTranslation?.title.trim()) return
+    if (
+      !editingTranslation?.title?.trim() ||
+      !editingTranslation?.address?.trim()
+    ) {
+      return
+    }
 
     try {
       await upsertTranslation.mutateAsync({
@@ -61,7 +67,7 @@ export function PropertyTranslationsManager({
       <div>
         <h3 className="font-semibold text-foreground">Property Translations</h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Manage title and description in different languages
+          Manage title, address, and description in different languages
         </p>
       </div>
 
@@ -84,7 +90,11 @@ export function PropertyTranslationsManager({
                       <Label className="text-sm font-medium">Language</Label>
                       <Input
                         type="text"
-                        value={editingTranslation.language}
+                        value={
+                          LANGUAGE_OPTIONS.find(
+                            l => l.value === editingTranslation.language
+                          )?.label || editingTranslation.language
+                        }
                         disabled
                         className="bg-muted border-border text-muted-foreground"
                       />
@@ -103,6 +113,25 @@ export function PropertyTranslationsManager({
                             title: e.target.value,
                           })
                         }
+                        placeholder="Property title in this language"
+                        className="bg-background border-border"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Address <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        type="text"
+                        value={editingTranslation.address || ''}
+                        onChange={e =>
+                          setEditingTranslation({
+                            ...editingTranslation,
+                            address: e.target.value,
+                          })
+                        }
+                        placeholder="Property address in this language"
                         className="bg-background border-border"
                       />
                     </div>
@@ -117,6 +146,7 @@ export function PropertyTranslationsManager({
                             description: e.target.value,
                           })
                         }
+                        placeholder="Property description in this language..."
                         className="bg-background border-border"
                         rows={4}
                       />
@@ -131,10 +161,14 @@ export function PropertyTranslationsManager({
                       </Button>
                       <Button
                         onClick={handleSaveTranslation}
-                        disabled={upsertTranslation.isPending}
+                        disabled={
+                          upsertTranslation.isPending ||
+                          !editingTranslation.title?.trim() ||
+                          !editingTranslation.address?.trim()
+                        }
                       >
                         <Save className="w-4 h-4 mr-2" />
-                        Save
+                        {upsertTranslation.isPending ? 'Saving...' : 'Save'}
                       </Button>
                     </div>
                   </div>
@@ -152,8 +186,13 @@ export function PropertyTranslationsManager({
                         <p className="text-sm font-medium text-foreground">
                           {translation.title}
                         </p>
+                        {translation.address && (
+                          <p className="text-xs text-muted-foreground">
+                            📍 {translation.address}
+                          </p>
+                        )}
                         {translation.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
                             {translation.description}
                           </p>
                         )}
@@ -168,6 +207,7 @@ export function PropertyTranslationsManager({
                           setEditingTranslation({
                             language: translation.language,
                             title: translation.title,
+                            address: translation.address || '',
                             description: translation.description ?? undefined,
                           })
                         }

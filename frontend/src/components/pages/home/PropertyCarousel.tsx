@@ -20,7 +20,9 @@ const PropertyCarousel = () => {
 
   const transformProperty = (property: any) => ({
     id: property.id,
+    externalId: property.externalId,
     image: property.galleryImages?.[0]?.imageUrl || '/placeholder-property.jpg',
+    galleryImages: property.galleryImages, // ADD THIS LINE
     priceUSD: property.price,
     priceGEL: property.price ? Math.round(property.price * 2.8) : 0,
     location: property.address,

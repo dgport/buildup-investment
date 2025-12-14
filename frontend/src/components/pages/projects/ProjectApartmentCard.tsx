@@ -46,7 +46,7 @@ export const ProjectApartmentCard = ({
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 border-b-[3px] border-b-blue-500 overflow-hidden">
         <div className="relative h-64 bg-gray-100">
           {hasImages ? (
             <div className="relative h-full bg-gray-900">
@@ -64,40 +64,80 @@ export const ProjectApartmentCard = ({
 
               {hasMultipleImages && (
                 <>
-                  <Button
+                  <button
                     onClick={goToPrevious}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg transition-all z-10 h-7 w-7 sm:h-8 sm:w-8"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
                     aria-label={t('apartmentCard.previousImage')}
                   >
-                    <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-800" />
-                  </Button>
+                    <ChevronLeft className="w-4 h-4 text-gray-800" />
+                  </button>
 
-                  <Button
+                  <button
                     onClick={goToNext}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg transition-all z-10 h-7 w-7 sm:h-8 sm:w-8"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
                     aria-label={t('apartmentCard.nextImage')}
                   >
-                    <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-800" />
-                  </Button>
+                    <ChevronRight className="w-4 h-4 text-gray-800" />
+                  </button>
 
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                    {apartment.images.map((_, index) => (
-                      <Button
-                        key={index}
-                        onClick={e => {
-                          e.stopPropagation()
-                          setCurrent(index)
-                        }}
-                        className={`h-1.5 rounded-full transition-all ${
-                          index === current
-                            ? 'bg-white w-6'
-                            : 'bg-white/50 w-1.5 hover:bg-white/75'
-                        }`}
-                        aria-label={t('apartmentCard.goToImage', {
-                          number: index + 1,
-                        })}
-                      />
-                    ))}
+                  {/* Thumbnail Strip at Bottom */}
+                  {apartment.images.length <= 5 ? (
+                    <div className="absolute bottom-2 left-2 right-2 z-10">
+                      <div className="bg-black/20 backdrop-blur-sm rounded-lg p-1.5">
+                        <div className="flex gap-1.5 justify-center">
+                          {apartment.images.map((img, index) => (
+                            <button
+                              key={index}
+                              onClick={e => {
+                                e.stopPropagation()
+                                setCurrent(index)
+                              }}
+                              className={`relative flex-shrink-0 rounded overflow-hidden transition-all border-2 ${
+                                index === current
+                                  ? 'border-white scale-105 shadow-lg'
+                                  : 'border-white/40 opacity-70 hover:opacity-100 hover:border-white/70'
+                              }`}
+                              style={{ width: '48px', height: '36px' }}
+                              aria-label={t('apartmentCard.goToImage', {
+                                number: index + 1,
+                              })}
+                            >
+                              <img
+                                src={`${import.meta.env.VITE_API_IMAGE_URL}/${img}`}
+                                alt={`Thumbnail ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dots for many images */
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 backdrop-blur-sm rounded-full px-2.5 py-1.5">
+                      {apartment.images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={e => {
+                            e.stopPropagation()
+                            setCurrent(index)
+                          }}
+                          className={`h-2 rounded-full transition-all ${
+                            index === current
+                              ? 'bg-white w-6'
+                              : 'bg-white/50 w-2 hover:bg-white/75'
+                          }`}
+                          aria-label={t('apartmentCard.goToImage', {
+                            number: index + 1,
+                          })}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Image counter */}
+                  <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full z-10">
+                    {current + 1} / {apartment.images.length}
                   </div>
                 </>
               )}

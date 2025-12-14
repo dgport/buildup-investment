@@ -1,3 +1,4 @@
+// hooks/useProperties.ts
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '../tanstack/query-client'
 import type {
@@ -6,9 +7,14 @@ import type {
   PropertyFilters,
   PropertyTranslation,
   UpsertPropertyTranslationDto,
+  CreatePropertyDto,
 } from '../types/properties'
-import { propertiesService } from '../services/properties.servcie'
+import { propertiesService } from '../services/properties.service'
+ 
 
+/**
+ * Get all properties with filters
+ */
 export const useProperties = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
     queryKey: ['properties', filters],
@@ -19,6 +25,9 @@ export const useProperties = (filters?: PropertyFilters) => {
   })
 }
 
+/**
+ * Get single property by ID
+ */
 export const useProperty = (id: string, lang?: string) => {
   return useQuery<Property>({
     queryKey: ['properties', id, lang],
@@ -30,10 +39,19 @@ export const useProperty = (id: string, lang?: string) => {
   })
 }
 
+/**
+ * Create a new property
+ */
 export const useCreateProperty = () => {
   return useMutation({
-    mutationFn: async (data: FormData) => {
-      const response = await propertiesService.createProperty(data)
+    mutationFn: async ({
+      data,
+      images,
+    }: {
+      data: CreatePropertyDto
+      images?: File[]
+    }) => {
+      const response = await propertiesService.createProperty(data, images)
       return response.data
     },
     onSuccess: () => {
@@ -42,10 +60,21 @@ export const useCreateProperty = () => {
   })
 }
 
+/**
+ * Update an existing property
+ */
 export const useUpdateProperty = () => {
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: FormData }) => {
-      const response = await propertiesService.updateProperty(id, data)
+    mutationFn: async ({
+      id,
+      data,
+      images,
+    }: {
+      id: string
+      data: Partial<CreatePropertyDto>
+      images?: File[]
+    }) => {
+      const response = await propertiesService.updateProperty(id, data, images)
       return response.data
     },
     onSuccess: (_, variables) => {
@@ -55,6 +84,9 @@ export const useUpdateProperty = () => {
   })
 }
 
+/**
+ * Delete a property
+ */
 export const useDeleteProperty = () => {
   return useMutation({
     mutationFn: async (id: string) => {
@@ -67,6 +99,9 @@ export const useDeleteProperty = () => {
   })
 }
 
+/**
+ * Get all translations for a property
+ */
 export const usePropertyTranslations = (id: string) => {
   return useQuery<PropertyTranslation[]>({
     queryKey: ['properties', id, 'translations'],
@@ -78,6 +113,9 @@ export const usePropertyTranslations = (id: string) => {
   })
 }
 
+/**
+ * Create or update a translation
+ */
 export const useUpsertPropertyTranslation = () => {
   return useMutation({
     mutationFn: async ({
@@ -100,6 +138,9 @@ export const useUpsertPropertyTranslation = () => {
   })
 }
 
+/**
+ * Delete a translation
+ */
 export const useDeletePropertyTranslation = () => {
   return useMutation({
     mutationFn: async ({ id, language }: { id: string; language: string }) => {
@@ -116,6 +157,9 @@ export const useDeletePropertyTranslation = () => {
   })
 }
 
+/**
+ * Delete a gallery image
+ */
 export const useDeletePropertyImage = () => {
   return useMutation({
     mutationFn: async ({
@@ -140,15 +184,13 @@ export const useDeletePropertyImage = () => {
   })
 }
 
+/**
+ * Add images to an existing property
+ */
 export const useAddPropertyImages = () => {
   return useMutation({
     mutationFn: async ({ id, images }: { id: string; images: File[] }) => {
-      const formData = new FormData()
-      images.forEach(image => {
-        formData.append('images', image)
-      })
-
-      const response = await propertiesService.updateProperty(id, formData)
+      const response = await propertiesService.updateProperty(id, {}, images)
       return response.data
     },
     onSuccess: (_, variables) => {

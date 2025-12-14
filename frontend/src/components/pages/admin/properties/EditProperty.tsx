@@ -12,8 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Property } from '@/lib/types/properties'
+import type { Property, CreatePropertyDto } from '@/lib/types/properties'
 import {
+  PropertyType,
+  PropertyStatus,
+  DealType,
   PropertyCondition,
   HeatingType,
   ParkingType,
@@ -38,96 +41,101 @@ export function EditProperty({
     'details' | 'images' | 'translations'
   >('details')
 
-  const safeString = (val: number | null | undefined) =>
-    val === null || val === undefined ? '' : val.toString()
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<CreatePropertyDto>>({
+    propertyType: property.propertyType,
     address: property.address,
-    price: safeString(property.price),
-    totalArea: safeString(property.totalArea),
-    rooms: safeString(property.rooms),
-    bedrooms: safeString(property.bedrooms),
-    bathrooms: safeString(property.bathrooms),
-    floors: safeString(property.floors),
-    floorsTotal: safeString(property.floorsTotal),
-    ceilingHeight: safeString(property.ceilingHeight),
-    condition: property.condition || '',
-    isNonStandard: property.isNonStandard ?? false,
-    occupancy: property.occupancy || '',
-    heating: property.heating || '',
-    hotWater: property.hotWater || '',
-    parking: property.parking || '',
-    balconyArea: safeString(property.balconyArea),
-
-    hasConditioner: property.hasConditioner ?? false,
-    hasFurniture: property.hasFurniture ?? false,
-    hasBed: property.hasBed ?? false,
-    hasSofa: property.hasSofa ?? false,
-    hasTable: property.hasTable ?? false,
-    hasChairs: property.hasChairs ?? false,
-    hasStove: property.hasStove ?? false,
-    hasRefrigerator: property.hasRefrigerator ?? false,
-    hasOven: property.hasOven ?? false,
-    hasWashingMachine: property.hasWashingMachine ?? false,
-    hasKitchenAppliances: property.hasKitchenAppliances ?? false,
-    hasBalcony: property.hasBalcony ?? false,
-    hasNaturalGas: property.hasNaturalGas ?? false,
-    hasInternet: property.hasInternet ?? false,
-    hasTV: property.hasTV ?? false,
-    hasSewerage: property.hasSewerage ?? false,
-    isFenced: property.isFenced ?? false,
-    hasYardLighting: property.hasYardLighting ?? false,
-    hasGrill: property.hasGrill ?? false,
-    hasAlarm: property.hasAlarm ?? false,
-    hasVentilation: property.hasVentilation ?? false,
-    hasWater: property.hasWater ?? false,
-    hasElectricity: property.hasElectricity ?? false,
-    hasGate: property.hasGate ?? false,
+    status: property.status || undefined,
+    dealType: property.dealType || undefined,
+    hotSale: property.hotSale,
+    public: property.public,
+    price: property.price || undefined,
+    totalArea: property.totalArea || undefined,
+    rooms: property.rooms || undefined,
+    bedrooms: property.bedrooms || undefined,
+    bathrooms: property.bathrooms || undefined,
+    floors: property.floors || undefined,
+    floorsTotal: property.floorsTotal || undefined,
+    ceilingHeight: property.ceilingHeight || undefined,
+    condition: property.condition || undefined,
+    isNonStandard: property.isNonStandard,
+    occupancy: property.occupancy || undefined,
+    heating: property.heating || undefined,
+    hotWater: property.hotWater || undefined,
+    parking: property.parking || undefined,
+    balconyArea: property.balconyArea || undefined,
+    hasConditioner: property.hasConditioner,
+    hasFurniture: property.hasFurniture,
+    hasBed: property.hasBed,
+    hasSofa: property.hasSofa,
+    hasTable: property.hasTable,
+    hasChairs: property.hasChairs,
+    hasStove: property.hasStove,
+    hasRefrigerator: property.hasRefrigerator,
+    hasOven: property.hasOven,
+    hasWashingMachine: property.hasWashingMachine,
+    hasKitchenAppliances: property.hasKitchenAppliances,
+    hasBalcony: property.hasBalcony,
+    hasNaturalGas: property.hasNaturalGas,
+    hasInternet: property.hasInternet,
+    hasTV: property.hasTV,
+    hasSewerage: property.hasSewerage,
+    isFenced: property.isFenced,
+    hasYardLighting: property.hasYardLighting,
+    hasGrill: property.hasGrill,
+    hasAlarm: property.hasAlarm,
+    hasVentilation: property.hasVentilation,
+    hasWater: property.hasWater,
+    hasElectricity: property.hasElectricity,
+    hasGate: property.hasGate,
   })
 
   useEffect(() => {
     setFormData({
+      propertyType: property.propertyType,
       address: property.address,
-      price: safeString(property.price),
-      totalArea: safeString(property.totalArea),
-      rooms: safeString(property.rooms),
-      bedrooms: safeString(property.bedrooms),
-      bathrooms: safeString(property.bathrooms),
-      floors: safeString(property.floors),
-      floorsTotal: safeString(property.floorsTotal),
-      ceilingHeight: safeString(property.ceilingHeight),
-      condition: property.condition || '',
-      isNonStandard: property.isNonStandard ?? false,
-      occupancy: property.occupancy || '',
-      heating: property.heating || '',
-      hotWater: property.hotWater || '',
-      parking: property.parking || '',
-      balconyArea: safeString(property.balconyArea),
-
-      hasConditioner: property.hasConditioner ?? false,
-      hasFurniture: property.hasFurniture ?? false,
-      hasBed: property.hasBed ?? false,
-      hasSofa: property.hasSofa ?? false,
-      hasTable: property.hasTable ?? false,
-      hasChairs: property.hasChairs ?? false,
-      hasStove: property.hasStove ?? false,
-      hasRefrigerator: property.hasRefrigerator ?? false,
-      hasOven: property.hasOven ?? false,
-      hasWashingMachine: property.hasWashingMachine ?? false,
-      hasKitchenAppliances: property.hasKitchenAppliances ?? false,
-      hasBalcony: property.hasBalcony ?? false,
-      hasNaturalGas: property.hasNaturalGas ?? false,
-      hasInternet: property.hasInternet ?? false,
-      hasTV: property.hasTV ?? false,
-      hasSewerage: property.hasSewerage ?? false,
-      isFenced: property.isFenced ?? false,
-      hasYardLighting: property.hasYardLighting ?? false,
-      hasGrill: property.hasGrill ?? false,
-      hasAlarm: property.hasAlarm ?? false,
-      hasVentilation: property.hasVentilation ?? false,
-      hasWater: property.hasWater ?? false,
-      hasElectricity: property.hasElectricity ?? false,
-      hasGate: property.hasGate ?? false,
+      status: property.status || undefined,
+      dealType: property.dealType || undefined,
+      hotSale: property.hotSale,
+      public: property.public,
+      price: property.price || undefined,
+      totalArea: property.totalArea || undefined,
+      rooms: property.rooms || undefined,
+      bedrooms: property.bedrooms || undefined,
+      bathrooms: property.bathrooms || undefined,
+      floors: property.floors || undefined,
+      floorsTotal: property.floorsTotal || undefined,
+      ceilingHeight: property.ceilingHeight || undefined,
+      condition: property.condition || undefined,
+      isNonStandard: property.isNonStandard,
+      occupancy: property.occupancy || undefined,
+      heating: property.heating || undefined,
+      hotWater: property.hotWater || undefined,
+      parking: property.parking || undefined,
+      balconyArea: property.balconyArea || undefined,
+      hasConditioner: property.hasConditioner,
+      hasFurniture: property.hasFurniture,
+      hasBed: property.hasBed,
+      hasSofa: property.hasSofa,
+      hasTable: property.hasTable,
+      hasChairs: property.hasChairs,
+      hasStove: property.hasStove,
+      hasRefrigerator: property.hasRefrigerator,
+      hasOven: property.hasOven,
+      hasWashingMachine: property.hasWashingMachine,
+      hasKitchenAppliances: property.hasKitchenAppliances,
+      hasBalcony: property.hasBalcony,
+      hasNaturalGas: property.hasNaturalGas,
+      hasInternet: property.hasInternet,
+      hasTV: property.hasTV,
+      hasSewerage: property.hasSewerage,
+      isFenced: property.isFenced,
+      hasYardLighting: property.hasYardLighting,
+      hasGrill: property.hasGrill,
+      hasAlarm: property.hasAlarm,
+      hasVentilation: property.hasVentilation,
+      hasWater: property.hasWater,
+      hasElectricity: property.hasElectricity,
+      hasGate: property.hasGate,
     })
   }, [property])
 
@@ -140,54 +148,11 @@ export function EditProperty({
   }
 
   const handleSubmit = async () => {
-    const data = new FormData()
-
-    if (formData.address !== property.address)
-      data.append('address', formData.address)
-    if (formData.price) data.append('price', formData.price)
-    if (formData.totalArea) data.append('totalArea', formData.totalArea)
-    if (formData.rooms) data.append('rooms', formData.rooms)
-    if (formData.bedrooms) data.append('bedrooms', formData.bedrooms)
-    if (formData.bathrooms) data.append('bathrooms', formData.bathrooms)
-    if (formData.floors) data.append('floors', formData.floors)
-    if (formData.floorsTotal) data.append('floorsTotal', formData.floorsTotal)
-    if (formData.ceilingHeight)
-      data.append('ceilingHeight', formData.ceilingHeight)
-    if (formData.condition) data.append('condition', formData.condition)
-    if (formData.occupancy) data.append('occupancy', formData.occupancy)
-    if (formData.heating) data.append('heating', formData.heating)
-    if (formData.hotWater) data.append('hotWater', formData.hotWater)
-    if (formData.parking) data.append('parking', formData.parking)
-    if (formData.balconyArea) data.append('balconyArea', formData.balconyArea)
-
-    data.append('isNonStandard', String(formData.isNonStandard))
-    data.append('hasConditioner', String(formData.hasConditioner))
-    data.append('hasFurniture', String(formData.hasFurniture))
-    data.append('hasBed', String(formData.hasBed))
-    data.append('hasSofa', String(formData.hasSofa))
-    data.append('hasTable', String(formData.hasTable))
-    data.append('hasChairs', String(formData.hasChairs))
-    data.append('hasStove', String(formData.hasStove))
-    data.append('hasRefrigerator', String(formData.hasRefrigerator))
-    data.append('hasOven', String(formData.hasOven))
-    data.append('hasWashingMachine', String(formData.hasWashingMachine))
-    data.append('hasKitchenAppliances', String(formData.hasKitchenAppliances))
-    data.append('hasBalcony', String(formData.hasBalcony))
-    data.append('hasNaturalGas', String(formData.hasNaturalGas))
-    data.append('hasInternet', String(formData.hasInternet))
-    data.append('hasTV', String(formData.hasTV))
-    data.append('hasSewerage', String(formData.hasSewerage))
-    data.append('isFenced', String(formData.isFenced))
-    data.append('hasYardLighting', String(formData.hasYardLighting))
-    data.append('hasGrill', String(formData.hasGrill))
-    data.append('hasAlarm', String(formData.hasAlarm))
-    data.append('hasVentilation', String(formData.hasVentilation))
-    data.append('hasWater', String(formData.hasWater))
-    data.append('hasElectricity', String(formData.hasElectricity))
-    data.append('hasGate', String(formData.hasGate))
-
     try {
-      await updateProperty.mutateAsync({ id: property.id, data })
+      await updateProperty.mutateAsync({
+        id: property.id,
+        data: formData,
+      })
       setHasChanges(false)
       onSuccess()
     } catch (error) {
@@ -259,6 +224,100 @@ export function EditProperty({
                 Basic Information
               </h3>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="propertyType">Property Type</Label>
+                  <Select
+                    value={formData.propertyType}
+                    onValueChange={value =>
+                      handleFormChange('propertyType', value as PropertyType)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={PropertyType.APARTMENT}>
+                        Apartment
+                      </SelectItem>
+                      <SelectItem value={PropertyType.VILLA}>Villa</SelectItem>
+                      <SelectItem value={PropertyType.COMMERCIAL}>
+                        Commercial
+                      </SelectItem>
+                      <SelectItem value={PropertyType.LAND}>Land</SelectItem>
+                      <SelectItem value={PropertyType.HOTEL}>Hotel</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dealType">Deal Type</Label>
+                  <Select
+                    value={formData.dealType || ''}
+                    onValueChange={value =>
+                      handleFormChange(
+                        'dealType',
+                        value ? (value as DealType) : undefined
+                      )
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select deal type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DealType.SALE}>Sale</SelectItem>
+                      <SelectItem value={DealType.RENT}>Rent</SelectItem>
+                      <SelectItem value={DealType.DAILY_RENT}>
+                        Daily Rent
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Property Status</Label>
+                  <Select
+                    value={formData.status || ''}
+                    onValueChange={value =>
+                      handleFormChange(
+                        'status',
+                        value ? (value as PropertyStatus) : undefined
+                      )
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={PropertyStatus.OLD_BUILDING}>
+                        Old Building
+                      </SelectItem>
+                      <SelectItem value={PropertyStatus.NEW_BUILDING}>
+                        New Building
+                      </SelectItem>
+                      <SelectItem value={PropertyStatus.UNDER_CONSTRUCTION}>
+                        Under Construction
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price ($)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={formData.price || ''}
+                    onChange={e =>
+                      handleFormChange(
+                        'price',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
                 <Input
@@ -268,27 +327,37 @@ export function EditProperty({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={e => handleFormChange('price', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="totalArea">Total Area (m²)</Label>
-                  <Input
-                    id="totalArea"
-                    type="number"
-                    value={formData.totalArea}
-                    onChange={e =>
-                      handleFormChange('totalArea', e.target.value)
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="hotSale"
+                    checked={formData.hotSale}
+                    onCheckedChange={checked =>
+                      handleFormChange('hotSale', checked === true)
                     }
                   />
+                  <Label
+                    htmlFor="hotSale"
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    🔥 Mark as Hot Sale
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="public"
+                    checked={formData.public}
+                    onCheckedChange={checked =>
+                      handleFormChange('public', checked === true)
+                    }
+                  />
+                  <Label
+                    htmlFor="public"
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    👁️ Make Public
+                  </Label>
                 </div>
               </div>
             </div>
@@ -300,12 +369,32 @@ export function EditProperty({
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
+                  <Label htmlFor="totalArea">Total Area (m²)</Label>
+                  <Input
+                    id="totalArea"
+                    type="number"
+                    value={formData.totalArea || ''}
+                    onChange={e =>
+                      handleFormChange(
+                        'totalArea',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="rooms">Rooms</Label>
                   <Input
                     id="rooms"
                     type="number"
-                    value={formData.rooms}
-                    onChange={e => handleFormChange('rooms', e.target.value)}
+                    value={formData.rooms || ''}
+                    onChange={e =>
+                      handleFormChange(
+                        'rooms',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
                   />
                 </div>
 
@@ -314,8 +403,13 @@ export function EditProperty({
                   <Input
                     id="bedrooms"
                     type="number"
-                    value={formData.bedrooms}
-                    onChange={e => handleFormChange('bedrooms', e.target.value)}
+                    value={formData.bedrooms || ''}
+                    onChange={e =>
+                      handleFormChange(
+                        'bedrooms',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
                   />
                 </div>
 
@@ -324,9 +418,12 @@ export function EditProperty({
                   <Input
                     id="bathrooms"
                     type="number"
-                    value={formData.bathrooms}
+                    value={formData.bathrooms || ''}
                     onChange={e =>
-                      handleFormChange('bathrooms', e.target.value)
+                      handleFormChange(
+                        'bathrooms',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
                     }
                   />
                 </div>
@@ -336,8 +433,13 @@ export function EditProperty({
                   <Input
                     id="floors"
                     type="number"
-                    value={formData.floors}
-                    onChange={e => handleFormChange('floors', e.target.value)}
+                    value={formData.floors || ''}
+                    onChange={e =>
+                      handleFormChange(
+                        'floors',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
                   />
                 </div>
 
@@ -346,9 +448,12 @@ export function EditProperty({
                   <Input
                     id="floorsTotal"
                     type="number"
-                    value={formData.floorsTotal}
+                    value={formData.floorsTotal || ''}
                     onChange={e =>
-                      handleFormChange('floorsTotal', e.target.value)
+                      handleFormChange(
+                        'floorsTotal',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
                     }
                   />
                 </div>
@@ -359,9 +464,12 @@ export function EditProperty({
                     id="ceilingHeight"
                     type="number"
                     step="0.1"
-                    value={formData.ceilingHeight}
+                    value={formData.ceilingHeight || ''}
                     onChange={e =>
-                      handleFormChange('ceilingHeight', e.target.value)
+                      handleFormChange(
+                        'ceilingHeight',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
                     }
                   />
                 </div>
@@ -372,9 +480,12 @@ export function EditProperty({
                     id="balconyArea"
                     type="number"
                     step="0.1"
-                    value={formData.balconyArea}
+                    value={formData.balconyArea || ''}
                     onChange={e =>
-                      handleFormChange('balconyArea', e.target.value)
+                      handleFormChange(
+                        'balconyArea',
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
                     }
                   />
                 </div>
@@ -384,9 +495,12 @@ export function EditProperty({
                 <div className="space-y-2">
                   <Label>Condition</Label>
                   <Select
-                    value={formData.condition}
+                    value={formData.condition || ''}
                     onValueChange={value =>
-                      handleFormChange('condition', value)
+                      handleFormChange(
+                        'condition',
+                        value ? (value as PropertyCondition) : undefined
+                      )
                     }
                   >
                     <SelectTrigger>
@@ -409,9 +523,12 @@ export function EditProperty({
                 <div className="space-y-2">
                   <Label>Occupancy</Label>
                   <Select
-                    value={formData.occupancy}
+                    value={formData.occupancy || ''}
                     onValueChange={value =>
-                      handleFormChange('occupancy', value)
+                      handleFormChange(
+                        'occupancy',
+                        value ? (value as Occupancy) : undefined
+                      )
                     }
                   >
                     <SelectTrigger>
@@ -442,8 +559,13 @@ export function EditProperty({
                 <div className="space-y-2">
                   <Label>Heating</Label>
                   <Select
-                    value={formData.heating}
-                    onValueChange={value => handleFormChange('heating', value)}
+                    value={formData.heating || ''}
+                    onValueChange={value =>
+                      handleFormChange(
+                        'heating',
+                        value ? (value as HeatingType) : undefined
+                      )
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select heating" />
@@ -467,8 +589,13 @@ export function EditProperty({
                 <div className="space-y-2">
                   <Label>Hot Water</Label>
                   <Select
-                    value={formData.hotWater}
-                    onValueChange={value => handleFormChange('hotWater', value)}
+                    value={formData.hotWater || ''}
+                    onValueChange={value =>
+                      handleFormChange(
+                        'hotWater',
+                        value ? (value as HotWaterType) : undefined
+                      )
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select hot water" />
@@ -489,8 +616,13 @@ export function EditProperty({
                 <div className="space-y-2">
                   <Label>Parking</Label>
                   <Select
-                    value={formData.parking}
-                    onValueChange={value => handleFormChange('parking', value)}
+                    value={formData.parking || ''}
+                    onValueChange={value =>
+                      handleFormChange(
+                        'parking',
+                        value ? (value as ParkingType) : undefined
+                      )
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select parking" />

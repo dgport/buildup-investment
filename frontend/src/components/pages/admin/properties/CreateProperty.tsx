@@ -17,12 +17,14 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   PropertyType,
+  DealType,
   PropertyStatus,
   PropertyCondition,
   HeatingType,
   ParkingType,
   HotWaterType,
   Occupancy,
+  type CreatePropertyDto,
 } from '@/lib/types/properties'
 
 interface CreatePropertyProps {
@@ -31,26 +33,32 @@ interface CreatePropertyProps {
 }
 
 export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreatePropertyDto>({
+    // Required fields
     propertyType: PropertyType.APARTMENT,
-    status: PropertyStatus.NEW_BUILDING,
     address: '',
-    price: '',
     title: '',
+
+    // Optional fields
     description: '',
-    totalArea: '',
-    rooms: '',
-    bedrooms: '',
-    bathrooms: '',
-    floors: '',
-    floorsTotal: '',
-    ceilingHeight: '',
-    condition: '' as PropertyCondition | '',
+    status: undefined,
+    dealType: undefined,
+    hotSale: false,
+    public: true,
+    price: undefined,
+    totalArea: undefined,
+    rooms: undefined,
+    bedrooms: undefined,
+    bathrooms: undefined,
+    floors: undefined,
+    floorsTotal: undefined,
+    ceilingHeight: undefined,
+    condition: undefined,
     isNonStandard: false,
-    occupancy: '' as Occupancy | '',
-    heating: '' as HeatingType | '',
-    hotWater: '' as HotWaterType | '',
-    parking: '' as ParkingType | '',
+    occupancy: undefined,
+    heating: undefined,
+    hotWater: undefined,
+    parking: undefined,
     hasConditioner: false,
     hasFurniture: false,
     hasBed: false,
@@ -63,7 +71,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
     hasWashingMachine: false,
     hasKitchenAppliances: false,
     hasBalcony: false,
-    balconyArea: '',
+    balconyArea: undefined,
     hasNaturalGas: false,
     hasInternet: false,
     hasTV: false,
@@ -105,8 +113,14 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    if (!formData.address.trim()) {
+    if (!formData.propertyType) {
+      newErrors.propertyType = 'Property type is required'
+    }
+    if (!formData.address?.trim()) {
       newErrors.address = 'Address is required'
+    }
+    if (!formData.title?.trim()) {
+      newErrors.title = 'Title is required'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -115,65 +129,11 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
   const handleSubmit = async () => {
     if (!validateForm()) return
 
-    const data = new FormData()
-
-    data.append('propertyType', formData.propertyType)
-    data.append('status', formData.status)
-    data.append('address', formData.address)
-
-    if (formData.price) data.append('price', formData.price)
-    if (formData.title) data.append('title', formData.title)
-    if (formData.description) data.append('description', formData.description)
-    if (formData.totalArea) data.append('totalArea', formData.totalArea)
-    if (formData.rooms) data.append('rooms', formData.rooms)
-    if (formData.bedrooms) data.append('bedrooms', formData.bedrooms)
-    if (formData.bathrooms) data.append('bathrooms', formData.bathrooms)
-    if (formData.floors) data.append('floors', formData.floors)
-    if (formData.floorsTotal) data.append('floorsTotal', formData.floorsTotal)
-    if (formData.ceilingHeight)
-      data.append('ceilingHeight', formData.ceilingHeight)
-    if (formData.condition) data.append('condition', formData.condition)
-    if (formData.occupancy) data.append('occupancy', formData.occupancy)
-    if (formData.heating) data.append('heating', formData.heating)
-    if (formData.hotWater) data.append('hotWater', formData.hotWater)
-    if (formData.parking) data.append('parking', formData.parking)
-    if (formData.balconyArea) data.append('balconyArea', formData.balconyArea)
-
-    data.append('isNonStandard', formData.isNonStandard.toString())
-    data.append('hasConditioner', formData.hasConditioner.toString())
-    data.append('hasFurniture', formData.hasFurniture.toString())
-    data.append('hasBed', formData.hasBed.toString())
-    data.append('hasSofa', formData.hasSofa.toString())
-    data.append('hasTable', formData.hasTable.toString())
-    data.append('hasChairs', formData.hasChairs.toString())
-    data.append('hasStove', formData.hasStove.toString())
-    data.append('hasRefrigerator', formData.hasRefrigerator.toString())
-    data.append('hasOven', formData.hasOven.toString())
-    data.append('hasWashingMachine', formData.hasWashingMachine.toString())
-    data.append(
-      'hasKitchenAppliances',
-      formData.hasKitchenAppliances.toString()
-    )
-    data.append('hasBalcony', formData.hasBalcony.toString())
-    data.append('hasNaturalGas', formData.hasNaturalGas.toString())
-    data.append('hasInternet', formData.hasInternet.toString())
-    data.append('hasTV', formData.hasTV.toString())
-    data.append('hasSewerage', formData.hasSewerage.toString())
-    data.append('isFenced', formData.isFenced.toString())
-    data.append('hasYardLighting', formData.hasYardLighting.toString())
-    data.append('hasGrill', formData.hasGrill.toString())
-    data.append('hasAlarm', formData.hasAlarm.toString())
-    data.append('hasVentilation', formData.hasVentilation.toString())
-    data.append('hasWater', formData.hasWater.toString())
-    data.append('hasElectricity', formData.hasElectricity.toString())
-    data.append('hasGate', formData.hasGate.toString())
-
-    imageFiles.forEach(file => {
-      data.append('images', file)
-    })
-
     try {
-      await createProperty.mutateAsync(data)
+      await createProperty.mutateAsync({
+        data: formData,
+        images: imageFiles.length > 0 ? imageFiles : undefined,
+      })
       onSuccess()
     } catch (error: any) {
       setErrors({ submit: error.message || 'Failed to create property' })
@@ -202,6 +162,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
       </div>
 
       <div className="space-y-8">
+        {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
             Basic Information
@@ -221,7 +182,9 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
                   })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className={errors.propertyType ? 'border-red-500' : ''}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -236,20 +199,48 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
                   <SelectItem value={PropertyType.HOTEL}>Hotel</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.propertyType && (
+                <p className="text-red-500 text-sm">{errors.propertyType}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">
-                Status <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="dealType">Deal Type</Label>
               <Select
-                value={formData.status}
+                value={formData.dealType || ''}
                 onValueChange={value =>
-                  setFormData({ ...formData, status: value as PropertyStatus })
+                  setFormData({
+                    ...formData,
+                    dealType: value ? (value as DealType) : undefined,
+                  })
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select deal type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={DealType.SALE}>Sale</SelectItem>
+                  <SelectItem value={DealType.RENT}>Rent</SelectItem>
+                  <SelectItem value={DealType.DAILY_RENT}>
+                    Daily Rent
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Property Status</Label>
+              <Select
+                value={formData.status || ''}
+                onValueChange={value =>
+                  setFormData({
+                    ...formData,
+                    status: value ? (value as PropertyStatus) : undefined,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={PropertyStatus.OLD_BUILDING}>
@@ -263,6 +254,22 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="price">Price ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                value={formData.price || ''}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    price: e.target.value ? Number(e.target.value) : undefined,
+                  })
+                }
+                placeholder="e.g., 150000"
+              />
             </div>
           </div>
 
@@ -284,31 +291,22 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title (English)</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={e =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                placeholder="e.g., Luxury Apartment"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
-              <Input
-                id="price"
-                type="number"
-                value={formData.price}
-                onChange={e =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
-                placeholder="e.g., 150000"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="title">
+              Title (English) <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={e =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+              placeholder="e.g., Luxury Apartment in Old Batumi"
+              className={errors.title ? 'border-red-500' : ''}
+            />
+            {errors.title && (
+              <p className="text-red-500 text-sm">{errors.title}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -323,7 +321,44 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               rows={4}
             />
           </div>
+
+          {/* Hot Sale and Public toggles */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hotSale"
+                checked={formData.hotSale}
+                onCheckedChange={checked =>
+                  setFormData({ ...formData, hotSale: checked as boolean })
+                }
+              />
+              <Label
+                htmlFor="hotSale"
+                className="text-sm font-medium cursor-pointer"
+              >
+                🔥 Mark as Hot Sale
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="public"
+                checked={formData.public}
+                onCheckedChange={checked =>
+                  setFormData({ ...formData, public: checked as boolean })
+                }
+              />
+              <Label
+                htmlFor="public"
+                className="text-sm font-medium cursor-pointer"
+              >
+                👁️ Make Public
+              </Label>
+            </div>
+          </div>
         </div>
+
+        {/* Property Details */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
             Property Details
@@ -335,9 +370,14 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               <Input
                 id="totalArea"
                 type="number"
-                value={formData.totalArea}
+                value={formData.totalArea || ''}
                 onChange={e =>
-                  setFormData({ ...formData, totalArea: e.target.value })
+                  setFormData({
+                    ...formData,
+                    totalArea: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
                 }
                 placeholder="120"
               />
@@ -348,9 +388,12 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               <Input
                 id="rooms"
                 type="number"
-                value={formData.rooms}
+                value={formData.rooms || ''}
                 onChange={e =>
-                  setFormData({ ...formData, rooms: e.target.value })
+                  setFormData({
+                    ...formData,
+                    rooms: e.target.value ? Number(e.target.value) : undefined,
+                  })
                 }
                 placeholder="3"
               />
@@ -361,9 +404,14 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               <Input
                 id="bedrooms"
                 type="number"
-                value={formData.bedrooms}
+                value={formData.bedrooms || ''}
                 onChange={e =>
-                  setFormData({ ...formData, bedrooms: e.target.value })
+                  setFormData({
+                    ...formData,
+                    bedrooms: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
                 }
                 placeholder="2"
               />
@@ -374,9 +422,14 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               <Input
                 id="bathrooms"
                 type="number"
-                value={formData.bathrooms}
+                value={formData.bathrooms || ''}
                 onChange={e =>
-                  setFormData({ ...formData, bathrooms: e.target.value })
+                  setFormData({
+                    ...formData,
+                    bathrooms: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
                 }
                 placeholder="2"
               />
@@ -387,9 +440,12 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               <Input
                 id="floors"
                 type="number"
-                value={formData.floors}
+                value={formData.floors || ''}
                 onChange={e =>
-                  setFormData({ ...formData, floors: e.target.value })
+                  setFormData({
+                    ...formData,
+                    floors: e.target.value ? Number(e.target.value) : undefined,
+                  })
                 }
                 placeholder="5"
               />
@@ -400,9 +456,14 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               <Input
                 id="floorsTotal"
                 type="number"
-                value={formData.floorsTotal}
+                value={formData.floorsTotal || ''}
                 onChange={e =>
-                  setFormData({ ...formData, floorsTotal: e.target.value })
+                  setFormData({
+                    ...formData,
+                    floorsTotal: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
                 }
                 placeholder="10"
               />
@@ -414,9 +475,14 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
                 id="ceilingHeight"
                 type="number"
                 step="0.1"
-                value={formData.ceilingHeight}
+                value={formData.ceilingHeight || ''}
                 onChange={e =>
-                  setFormData({ ...formData, ceilingHeight: e.target.value })
+                  setFormData({
+                    ...formData,
+                    ceilingHeight: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
                 }
                 placeholder="3.0"
               />
@@ -428,9 +494,14 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
                 id="balconyArea"
                 type="number"
                 step="0.1"
-                value={formData.balconyArea}
+                value={formData.balconyArea || ''}
                 onChange={e =>
-                  setFormData({ ...formData, balconyArea: e.target.value })
+                  setFormData({
+                    ...formData,
+                    balconyArea: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
+                  })
                 }
                 placeholder="10.5"
               />
@@ -441,11 +512,11 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <div className="space-y-2">
               <Label>Condition</Label>
               <Select
-                value={formData.condition}
+                value={formData.condition || ''}
                 onValueChange={value =>
                   setFormData({
                     ...formData,
-                    condition: value as PropertyCondition,
+                    condition: value ? (value as PropertyCondition) : undefined,
                   })
                 }
               >
@@ -469,9 +540,12 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <div className="space-y-2">
               <Label>Occupancy</Label>
               <Select
-                value={formData.occupancy}
+                value={formData.occupancy || ''}
                 onValueChange={value =>
-                  setFormData({ ...formData, occupancy: value as Occupancy })
+                  setFormData({
+                    ...formData,
+                    occupancy: value ? (value as Occupancy) : undefined,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -491,6 +565,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
           </div>
         </div>
 
+        {/* Utilities */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Utilities</h3>
 
@@ -498,9 +573,12 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <div className="space-y-2">
               <Label>Heating</Label>
               <Select
-                value={formData.heating}
+                value={formData.heating || ''}
                 onValueChange={value =>
-                  setFormData({ ...formData, heating: value as HeatingType })
+                  setFormData({
+                    ...formData,
+                    heating: value ? (value as HeatingType) : undefined,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -523,9 +601,12 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <div className="space-y-2">
               <Label>Hot Water</Label>
               <Select
-                value={formData.hotWater}
+                value={formData.hotWater || ''}
                 onValueChange={value =>
-                  setFormData({ ...formData, hotWater: value as HotWaterType })
+                  setFormData({
+                    ...formData,
+                    hotWater: value ? (value as HotWaterType) : undefined,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -545,9 +626,12 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <div className="space-y-2">
               <Label>Parking</Label>
               <Select
-                value={formData.parking}
+                value={formData.parking || ''}
                 onValueChange={value =>
-                  setFormData({ ...formData, parking: value as ParkingType })
+                  setFormData({
+                    ...formData,
+                    parking: value ? (value as ParkingType) : undefined,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -566,6 +650,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
           </div>
         </div>
 
+        {/* Amenities */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Amenities</h3>
 
@@ -615,6 +700,8 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             ))}
           </div>
         </div>
+
+        {/* Property Images */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
             Property Images

@@ -18,7 +18,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
   const projectLocation = getTranslatedValue('projectLocation')
 
   return (
-    <div className="bg-white rounded-xl border border-gray-300 transition-all duration-300 h-full p-1 cursor-pointer hover:shadow-lg">
+    <div className="bg-white rounded-xl border border-gray-300 border-b-[3px] border-b-blue-500 transition-all duration-300 h-full p-1 cursor-pointer shadow-md hover:shadow-lg">
       <div className="relative h-72 overflow-hidden rounded-lg">
         {!imageError ? (
           <img

@@ -73,16 +73,14 @@ export function PropertyImagesManager({
     setMessage(null)
 
     try {
-      const formData = new FormData()
-      selectedFiles.forEach(f => {
-        formData.append('images', f.file)
-      })
-
+      // Use the new API: data object + images array
       await updateProperty.mutateAsync({
         id: propertyId,
-        data: formData,
+        data: {}, // Empty data object - we're only uploading images
+        images: selectedFiles.map(f => f.file), // Pass images array
       })
 
+      // Clean up previews
       selectedFiles.forEach(f => URL.revokeObjectURL(f.preview))
 
       setMessage({
@@ -91,9 +89,11 @@ export function PropertyImagesManager({
       })
       setTimeout(() => setMessage(null), 5000)
 
+      // Reset state
       setSelectedFiles([])
       if (fileInputRef.current) fileInputRef.current.value = ''
 
+      // Refresh property data
       await refetch()
     } catch (error) {
       console.error('Error uploading images:', error)
@@ -178,9 +178,9 @@ export function PropertyImagesManager({
       />
 
       {selectedFiles.length > 0 && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
           <CardContent className="pt-4">
-            <p className="text-sm font-medium text-blue-900 mb-2">
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
               {selectedFiles.length} file(s) selected
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -191,7 +191,7 @@ export function PropertyImagesManager({
                     alt={f.file.name}
                     className="w-full h-24 object-cover rounded"
                   />
-                  <p className="text-xs text-center mt-1 truncate">
+                  <p className="text-xs text-center mt-1 truncate text-blue-900 dark:text-blue-100">
                     {f.file.name}
                   </p>
                 </div>

@@ -3,7 +3,6 @@ import { useState, useCallback, useEffect } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 
 import {
-  MapPin,
   Home,
   Bed,
   Bath,
@@ -18,18 +17,34 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  Phone,
+  MessageCircle,
+  Copy,
+  Check,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+
 import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
 import { useProperty } from '@/lib/hooks/useProperties'
+import { getImageUrl } from '@/lib/utils/image-utils'
+import MortgageCalculator from '@/components/shared/calculator/MortgageCalculator'
+import Lightbox from 'yet-another-react-lightbox'
+import 'yet-another-react-lightbox/styles.css'
 
 type Currency = 'USD' | 'GEL'
+
+const PHONE_NUMBER = '+995 595 80 47 95'
+const PHONE_NUMBER_CLEAN = '995595804795'
 
 export default function PropertyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [currency, setCurrency] = useState<Currency>('USD')
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [copiedId, setCopiedId] = useState(false)
+  const [copiedPhone, setCopiedPhone] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const { data: property, isLoading, error } = useProperty(id!)
 
@@ -89,6 +104,38 @@ export default function PropertyDetail() {
       .join(' ')
   }
 
+  const handleCopyId = async () => {
+    const idToCopy = property?.externalId || property?.id
+    if (idToCopy) {
+      await navigator.clipboard.writeText(String(idToCopy))
+      setCopiedId(true)
+      setTimeout(() => setCopiedId(false), 2000)
+    }
+  }
+
+  const handleCopyPhone = async () => {
+    await navigator.clipboard.writeText(PHONE_NUMBER)
+    setCopiedPhone(true)
+    setTimeout(() => setCopiedPhone(false), 2000)
+  }
+
+  const handlePhoneCall = () => {
+    window.location.href = `tel:${PHONE_NUMBER_CLEAN}`
+  }
+
+  const handleWhatsApp = () => {
+    const propertyTitle = property?.translation?.title || 'a property'
+    const message = encodeURIComponent(
+      `Hello! I'm interested in ${propertyTitle} (ID: ${property?.externalId || property?.id})`
+    )
+    window.open(`https://wa.me/${PHONE_NUMBER_CLEAN}?text=${message}`, '_blank')
+  }
+
+  const handleImageClick = () => {
+    setLightboxIndex(selectedIndex)
+    setLightboxOpen(true)
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -116,121 +163,222 @@ export default function PropertyDetail() {
   }
 
   const images =
-    property.galleryImages?.map(
-      img => `${import.meta.env.VITE_API_IMAGE_URL}/${img.imageUrl}`
-    ) || []
+    property.galleryImages?.map(img => getImageUrl(img.imageUrl)) || []
+
+  const lightboxSlides = images.map((src: string) => ({ src }))
+
+  const priceInGEL = property.price ? Math.round(property.price * 2.8) : null
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-              <div className="relative h-96 md:h-[500px]">
-                <div className="overflow-hidden h-full" ref={emblaRef}>
-                  <div className="flex h-full">
-                    {images.length > 0 ? (
-                      images.map((img, index) => (
+          {/* Left side - Images */}
+          <div className="lg:col-span-2 h-[500px]">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">
+              <div className="overflow-hidden h-full" ref={emblaRef}>
+                <div className="flex h-full">
+                  {images.length > 0 ? (
+                    images.map((img, index) => (
+                      <div
+                        className="relative flex-[0_0_100%] h-full"
+                        key={index}
+                      >
                         <div
-                          className="relative flex-[0_0_100%] h-full"
-                          key={index}
+                          className="relative flex justify-center h-full cursor-zoom-in"
+                          onClick={handleImageClick}
                         >
-                          <div className="relative flex justify-center h-full">
-                            <div
-                              className="absolute inset-0 z-0"
-                              style={{
-                                backgroundImage: `url(${img})`,
-                                backgroundSize: '150%',
-                                backgroundPosition: 'center',
-                                filter: 'blur(15px)',
-                              }}
+                          <div
+                            className="absolute inset-0 z-0"
+                            style={{
+                              backgroundImage: `url(${img})`,
+                              backgroundSize: '150%',
+                              backgroundPosition: 'center',
+                              filter: 'blur(15px)',
+                            }}
+                          />
+                          <div className="relative z-10 w-full h-full flex items-center justify-center">
+                            <img
+                              src={img || '/placeholder.svg'}
+                              alt={property.translation?.title || 'Property'}
+                              className="max-h-full max-w-full object-contain"
                             />
-                            <div className="relative z-10 w-full h-full flex items-center justify-center">
-                              <img
-                                src={img}
-                                alt={property.translation?.title || 'Property'}
-                                className="max-h-full max-w-full object-contain"
-                              />
-                            </div>
                           </div>
                         </div>
-                      ))
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <p className="text-gray-400">No images available</p>
                       </div>
-                    )}
+                    ))
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <p className="text-gray-400">No images available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={scrollPrev}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={scrollNext}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+
+              {images.length > 1 && (
+                <div className="absolute bottom-2 left-0 right-0 z-20 px-4">
+                  <div className="bg-black/10 rounded-xl p-3">
+                    <div className="overflow-hidden" ref={thumbsRef}>
+                      <div className="flex gap-2">
+                        {images.map((img, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleThumbClick(index)}
+                            className={`flex-[0_0_auto] cursor-pointer rounded-lg overflow-hidden transition-all border-4
+                ${index === selectedIndex ? 'border-blue-600 scale-105 shadow-xl' : 'border-white/50 opacity-70 hover:opacity-100 hover:border-blue-500/50'}`}
+                            style={{ width: '64px', height: '48px' }}
+                          >
+                            <img
+                              src={img || '/placeholder.svg'}
+                              alt={`Thumbnail ${index}`}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                {images.length > 1 && (
-                  <>
-                    <button
-                      onClick={scrollPrev}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={scrollNext}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
-              </div>
+              )}
             </div>
-            {images.length > 1 && (
-              <div className="relative">
-                <div className="overflow-hidden" ref={thumbsRef}>
-                  <div className="flex space-x-2">
-                    {images.map((img, index) => (
-                      <div
-                        key={index}
-                        className={`flex-[0_0_auto] cursor-pointer rounded-lg overflow-hidden transition-all ${
-                          index === selectedIndex
-                            ? 'ring-2 ring-blue-600 scale-105'
-                            : 'opacity-70 hover:opacity-100'
-                        }`}
-                        onClick={() => handleThumbClick(index)}
-                        style={{ width: '96px', height: '72px' }}
-                      >
-                        <img
-                          src={img}
-                          alt={`Thumbnail ${index}`}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ))}
+          </div>
+
+          {/* Right side - Property Info */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-[500px] flex flex-col justify-between">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    Property ID
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-gray-900 text-xs sm:text-sm">
+                      {property.externalId || property.id}
+                    </span>
+                    <button
+                      onClick={handleCopyId}
+                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      title="Copy ID"
+                    >
+                      {copiedId ? (
+                        <Check className="w-3.5 h-3.5 text-green-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </button>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-6 shadow-sm h-96 md:h-[500px] flex flex-col">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
-                Contact Agent
-              </h3>
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                Send Message
-              </button>
-              <button className="w-full mt-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-lg transition-colors">
-                Call Now
-              </button>
 
-              <div className="mt-6 pt-6 border-t flex-grow">
-                <p className="text-sm text-gray-500 mb-2">Property ID</p>
-                <p className="font-mono text-gray-900">
-                  {property.externalId || property.id}
-                </p>
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    Price
+                  </span>
+                  <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
+                    {formatPrice(property.price)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    Currency
+                  </span>
+                  <div className="flex items-center gap-2 bg-gray-50 rounded-full px-2.5 py-1.5">
+                    <span
+                      className={`text-xs font-medium ${currency === 'USD' ? 'text-blue-900' : 'text-gray-400'}`}
+                    >
+                      USD
+                    </span>
+                    <Switch
+                      checked={currency === 'GEL'}
+                      onCheckedChange={checked =>
+                        setCurrency(checked ? 'GEL' : 'USD')
+                      }
+                    />
+                    <span
+                      className={`text-xs font-medium ${currency === 'GEL' ? 'text-blue-900' : 'text-gray-400'}`}
+                    >
+                      GEL
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    Property Type
+                  </span>
+                  <span className="text-sm sm:text-base font-semibold text-blue-900">
+                    {formatEnumValue(property.propertyType)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    City
+                  </span>
+                  <span className="text-sm sm:text-base font-semibold text-gray-900">
+                    {property.address}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    Listed on
+                  </span>
+                  <span className="text-sm sm:text-base font-semibold text-gray-900">
+                    {new Date(property.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
 
-              <div className="mt-4">
-                <p className="text-sm text-gray-500 mb-2">Listed on</p>
-                <p className="text-gray-900">
-                  {new Date(property.createdAt).toLocaleDateString()}
-                </p>
+              <div className="space-y-2 pt-3 sm:pt-4">
+                <div className="relative">
+                  <Button
+                    size="lg"
+                    onClick={handlePhoneCall}
+                    className="w-full bg-blue-900 hover:bg-blue-800 h-10 sm:h-11 lg:h-12 text-sm sm:text-base flex items-center justify-center pr-12"
+                  >
+                    <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                    {PHONE_NUMBER}
+                  </Button>
+                  <button
+                    onClick={handleCopyPhone}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-blue-800 rounded transition-colors"
+                    title="Copy phone number"
+                  >
+                    {copiedPhone ? (
+                      <Check className="w-4 h-4 text-white" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white" />
+                    )}
+                  </button>
+                </div>
+
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={handleWhatsApp}
+                  className="w-full border-green-600 text-green-600 hover:bg-green-50 h-10 sm:h-11 lg:h-12 text-sm sm:text-base flex items-center justify-center bg-transparent"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                  Contact WhatsApp
+                </Button>
               </div>
             </div>
           </div>
@@ -238,61 +386,19 @@ export default function PropertyDetail() {
 
         <div className="space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  {property.translation?.title || 'Untitled Property'}
-                </h1>
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="w-5 h-5 mr-2" />
-                  <span>{property.address}</span>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Badge variant="outline">
-                  {formatEnumValue(property.propertyType)}
-                </Badge>
-                <Badge variant="outline">
-                  {formatEnumValue(property.status)}
-                </Badge>
-              </div>
-            </div>
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
+              {property.translation?.title || 'Untitled Property'}
+            </h1>
 
-            <div className="flex items-center gap-4 pt-4 border-t">
-              <h2 className="text-4xl font-bold text-green-600">
-                {formatPrice(property.price)}
-              </h2>
-              <div className="flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5">
-                <span
-                  className={`text-sm font-medium ${currency === 'USD' ? 'text-blue-600' : 'text-gray-400'}`}
-                >
-                  USD
-                </span>
-                <Switch
-                  checked={currency === 'GEL'}
-                  onCheckedChange={checked =>
-                    setCurrency(checked ? 'GEL' : 'USD')
-                  }
-                />
-                <span
-                  className={`text-sm font-medium ${currency === 'GEL' ? 'text-blue-600' : 'text-gray-400'}`}
-                >
-                  GEL
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {property.translation?.description && (
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
-                Description
-              </h3>
+            <div className="h-px w-full bg-gray-300 my-4"></div>
+            {property.translation?.description ? (
               <p className="text-gray-700 whitespace-pre-line">
                 {property.translation.description}
               </p>
-            </div>
-          )}
+            ) : (
+              <p className="text-gray-500 italic">No description available</p>
+            )}
+          </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
@@ -378,12 +484,21 @@ export default function PropertyDetail() {
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Condition & Utilities
             </h3>
+
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {property.condition && (
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-xs text-gray-500 mb-1">Condition</p>
                   <p className="font-semibold">
                     {formatEnumValue(property.condition)}
+                  </p>
+                </div>
+              )}
+              {property.status && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500 mb-1">Property Status</p>
+                  <p className="font-semibold">
+                    {formatEnumValue(property.status)}
                   </p>
                 </div>
               )}
@@ -437,6 +552,7 @@ export default function PropertyDetail() {
               )}
             </div>
           </div>
+
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Amenities & Features
@@ -588,8 +704,19 @@ export default function PropertyDetail() {
               )}
             </div>
           </div>
+
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <MortgageCalculator initialPrice={priceInGEL} />
+          </div>
         </div>
       </div>
+
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={lightboxSlides}
+        index={lightboxIndex}
+      />
     </div>
   )
 }

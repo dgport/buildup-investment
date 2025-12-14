@@ -1,11 +1,23 @@
-import { Phone, MessageCircle, Loader2 } from 'lucide-react'
+import {
+  Phone,
+  MessageCircle,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Check,
+} from 'lucide-react'
 import { useApartments } from '@/lib/hooks/useApartments'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useProject } from '@/lib/hooks/useProjects'
-import { ProjectImageCarousel } from '@/components/pages/projects/ProjectImageCarousel'
 import { ProjectApartmentCard } from '@/components/pages/projects/ProjectApartmentCard'
 import { useTranslation } from 'react-i18next'
+import { useState, useCallback, useEffect } from 'react'
+import useEmblaCarousel from 'embla-carousel-react'
+import { getImageUrl } from '@/lib/utils/image-utils'
+import Lightbox from 'yet-another-react-lightbox'
+import 'yet-another-react-lightbox/styles.css'
 
 const getQuarter = (dateString: string | null | undefined): string | null => {
   if (!dateString) return null
@@ -17,11 +29,18 @@ const getQuarter = (dateString: string | null | undefined): string | null => {
   return `Q${quarter} ${year}`
 }
 
+const PHONE_NUMBER = '+995 595 80 47 95'
+const PHONE_NUMBER_CLEAN = '995595804795'
+
 export default function ProjectPage() {
   const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const projectId = Number(id)
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [copiedPhone, setCopiedPhone] = useState(false)
 
   const {
     data: project,
@@ -35,6 +54,68 @@ export default function ProjectPage() {
     })
 
   const apartments = apartmentsResponse?.data || []
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
+  const [thumbsRef, thumbsApi] = useEmblaCarousel({
+    containScroll: 'keepSnaps',
+    dragFree: true,
+  })
+
+  const scrollPrev = useCallback(
+    () => emblaApi && emblaApi.scrollPrev(),
+    [emblaApi]
+  )
+  const scrollNext = useCallback(
+    () => emblaApi && emblaApi.scrollNext(),
+    [emblaApi]
+  )
+
+  const handleThumbClick = useCallback(
+    (index: number) => {
+      setSelectedIndex(index)
+      emblaApi && emblaApi.scrollTo(index)
+    },
+    [emblaApi]
+  )
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return
+    setSelectedIndex(emblaApi.selectedScrollSnap())
+  }, [emblaApi])
+
+  useEffect(() => {
+    if (!emblaApi) return
+    onSelect()
+    emblaApi.on('select', onSelect)
+    emblaApi.on('reInit', onSelect)
+    return () => {
+      emblaApi.off('select', onSelect)
+      emblaApi.off('reInit', onSelect)
+    }
+  }, [emblaApi, onSelect])
+
+  const handleImageClick = () => {
+    setLightboxIndex(selectedIndex)
+    setLightboxOpen(true)
+  }
+
+  const handleCopyPhone = async () => {
+    await navigator.clipboard.writeText(PHONE_NUMBER)
+    setCopiedPhone(true)
+    setTimeout(() => setCopiedPhone(false), 2000)
+  }
+
+  const handlePhoneCall = () => {
+    window.location.href = `tel:${PHONE_NUMBER_CLEAN}`
+  }
+
+  const handleWhatsApp = () => {
+    const projectName = project?.projectName || 'a project'
+    const message = encodeURIComponent(
+      `Hello! I'm interested in ${projectName}`
+    )
+    window.open(`https://wa.me/${PHONE_NUMBER_CLEAN}?text=${message}`, '_blank')
+  }
 
   const isLoading = projectLoading || apartmentsLoading
 
@@ -71,33 +152,123 @@ export default function ProjectPage() {
     )
   }
 
+  const images =
+    project.gallery && project.gallery.length > 0
+      ? project.gallery.map((img: string) => getImageUrl(img))
+      : project.image
+        ? [getImageUrl(project.image)]
+        : []
+
+  const lightboxSlides = images.map((src: string) => ({ src }))
+
   return (
-    <div className="min-h-screen pt-16 pb-12 md:pb-16 lg:pb-24">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12 mb-8 lg:mb-12">
-          <div className="lg:col-span-2">
-            <div className="h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px] xl:h-[550px]">
-              <ProjectImageCarousel
-                gallery={project.gallery || []}
-                image={project.image || ''}
-                projectName={project.projectName || ''}
-              />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Left side - Images */}
+          <div className="lg:col-span-2 h-[500px]">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">
+              <div className="overflow-hidden h-full" ref={emblaRef}>
+                <div className="flex h-full">
+                  {images.length > 0 ? (
+                    images.map((img: string, index: number) => (
+                      <div
+                        className="relative flex-[0_0_100%] h-full"
+                        key={index}
+                      >
+                        <div
+                          className="relative flex justify-center h-full cursor-zoom-in"
+                          onClick={handleImageClick}
+                        >
+                          {/* Blurred background */}
+                          <div
+                            className="absolute inset-0 z-0"
+                            style={{
+                              backgroundImage: `url(${img})`,
+                              backgroundSize: '150%',
+                              backgroundPosition: 'center',
+                              filter: 'blur(15px)',
+                            }}
+                          />
+                          {/* Main image */}
+                          <div className="relative z-10 w-full h-full flex items-center justify-center">
+                            <img
+                              src={img || '/placeholder.svg'}
+                              alt={project.projectName || 'Project'}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <p className="text-gray-400">No images available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={scrollPrev}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={scrollNext}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+
+              {images.length > 1 && (
+                <div className="absolute bottom-2 left-0 right-0 z-20 px-4">
+                  <div className="bg-black/10 rounded-xl p-3">
+                    <div className="overflow-hidden" ref={thumbsRef}>
+                      <div className="flex gap-2">
+                        {images.map((img: string, index: number) => (
+                          <div
+                            key={index}
+                            onClick={() => handleThumbClick(index)}
+                            className={`flex-[0_0_auto] cursor-pointer rounded-lg overflow-hidden transition-all border-4
+                ${index === selectedIndex ? 'border-blue-600 scale-105 shadow-xl' : 'border-white/50 opacity-70 hover:opacity-100 hover:border-blue-500/50'}`}
+                            style={{ width: '64px', height: '48px' }}
+                          >
+                            <img
+                              src={img || '/placeholder.svg'}
+                              alt={`Thumbnail ${index}`}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Right side - Property Info */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-5 lg:p-6 lg:sticky lg:top-20">
-              <div className="mb-4 sm:mb-5 pb-4 border-b-2 border-gray-300">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
-                  {project.projectName || t('projectPage.noName')}
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600">
-                  {project.projectLocation || t('projectPage.noLocation')}
-                </p>
-              </div>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-[500px] flex flex-col justify-between">
+              {/* Top Info */}
+              <div className="space-y-2 sm:space-y-3">
+                <div className="mb-4 sm:mb-5 pb-4 border-b-2 border-gray-300">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
+                    {project.projectName || t('projectPage.noName')}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    {project.projectLocation || t('projectPage.noLocation')}
+                  </p>
+                </div>
 
-              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-5 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center justify-between py-2 sm:py-2.5 border-b border-gray-200">
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
                   <span className="text-xs sm:text-sm font-medium text-gray-600">
                     {t('projectPage.startingPrice')}
                   </span>
@@ -108,7 +279,7 @@ export default function ProjectPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-2 sm:py-2.5 border-b border-gray-200">
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
                   <span className="text-xs sm:text-sm font-medium text-gray-600">
                     {t('projectPage.delivery')}
                   </span>
@@ -119,7 +290,7 @@ export default function ProjectPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-2 sm:py-2.5 border-b border-gray-200">
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
                   <span className="text-xs sm:text-sm font-medium text-gray-600">
                     {t('projectPage.floors')}
                   </span>
@@ -128,7 +299,7 @@ export default function ProjectPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-2 sm:py-2.5">
+                <div className="flex items-center justify-between py-2">
                   <span className="text-xs sm:text-sm font-medium text-gray-600">
                     {t('projectPage.totalUnits')}
                   </span>
@@ -138,18 +309,34 @@ export default function ProjectPage() {
                 </div>
               </div>
 
-              <div className="space-y-2 sm:space-y-2.5 pt-3 sm:pt-4">
-                <Button
-                  size="lg"
-                  className="w-full bg-blue-900 hover:bg-blue-800 h-10 sm:h-11 lg:h-12 text-sm sm:text-base"
-                >
-                  <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-                  +995 595 80 47 95
-                </Button>
+              {/* Bottom Actions */}
+              <div className="space-y-2 pt-3 sm:pt-4">
+                <div className="relative">
+                  <Button
+                    size="lg"
+                    onClick={handlePhoneCall}
+                    className="w-full bg-blue-900 hover:bg-blue-800 h-10 sm:h-11 lg:h-12 text-sm sm:text-base flex items-center justify-center pr-12"
+                  >
+                    <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                    {PHONE_NUMBER}
+                  </Button>
+                  <button
+                    onClick={handleCopyPhone}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-blue-800 rounded transition-colors"
+                    title="Copy phone number"
+                  >
+                    {copiedPhone ? (
+                      <Check className="w-4 h-4 text-white" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white" />
+                    )}
+                  </button>
+                </div>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full border-green-600 text-green-600 hover:bg-green-50 h-10 sm:h-11 lg:h-12 text-sm sm:text-base bg-transparent"
+                  onClick={handleWhatsApp}
+                  className="w-full border-green-600 text-green-600 hover:bg-green-50 h-10 sm:h-11 lg:h-12 text-sm sm:text-base bg-transparent flex items-center justify-center"
                 >
                   <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                   {t('projectPage.contactWhatsApp')}
@@ -166,7 +353,7 @@ export default function ProjectPage() {
                 {t('projectPage.availableApartments')}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
-                {apartments.map(apartment => (
+                {apartments.map((apartment: any) => (
                   <ProjectApartmentCard
                     key={apartment.id}
                     apartment={apartment}
@@ -183,6 +370,13 @@ export default function ProjectPage() {
           )}
         </div>
       </div>
+
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={lightboxSlides}
+        index={lightboxIndex}
+      />
     </div>
   )
 }
