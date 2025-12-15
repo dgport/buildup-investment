@@ -20,7 +20,6 @@ export default function Properties() {
       page,
       limit,
       lang: i18n.language,
-      public: true,
     }
 
     // Property ID search
@@ -94,7 +93,7 @@ export default function Properties() {
       title: property.translation?.title ?? 'Untitled Property',
       totalArea: property.totalArea ?? null,
       propertyType: property.propertyType,
-      status: property.status,
+      hotSale: property.hotSale,
     })) || []
 
   if (error) {

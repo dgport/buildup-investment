@@ -18,8 +18,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   PropertyType,
   DealType,
-  PropertyStatus,
-  PropertyCondition,
   HeatingType,
   ParkingType,
   HotWaterType,
@@ -35,6 +33,7 @@ interface CreatePropertyProps {
 
 const INITIAL_FORM_STATE: CreatePropertyDto = {
   propertyType: PropertyType.APARTMENT,
+  dealType: DealType.SALE,
   title: '',
   hotSale: false,
   public: true,
@@ -58,18 +57,6 @@ const DEAL_TYPES = [
   { value: DealType.SALE, label: 'Sale' },
   { value: DealType.RENT, label: 'Rent' },
   { value: DealType.DAILY_RENT, label: 'Daily Rent' },
-]
-
-const PROPERTY_STATUSES = [
-  { value: PropertyStatus.OLD_BUILDING, label: 'Old Building' },
-  { value: PropertyStatus.NEW_BUILDING, label: 'New Building' },
-  { value: PropertyStatus.UNDER_CONSTRUCTION, label: 'Under Construction' },
-]
-
-const PROPERTY_CONDITIONS = [
-  { value: PropertyCondition.NEWLY_RENOVATED, label: 'Newly Renovated' },
-  { value: PropertyCondition.OLD_RENOVATED, label: 'Old Renovated' },
-  { value: PropertyCondition.REPAIRING, label: 'Repairing' },
 ]
 
 const HEATING_TYPES = [
@@ -171,6 +158,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
     const newErrors: Record<string, string> = {}
     if (!formData.propertyType)
       newErrors.propertyType = 'Property type is required'
+    if (!formData.dealType) newErrors.dealType = 'Deal type is required'
     if (!formData.title?.trim()) newErrors.title = 'Title is required'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -180,8 +168,41 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
     if (!validateForm()) return
 
     try {
+      // Clean the data - remove empty strings and undefined/null values
+      const cleanedData = Object.entries(formData).reduce(
+        (acc: Partial<CreatePropertyDto>, [key, value]) => {
+          // Skip undefined or null values
+          if (value === null || value === undefined) return acc
+          
+          // For strings, trim and skip if empty
+          if (typeof value === 'string') {
+            const trimmed = value.trim()
+            if (trimmed === '') return acc
+            acc[key as keyof CreatePropertyDto] = trimmed as any
+            return acc
+          }
+          
+          // For booleans, always include them (even if false)
+          if (typeof value === 'boolean') {
+            acc[key as keyof CreatePropertyDto] = value as any
+            return acc
+          }
+          
+          // For numbers, include them
+          if (typeof value === 'number') {
+            acc[key as keyof CreatePropertyDto] = value as any
+            return acc
+          }
+          
+          // For other types (enums), include them
+          acc[key as keyof CreatePropertyDto] = value
+          return acc
+        },
+        {}
+      ) as CreatePropertyDto
+
       await createProperty.mutateAsync({
-        data: formData,
+        data: cleanedData,
         images: imageFiles.length > 0 ? imageFiles : undefined,
       })
       onSuccess()
@@ -227,36 +248,26 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             />
 
             <SelectField
-              label="City"
-              value={formData.city || ''}
-              onValueChange={value =>
-                updateField('city', value ? (value as City) : undefined)
-              }
-              options={CITIES}
-              placeholder="Select city"
-            />
-
-            <SelectField
               label="Deal Type"
-              value={formData.dealType || ''}
+              required
+              value={formData.dealType}
               onValueChange={value =>
-                updateField('dealType', value ? (value as DealType) : undefined)
+                updateField('dealType', value as DealType)
               }
               options={DEAL_TYPES}
-              placeholder="Select deal type"
+              error={errors.dealType}
             />
 
             <SelectField
-              label="Property Status"
-              value={formData.status || ''}
-              onValueChange={value =>
-                updateField(
-                  'status',
-                  value ? (value as PropertyStatus) : undefined
-                )
-              }
-              options={PROPERTY_STATUSES}
-              placeholder="Select status"
+              label="City"
+              value={formData.city || ''}
+              onValueChange={value => {
+                if (value && Object.values(City).includes(value as City)) {
+                  updateField('city', value as City)
+                }
+              }}
+              options={CITIES}
+              placeholder="Select city"
             />
 
             <InputField
@@ -278,7 +289,6 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             value={formData.address || ''}
             onChange={e => updateField('address', e.target.value || undefined)}
             placeholder="e.g., 123 Main Street, Batumi"
-            error={errors.address}
           />
 
           <InputField
@@ -311,17 +321,17 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <CheckboxField
               id="hotSale"
               label="🔥 Mark as Hot Sale"
-              checked={formData.hotSale || false}
+              checked={formData.hotSale === true}
               onCheckedChange={checked =>
-                updateField('hotSale', checked as boolean)
+                updateField('hotSale', checked === true)
               }
             />
             <CheckboxField
               id="public"
               label="👁️ Make Public"
-              checked={formData.public ?? true}
+              checked={formData.public === true}
               onCheckedChange={checked =>
-                updateField('public', checked as boolean)
+                updateField('public', checked === true)
               }
             />
           </div>
@@ -430,32 +440,20 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectField
-              label="Condition"
-              value={formData.condition || ''}
-              onValueChange={value =>
-                updateField(
-                  'condition',
-                  value ? (value as PropertyCondition) : undefined
-                )
+          <SelectField
+            label="Occupancy"
+            value={formData.occupancy || ''}
+            onValueChange={value => {
+              if (
+                value &&
+                Object.values(Occupancy).includes(value as Occupancy)
+              ) {
+                updateField('occupancy', value as Occupancy)
               }
-              options={PROPERTY_CONDITIONS}
-              placeholder="Select condition"
-            />
-            <SelectField
-              label="Occupancy"
-              value={formData.occupancy || ''}
-              onValueChange={value =>
-                updateField(
-                  'occupancy',
-                  value ? (value as Occupancy) : undefined
-                )
-              }
-              options={OCCUPANCY_OPTIONS}
-              placeholder="Select occupancy"
-            />
-          </div>
+            }}
+            options={OCCUPANCY_OPTIONS}
+            placeholder="Select occupancy"
+          />
         </Section>
 
         {/* Utilities */}
@@ -464,36 +462,42 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <SelectField
               label="Heating"
               value={formData.heating || ''}
-              onValueChange={value =>
-                updateField(
-                  'heating',
-                  value ? (value as HeatingType) : undefined
-                )
-              }
+              onValueChange={value => {
+                if (
+                  value &&
+                  Object.values(HeatingType).includes(value as HeatingType)
+                ) {
+                  updateField('heating', value as HeatingType)
+                }
+              }}
               options={HEATING_TYPES}
               placeholder="Select heating"
             />
             <SelectField
               label="Hot Water"
               value={formData.hotWater || ''}
-              onValueChange={value =>
-                updateField(
-                  'hotWater',
-                  value ? (value as HotWaterType) : undefined
-                )
-              }
+              onValueChange={value => {
+                if (
+                  value &&
+                  Object.values(HotWaterType).includes(value as HotWaterType)
+                ) {
+                  updateField('hotWater', value as HotWaterType)
+                }
+              }}
               options={HOT_WATER_TYPES}
               placeholder="Select hot water"
             />
             <SelectField
               label="Parking"
               value={formData.parking || ''}
-              onValueChange={value =>
-                updateField(
-                  'parking',
-                  value ? (value as ParkingType) : undefined
-                )
-              }
+              onValueChange={value => {
+                if (
+                  value &&
+                  Object.values(ParkingType).includes(value as ParkingType)
+                ) {
+                  updateField('parking', value as ParkingType)
+                }
+              }}
               options={PARKING_TYPES}
               placeholder="Select parking"
             />
@@ -509,10 +513,10 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
                 id={key}
                 label={label}
                 checked={
-                  (formData[key as keyof typeof formData] as boolean) || false
+                  (formData[key as keyof typeof formData] as boolean) === true
                 }
                 onCheckedChange={checked =>
-                  updateField(key as keyof CreatePropertyDto, checked as any)
+                  updateField(key as keyof CreatePropertyDto, checked === true)
                 }
               />
             ))}
@@ -543,7 +547,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
               {imagePreviews.map((preview, index) => (
                 <div key={index} className="relative group">
                   <img
-                    src={preview}
+                    src={preview || '/placeholder.svg'}
                     alt={`Preview ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg border border-border"
                   />
@@ -577,7 +581,11 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             <Save className="w-4 h-4 mr-2" />
             {createProperty.isPending ? 'Creating...' : 'Create Property'}
           </Button>
-          <Button variant="outline" onClick={onBack} className="px-6">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="px-6 bg-transparent"
+          >
             Cancel
           </Button>
         </div>
@@ -666,9 +674,9 @@ function SelectField({
       <Label>
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value || undefined} onValueChange={onValueChange}>
         <SelectTrigger className={error ? 'border-red-500' : ''}>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={placeholder || 'Select an option'} />
         </SelectTrigger>
         <SelectContent>
           {options.map(opt => (

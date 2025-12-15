@@ -18,18 +18,6 @@ export enum DealType {
   DAILY_RENT = 'DAILY_RENT',
 }
 
-export enum PropertyStatus {
-  OLD_BUILDING = 'OLD_BUILDING',
-  NEW_BUILDING = 'NEW_BUILDING',
-  UNDER_CONSTRUCTION = 'UNDER_CONSTRUCTION',
-}
-
-export enum PropertyCondition {
-  NEWLY_RENOVATED = 'NEWLY_RENOVATED',
-  OLD_RENOVATED = 'OLD_RENOVATED',
-  REPAIRING = 'REPAIRING',
-}
-
 export enum HeatingType {
   CENTRAL_HEATING = 'CENTRAL_HEATING',
   INDIVIDUAL = 'INDIVIDUAL',
@@ -79,7 +67,6 @@ export interface PropertyTranslation {
   language: string
   title: string
   address: string | null
-  location: string | null
   description: string | null
 }
 
@@ -89,6 +76,7 @@ export interface Property {
 
   // Required fields
   propertyType: PropertyType
+  dealType: DealType
 
   // Location fields (all optional)
   city: City | null
@@ -96,9 +84,7 @@ export interface Property {
   location: string | null
 
   // Optional fields
-  status: PropertyStatus | null
   price: number | null
-  dealType: DealType | null
   hotSale: boolean
   public: boolean
   createdAt: string
@@ -112,9 +98,6 @@ export interface Property {
   floors: number | null
   floorsTotal: number | null
   ceilingHeight: number | null
-
-  // Condition (optional)
-  condition: PropertyCondition | null
   isNonStandard: boolean
 
   // Occupancy (optional)
@@ -169,50 +152,24 @@ export interface PropertiesResponse {
   }
 }
 
+// Simplified filters - only what backend supports
 export interface PropertyFilters {
-  // Pagination
+  // Pagination & Language
   page?: number
   limit?: number
   lang?: string
-  externalId?: string
 
-  // Main filters
+  // Core filters (what backend actually supports)
+  externalId?: string
   city?: string
   propertyType?: string
-  address?: string
+  dealType?: string
   priceFrom?: number
   priceTo?: number
-  hotSale?: boolean
-  public?: boolean // For admin: show all properties or only public ones
-
-  // Additional filters
-  status?: string
-  dealType?: string
   areaFrom?: number
   areaTo?: number
-  rooms?: number // 5+ will query >= 5
-  bedrooms?: number // 4+ will query >= 4
-  bathrooms?: number // 3+ will query >= 3
-  floors?: number
-  condition?: string
-  heating?: string
-  parking?: string
-
-  // Boolean amenity filters (only true values are considered)
-  hasConditioner?: boolean
-  hasFurniture?: boolean
-  hasBalcony?: boolean
-  hasInternet?: boolean
-  hasNaturalGas?: boolean
-}
-
-export interface PropertyTranslation {
-  id: number
-  language: string
-  title: string
-  address: string | null
-  description: string | null
-  propertyId: string
+  rooms?: number
+  bedrooms?: number
 }
 
 export interface UpsertPropertyTranslationDto {
@@ -220,23 +177,21 @@ export interface UpsertPropertyTranslationDto {
   title: string
   address?: string
   description?: string
-  // Note: location is NOT included - it's non-translatable
 }
 
 export interface CreatePropertyDto {
-  // Required fields
+  // REQUIRED fields
   propertyType: PropertyType
+  dealType: DealType
   title: string
 
-  // Location fields (all optional)
+  // Location (all optional strings)
   city?: City
   address?: string
   location?: string
 
   // Optional fields
   description?: string
-  status?: PropertyStatus
-  dealType?: DealType
   hotSale?: boolean
   public?: boolean
   price?: number
@@ -247,14 +202,13 @@ export interface CreatePropertyDto {
   floors?: number
   floorsTotal?: number
   ceilingHeight?: number
-  condition?: PropertyCondition
   isNonStandard?: boolean
   occupancy?: Occupancy
   heating?: HeatingType
   hotWater?: HotWaterType
   parking?: ParkingType
 
-  // Amenities
+  // Amenities (all optional booleans)
   hasConditioner?: boolean
   hasFurniture?: boolean
   hasBed?: boolean

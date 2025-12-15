@@ -1,4 +1,3 @@
-// services/properties.service.ts
 import { api } from '../api/api'
 import { API_ENDPOINTS } from '@/constants/api'
 import type {
@@ -12,8 +11,8 @@ import type {
 
 export const propertiesService = {
   /**
-   * Get all properties with filters
-   * Supports pagination, language selection, and various property filters
+   * Get all PUBLIC properties only (for public-facing pages)
+   * This ALWAYS returns only public properties, even for admins
    */
   getAll: (filters?: PropertyFilters) => {
     // Clean up filters - remove undefined/null values
@@ -32,7 +31,28 @@ export const propertiesService = {
   },
 
   /**
-   * Get property by ID with optional language
+   * Get ALL properties including private ones (for admin area only)
+   * Requires admin authentication
+   */
+  getAllAdmin: (filters?: PropertyFilters) => {
+    // Clean up filters - remove undefined/null values
+    const cleanFilters = filters
+      ? Object.fromEntries(
+          Object.entries(filters).filter(
+            ([_, value]) =>
+              value !== undefined && value !== null && value !== ''
+          )
+        )
+      : {}
+
+    return api.get<PropertiesResponse>('/properties/admin/all', {
+      params: cleanFilters,
+    })
+  },
+
+  /**
+   * Get PUBLIC property by ID (for public-facing pages)
+   * This ALWAYS returns only public properties, even for admins
    */
   getById: (id: string, lang?: string) =>
     api.get<Property>(API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id), {
@@ -40,7 +60,16 @@ export const propertiesService = {
     }),
 
   /**
-   * Create a new property with images
+   * Get property by ID including private ones (for admin area only)
+   * Requires admin authentication
+   */
+  getByIdAdmin: (id: string, lang?: string) =>
+    api.get<Property>(`/properties/admin/${id}`, {
+      params: lang ? { lang } : {},
+    }),
+
+  /**
+   * Create a new property with images (Admin only - requires authentication)
    */
   createProperty: (data: CreatePropertyDto, images?: File[]) => {
     const formData = new FormData()
@@ -72,7 +101,7 @@ export const propertiesService = {
   },
 
   /**
-   * Update property
+   * Update property (Admin only - requires authentication)
    * Can update property fields and/or add new images
    */
   updateProperty: (
@@ -113,7 +142,7 @@ export const propertiesService = {
   },
 
   /**
-   * Delete property
+   * Delete property (Admin only - requires authentication)
    */
   deleteProperty: (id: string) =>
     api.delete<{ message: string }>(
@@ -121,13 +150,13 @@ export const propertiesService = {
     ),
 
   /**
-   * Get all translations for a property
+   * Get all translations for a property (Admin only - requires authentication)
    */
   getTranslations: (id: string) =>
     api.get<PropertyTranslation[]>(API_ENDPOINTS.PROPERTIES.TRANSLATIONS(id)),
 
   /**
-   * Create or update a translation
+   * Create or update a translation (Admin only - requires authentication)
    */
   upsertTranslation: (id: string, data: UpsertPropertyTranslationDto) =>
     api.patch<PropertyTranslation>(
@@ -136,7 +165,7 @@ export const propertiesService = {
     ),
 
   /**
-   * Delete a translation
+   * Delete a translation (Admin only - requires authentication)
    */
   deleteTranslation: (id: string, language: string) =>
     api.delete<{ message: string }>(
@@ -144,7 +173,7 @@ export const propertiesService = {
     ),
 
   /**
-   * Delete a gallery image
+   * Delete a gallery image (Admin only - requires authentication)
    */
   deleteGalleryImage: (propertyId: string, imageId: number) =>
     api.delete<{ message: string }>(

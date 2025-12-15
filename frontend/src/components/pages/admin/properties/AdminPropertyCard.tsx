@@ -1,4 +1,4 @@
-import { Edit, Trash2, ImageIcon } from 'lucide-react'
+import { Edit, Trash2, ImageIcon, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Property } from '@/lib/types/properties'
@@ -43,7 +43,7 @@ export function AdminPropertyCard({
         {imageUrl ? (
           <img
             src={imageUrl}
-            alt={property.address}
+            alt={property.propertyType}
             className="h-16 w-full object-cover rounded-md bg-muted"
           />
         ) : (
@@ -54,7 +54,7 @@ export function AdminPropertyCard({
       </div>
 
       {/* Address */}
-      <div className="col-span-3">
+      <div className="col-span-2">
         <p className="font-medium text-foreground line-clamp-2">
           {property.translation?.title || property.address}
         </p>
@@ -83,14 +83,29 @@ export function AdminPropertyCard({
       </div>
 
       {/* Price */}
-      <div className="col-span-2">
+      <div className="col-span-1">
         <p className="text-sm font-medium text-foreground">
           {formatPrice(property.price)}
         </p>
       </div>
 
+      {/* Status (Public/Private) */}
+      <div className="col-span-1">
+        {property.public ? (
+          <Badge variant="default" className="text-xs gap-1">
+            <Eye className="w-3 h-3" />
+            Public
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="text-xs gap-1">
+            <EyeOff className="w-3 h-3" />
+            Private
+          </Badge>
+        )}
+      </div>
+
       {/* Actions */}
-      <div className="col-span-1 flex items-center justify-end gap-2">
+      <div className="col-span-2 flex items-center justify-end gap-2">
         <Button
           variant="ghost"
           size="sm"

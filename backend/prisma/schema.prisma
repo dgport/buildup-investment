@@ -97,7 +97,6 @@ model ApartmentTranslations {
 ////////////////////////////////////////////////
 
 
-
 enum PropertyType {
   APARTMENT
   VILLA
@@ -110,18 +109,6 @@ enum DealType {
   RENT
   SALE
   DAILY_RENT
-}
-
-enum PropertyStatus {
-  OLD_BUILDING
-  NEW_BUILDING
-  UNDER_CONSTRUCTION
-}
-
-enum PropertyCondition {
-  NEWLY_RENOVATED
-  OLD_RENOVATED
-  REPAIRING
 }
 
 enum HeatingType {
@@ -159,29 +146,27 @@ enum Occupancy {
   TEN_PLUS
 }
 
-// Add this enum near the top with other enums
 enum City {
   BATUMI
   TBILISI
 }
 
-// Updated Property model
+// Updated Property model - removed PropertyStatus and PropertyCondition enums
 model Property {
   id              String           @id @default(cuid())
   externalId      String           @unique @map("external_id")
   
   // Required fields
   propertyType    PropertyType     @map("property_type")
+  dealType        DealType         @map("deal_type")
   
-  // Location fields (all optional)
+  // Location fields (all optional, both strings)
   city            City?
-  address         String?          // Now optional
-  location        String?          // New field for coordinates or specific location
+  address         String?
+  location        String?
   
   // Optional fields
-  status          PropertyStatus?
   price           Int?
-  dealType        DealType?        @map("deal_type")
   hotSale         Boolean          @map("hot_sale") @default(false)
   public          Boolean          @default(true)
   createdAt       DateTime         @map("created_at") @default(now())
@@ -196,8 +181,7 @@ model Property {
   floorsTotal     Int?             @map("floors_total")
   ceilingHeight   Float?           @map("ceiling_height")
 
-  // Condition (optional)
-  condition       PropertyCondition?
+  // Removed: status and condition fields
   isNonStandard   Boolean          @map("is_non_standard") @default(false)
 
   // Occupancy (optional)
@@ -241,7 +225,6 @@ model Property {
   @@map("properties")
   @@index([propertyType])
   @@index([city])
-  @@index([status])
   @@index([price])
   @@index([dealType])
   @@index([hotSale])
@@ -254,9 +237,9 @@ model PropertyTranslations {
   property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   language        String
   
-  // Translatable fields
+  // Translatable fields - title is required, rest optional
   title           String
-  address         String?  // Optional translated address
+  address         String?
   description     String?  @db.Text
 
   @@unique([propertyId, language])
@@ -276,7 +259,6 @@ model PropertyGalleryImage {
   @@map("property_gallery_images")
   @@index([propertyId])
 }
-
 
 
 model HomepageSlide {

@@ -12,13 +12,9 @@ import type {
 import { propertiesService } from '../services/properties.service'
 
 /**
- * Get all properties with filters
- * Supports:
- * - Pagination (page, limit)
- * - Language selection (lang)
- * - Main filters (city, propertyType, address, priceFrom, priceTo, hotSale, public)
- * - Additional filters (status, dealType, areaFrom, areaTo, rooms, bedrooms, bathrooms, etc.)
- * - Boolean amenity filters (hasConditioner, hasFurniture, hasBalcony, etc.)
+ * Get all PUBLIC properties with filters (for public-facing pages)
+ * This hook ALWAYS shows only public properties, even for logged-in admins
+ * Use `usePropertiesAdmin` hook in admin area to see all properties
  */
 export const useProperties = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
@@ -31,9 +27,23 @@ export const useProperties = (filters?: PropertyFilters) => {
 }
 
 /**
- * Get single property by ID with optional language
- * @param id - Property ID
- * @param lang - Language code (default: 'en')
+ * Get ALL properties including private ones (for admin area only)
+ * Requires admin authentication
+ */
+export const usePropertiesAdmin = (filters?: PropertyFilters) => {
+  return useQuery<PropertiesResponse>({
+    queryKey: ['properties', 'admin', filters],
+    queryFn: async () => {
+      const response = await propertiesService.getAllAdmin(filters)
+      return response.data
+    },
+  })
+}
+
+/**
+ * Get single PUBLIC property by ID (for public-facing pages)
+ * This hook ALWAYS shows only public properties, even for logged-in admins
+ * Use `usePropertyAdmin` hook in admin area to see all properties
  */
 export const useProperty = (id: string, lang?: string) => {
   return useQuery<Property>({
@@ -47,9 +57,22 @@ export const useProperty = (id: string, lang?: string) => {
 }
 
 /**
- * Create a new property with optional images
- * Automatically generates a unique externalId
- * Creates default translations for all languages
+ * Get property by ID including private ones (for admin area only)
+ * Requires admin authentication
+ */
+export const usePropertyAdmin = (id: string, lang?: string) => {
+  return useQuery<Property>({
+    queryKey: ['properties', 'admin', id, lang],
+    queryFn: async () => {
+      const response = await propertiesService.getByIdAdmin(id, lang)
+      return response.data
+    },
+    enabled: !!id,
+  })
+}
+
+/**
+ * Create property (Admin only)
  */
 export const useCreateProperty = () => {
   return useMutation({
@@ -64,15 +87,13 @@ export const useCreateProperty = () => {
       return response.data
     },
     onSuccess: () => {
-      // Invalidate all property queries to refresh lists
       queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
 }
 
 /**
- * Update an existing property
- * Can update property fields and/or add new gallery images
+ * Update property (Admin only)
  */
 export const useUpdateProperty = () => {
   return useMutation({
@@ -89,7 +110,6 @@ export const useUpdateProperty = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
-      // Invalidate specific property and all property lists
       queryClient.invalidateQueries({ queryKey: ['properties'] })
       queryClient.invalidateQueries({ queryKey: ['properties', variables.id] })
     },
@@ -97,8 +117,7 @@ export const useUpdateProperty = () => {
 }
 
 /**
- * Delete a property
- * Also deletes all related translations and gallery images
+ * Delete property (Admin only)
  */
 export const useDeleteProperty = () => {
   return useMutation({
@@ -107,15 +126,13 @@ export const useDeleteProperty = () => {
       return response.data
     },
     onSuccess: () => {
-      // Invalidate all property queries
       queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
 }
 
 /**
- * Get all translations for a property
- * Returns translations for all languages
+ * Get property translations (Admin only)
  */
 export const usePropertyTranslations = (id: string) => {
   return useQuery<PropertyTranslation[]>({
@@ -129,9 +146,7 @@ export const usePropertyTranslations = (id: string) => {
 }
 
 /**
- * Create or update a translation
- * Fields: language, title, address (optional), description (optional)
- * Note: location is NOT translatable (stored on main Property model)
+ * Create or update translation (Admin only)
  */
 export const useUpsertPropertyTranslation = () => {
   return useMutation({
@@ -146,19 +161,16 @@ export const useUpsertPropertyTranslation = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
-      // Invalidate translations, specific property, and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id, 'translations'],
       })
-      queryClient.invalidateQueries({ queryKey: ['properties'] })
       queryClient.invalidateQueries({ queryKey: ['properties', variables.id] })
     },
   })
 }
 
 /**
- * Delete a translation
- * Cannot delete English (en) translation - it's required
+ * Delete translation (Admin only)
  */
 export const useDeletePropertyTranslation = () => {
   return useMutation({
@@ -167,18 +179,16 @@ export const useDeletePropertyTranslation = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
-      // Invalidate translations, specific property, and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id, 'translations'],
       })
-      queryClient.invalidateQueries({ queryKey: ['properties'] })
       queryClient.invalidateQueries({ queryKey: ['properties', variables.id] })
     },
   })
 }
 
 /**
- * Delete a gallery image from a property
+ * Delete gallery image (Admin only)
  */
 export const useDeletePropertyImage = () => {
   return useMutation({
@@ -196,18 +206,15 @@ export const useDeletePropertyImage = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
-      // Invalidate specific property and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.propertyId],
       })
-      queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
 }
 
 /**
- * Add images to an existing property
- * Uses the update endpoint with only images (no data updates)
+ * Add images to property (Admin only - convenience hook)
  */
 export const useAddPropertyImages = () => {
   return useMutation({
@@ -216,11 +223,9 @@ export const useAddPropertyImages = () => {
       return response.data
     },
     onSuccess: (_, variables) => {
-      // Invalidate specific property and all property lists
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id],
       })
-      queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
 }

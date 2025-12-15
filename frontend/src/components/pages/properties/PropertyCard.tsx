@@ -1,3 +1,7 @@
+'use client'
+
+import type React from 'react'
+
 import {
   Calendar,
   MapPin,
@@ -7,12 +11,13 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Flame,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { Switch } from '@/components/ui/switch'
 import { useTranslation } from 'react-i18next'
-import type { PropertyStatus, PropertyType } from '@/lib/types/properties'
+import type { PropertyType } from '@/lib/types/properties'
 
 interface PropertyCardProps {
   property: {
@@ -30,8 +35,8 @@ interface PropertyCardProps {
     title: string
     totalArea: number | null
     propertyType: PropertyType
-    status: PropertyStatus | null
     floors?: number
+    hotSale?: boolean // Added hotSale property
   }
 }
 
@@ -91,6 +96,8 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     const year = String(date.getFullYear()).slice(-2)
     return `${month}/${day}/${year}`
   }
+
+  console.log(property)
 
   return (
     <div
@@ -168,6 +175,16 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           </div>
         )}
 
+        {property.hotSale && (
+          <div className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-orange-500 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-20 animate-pulse">
+            <Flame className="w-4 h-4 text-white" />
+            <span className="text-xs font-bold text-white uppercase tracking-wide">
+              {t('properties.hotSale', { defaultValue: 'Hot Sale' })}
+            </span>
+          </div>
+        )}
+
+        {/* ID badge in top-right corner */}
         <div
           className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-md flex items-center gap-1.5 z-20"
           onClick={e => e.stopPropagation()}
@@ -240,7 +257,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             </div>
           </div>
 
-          <h4 className="text-sm sm:text-base   text-gray-800 hover:text-blue-900 transition-colors line-clamp-1">
+          <h4 className="text-sm sm:text-base text-gray-800 hover:text-blue-900 transition-colors line-clamp-1">
             {property.title}
           </h4>
 

@@ -14,37 +14,17 @@ interface FindAllParams {
   lang?: string;
   page?: number;
   limit?: number;
-
-  externalId?: string; // ADD THIS
+  externalId?: string;
   city?: string;
   propertyType?: string;
-
-  address?: string;
+  dealType?: string;
   priceFrom?: number;
   priceTo?: number;
-  hotSale?: boolean;
-  public?: boolean;
-
-  // Additional filters
-  status?: string;
-  dealType?: string;
   areaFrom?: number;
   areaTo?: number;
   rooms?: number;
   bedrooms?: number;
-  bathrooms?: number;
-  floors?: number;
-  condition?: string;
-  heating?: string;
-  parking?: string;
-
-  // Boolean filters
-  hasConditioner?: boolean;
-  hasFurniture?: boolean;
-  hasBalcony?: boolean;
-  hasInternet?: boolean;
-  hasNaturalGas?: boolean;
-  hasParking?: boolean;
+  includePrivate?: boolean; // For admin access
 }
 
 @Injectable()
@@ -79,57 +59,31 @@ export class PropertiesService {
       limit = 10,
       city,
       propertyType,
-      address,
+      dealType,
       priceFrom,
       priceTo,
-      hotSale,
-      public: isPublic,
-      status,
-      dealType,
       areaFrom,
       areaTo,
       rooms,
       bedrooms,
-      bathrooms,
-      floors,
-      condition,
-      heating,
-      parking,
-      hasConditioner,
-      hasFurniture,
-      hasBalcony,
-      hasInternet,
-      hasNaturalGas,
+      includePrivate = false,
     } = params;
 
     const skip = (page - 1) * limit;
     const where: any = {};
 
+    // CRITICAL: Only show public properties to non-admin users
+    if (!includePrivate) {
+      where.public = true;
+    }
+
+    // Basic filters
     if (externalId) {
       where.externalId = { contains: externalId, mode: 'insensitive' };
     }
-
-    // Main filters
     if (city) where.city = city;
     if (propertyType) where.propertyType = propertyType;
     if (dealType) where.dealType = dealType;
-    if (hotSale !== undefined) where.hotSale = hotSale;
-    if (isPublic !== undefined) where.public = isPublic;
-
-    // Address filter (searches in base address and translations)
-    if (address) {
-      where.OR = [
-        { address: { contains: address, mode: 'insensitive' } },
-        {
-          translations: {
-            some: {
-              address: { contains: address, mode: 'insensitive' },
-              language: lang,
-            },
-          },
-        },
-      ];
-    }
 
     // Price range filter
     if (priceFrom !== undefined || priceTo !== undefined) {
@@ -138,51 +92,21 @@ export class PropertiesService {
       if (priceTo !== undefined) where.price.lte = priceTo;
     }
 
-    // Additional filters
-    if (status) where.status = status;
-
+    // Area range filter
     if (areaFrom !== undefined || areaTo !== undefined) {
       where.totalArea = {};
       if (areaFrom !== undefined) where.totalArea.gte = areaFrom;
       if (areaTo !== undefined) where.totalArea.lte = areaTo;
     }
 
-    // Room filters with "or more" logic
+    // Room filters
     if (rooms !== undefined) {
-      if (rooms >= 5) {
-        where.rooms = { gte: 5 };
-      } else {
-        where.rooms = rooms;
-      }
+      where.rooms = rooms;
     }
 
     if (bedrooms !== undefined) {
-      if (bedrooms >= 4) {
-        where.bedrooms = { gte: 4 };
-      } else {
-        where.bedrooms = bedrooms;
-      }
+      where.bedrooms = bedrooms;
     }
-
-    if (bathrooms !== undefined) {
-      if (bathrooms >= 3) {
-        where.bathrooms = { gte: 3 };
-      } else {
-        where.bathrooms = bathrooms;
-      }
-    }
-
-    if (floors !== undefined) where.floors = floors;
-    if (condition) where.condition = condition;
-    if (heating) where.heating = heating;
-    if (parking) where.parking = parking;
-
-    // Boolean amenity filters
-    if (hasConditioner === true) where.hasConditioner = true;
-    if (hasFurniture === true) where.hasFurniture = true;
-    if (hasBalcony === true) where.hasBalcony = true;
-    if (hasInternet === true) where.hasInternet = true;
-    if (hasNaturalGas === true) where.hasNaturalGas = true;
 
     const total = await this.prismaService.property.count({ where });
 
@@ -190,9 +114,12 @@ export class PropertiesService {
       skip,
       take: limit,
       where,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        // Hot sale properties first
+        { hotSale: 'desc' },
+        // Then by creation date (newest first)
+        { createdAt: 'desc' },
+      ],
       include: {
         translations: {
           where: { language: lang },
@@ -223,9 +150,16 @@ export class PropertiesService {
     };
   }
 
-  async findOne(id: string, lang = 'en') {
-    const property = await this.prismaService.property.findUnique({
-      where: { id },
+  async findOne(id: string, lang = 'en', includePrivate = false) {
+    const where: any = { id };
+
+    // CRITICAL: Only show public properties to non-admin users
+    if (!includePrivate) {
+      where.public = true;
+    }
+
+    const property = await this.prismaService.property.findFirst({
+      where,
       include: {
         translations: {
           where: { language: lang },
@@ -253,11 +187,10 @@ export class PropertiesService {
       data: {
         externalId: generatedExternalId,
         propertyType: dto.propertyType,
+        dealType: dto.dealType,
         city: dto.city || null,
         address: dto.address || null,
         location: dto.location || null,
-        status: dto.status,
-        dealType: dto.dealType,
         hotSale: dto.hotSale || false,
         public: dto.public !== undefined ? dto.public : true,
         price: dto.price ? parseInt(dto.price as any) : null,
@@ -270,7 +203,6 @@ export class PropertiesService {
         ceilingHeight: dto.ceilingHeight
           ? parseFloat(dto.ceilingHeight as any)
           : null,
-        condition: dto.condition,
         isNonStandard: dto.isNonStandard || false,
         occupancy: dto.occupancy,
         heating: dto.heating,
@@ -314,7 +246,6 @@ export class PropertiesService {
         title: lang === 'en' && dto.title ? dto.title : '',
         address: lang === 'en' && dto.address ? dto.address : null,
         description: lang === 'en' && dto.description ? dto.description : null,
-        // Remove: location
       })),
       skipDuplicates: true,
     });
@@ -339,7 +270,7 @@ export class PropertiesService {
       }
     }
 
-    return this.findOne(property.id);
+    return this.findOne(property.id, 'en', true);
   }
 
   async updateProperty(
@@ -360,11 +291,10 @@ export class PropertiesService {
     // Update all optional fields
     if (dto.propertyType !== undefined)
       updateData.propertyType = dto.propertyType;
+    if (dto.dealType !== undefined) updateData.dealType = dto.dealType;
     if (dto.city !== undefined) updateData.city = dto.city || null;
     if (dto.address !== undefined) updateData.address = dto.address || null;
     if (dto.location !== undefined) updateData.location = dto.location || null;
-    if (dto.status !== undefined) updateData.status = dto.status;
-    if (dto.dealType !== undefined) updateData.dealType = dto.dealType;
     if (dto.hotSale !== undefined) updateData.hotSale = dto.hotSale;
     if (dto.public !== undefined) updateData.public = dto.public;
     if (dto.price !== undefined)
@@ -391,7 +321,6 @@ export class PropertiesService {
       updateData.ceilingHeight = dto.ceilingHeight
         ? parseFloat(dto.ceilingHeight as any)
         : null;
-    if (dto.condition !== undefined) updateData.condition = dto.condition;
     if (dto.isNonStandard !== undefined)
       updateData.isNonStandard = dto.isNonStandard;
     if (dto.occupancy !== undefined) updateData.occupancy = dto.occupancy;
@@ -469,7 +398,7 @@ export class PropertiesService {
       }
     }
 
-    return this.findOne(updatedProperty.id);
+    return this.findOne(updatedProperty.id, 'en', true);
   }
 
   async deleteProperty(id: string) {
@@ -518,7 +447,6 @@ export class PropertiesService {
         title: '',
         address: null,
         description: null,
-        // Remove: location: null
       },
     });
 
@@ -540,7 +468,6 @@ export class PropertiesService {
     title: string,
     address?: string,
     description?: string,
-    // Remove: location?: string
   ) {
     const property = await this.prismaService.property.findUnique({
       where: { id: propertyId },
@@ -561,7 +488,6 @@ export class PropertiesService {
         title,
         address: address || null,
         description: description || null,
-        // Remove: location
       },
       create: {
         propertyId,
@@ -569,7 +495,6 @@ export class PropertiesService {
         title,
         address: address || null,
         description: description || null,
-        // Remove: location
       },
     });
 
@@ -637,7 +562,6 @@ export class PropertiesService {
         title: '',
         address: null,
         description: null,
-        // Remove: location: null
       }),
     );
   }

@@ -28,7 +28,7 @@ services:
       - ./backend/.env
     volumes:
       - /app/node_modules
-      - ./uploads:/app/public/uploads
+      - uploads_data:/app/public/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,3 +50,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

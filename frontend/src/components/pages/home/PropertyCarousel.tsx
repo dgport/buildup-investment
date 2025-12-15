@@ -37,6 +37,8 @@ const PropertyCarousel = () => {
     propertyType: property.propertyType,
     status: property.status,
     floors: property.floors,
+
+    hotSale: property.hotSale,
   })
 
   if (isLoading) {

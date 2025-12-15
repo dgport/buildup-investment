@@ -4,6 +4,7 @@ import { useUpdateProperty } from '@/lib/hooks/useProperties'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
@@ -12,12 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Property, CreatePropertyDto } from '@/lib/types/properties'
+import type { Property, UpdatePropertyDto } from '@/lib/types/properties'
 import {
   PropertyType,
-  PropertyStatus,
   DealType,
-  PropertyCondition,
   HeatingType,
   ParkingType,
   HotWaterType,
@@ -50,18 +49,6 @@ const DEAL_TYPES = [
   { value: DealType.SALE, label: 'Sale' },
   { value: DealType.RENT, label: 'Rent' },
   { value: DealType.DAILY_RENT, label: 'Daily Rent' },
-]
-
-const PROPERTY_STATUSES = [
-  { value: PropertyStatus.OLD_BUILDING, label: 'Old Building' },
-  { value: PropertyStatus.NEW_BUILDING, label: 'New Building' },
-  { value: PropertyStatus.UNDER_CONSTRUCTION, label: 'Under Construction' },
-]
-
-const PROPERTY_CONDITIONS = [
-  { value: PropertyCondition.NEWLY_RENOVATED, label: 'Newly Renovated' },
-  { value: PropertyCondition.OLD_RENOVATED, label: 'Old Renovated' },
-  { value: PropertyCondition.REPAIRING, label: 'Repairing' },
 ]
 
 const HEATING_TYPES = [
@@ -124,14 +111,11 @@ const AMENITIES = [
   { key: 'isNonStandard', label: 'Non-Standard Layout' },
 ]
 
-const propertyToFormData = (
-  property: Property
-): Partial<CreatePropertyDto> => ({
+const propertyToFormData = (property: Property): UpdatePropertyDto => ({
   propertyType: property.propertyType,
   city: property.city || undefined,
   address: property.address || undefined,
   location: property.location || undefined,
-  status: property.status || undefined,
   dealType: property.dealType || undefined,
   hotSale: property.hotSale,
   public: property.public,
@@ -143,7 +127,6 @@ const propertyToFormData = (
   floors: property.floors || undefined,
   floorsTotal: property.floorsTotal || undefined,
   ceilingHeight: property.ceilingHeight || undefined,
-  condition: property.condition || undefined,
   isNonStandard: property.isNonStandard,
   occupancy: property.occupancy || undefined,
   heating: property.heating || undefined,
@@ -184,7 +167,7 @@ export function EditProperty({
   const [activeSection, setActiveSection] = useState<
     'details' | 'images' | 'translations'
   >('details')
-  const [formData, setFormData] = useState<Partial<CreatePropertyDto>>(
+  const [formData, setFormData] = useState<UpdatePropertyDto>(
     propertyToFormData(property)
   )
   const [hasChanges, setHasChanges] = useState(false)
@@ -196,9 +179,9 @@ export function EditProperty({
     setHasChanges(false)
   }, [property])
 
-  const updateField = <K extends keyof CreatePropertyDto>(
+  const updateField = <K extends keyof UpdatePropertyDto>(
     field: K,
-    value: CreatePropertyDto[K]
+    value: UpdatePropertyDto[K]
   ) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setHasChanges(true)
@@ -312,10 +295,10 @@ function DetailsSection({
   onSubmit,
   onCancel,
 }: {
-  formData: Partial<CreatePropertyDto>
-  updateField: <K extends keyof CreatePropertyDto>(
+  formData: UpdatePropertyDto
+  updateField: <K extends keyof UpdatePropertyDto>(
     field: K,
-    value: CreatePropertyDto[K]
+    value: UpdatePropertyDto[K]
   ) => void
   hasChanges: boolean
   isPending: boolean
@@ -337,36 +320,22 @@ function DetailsSection({
           />
 
           <SelectField
-            label="City"
-            value={formData.city || ''}
-            onValueChange={value =>
-              updateField('city', value ? (value as City) : undefined)
-            }
-            options={CITIES}
-            placeholder="Select city"
-          />
-
-          <SelectField
             label="Deal Type"
             value={formData.dealType || ''}
-            onValueChange={value =>
-              updateField('dealType', value ? (value as DealType) : undefined)
-            }
+            onValueChange={value => updateField('dealType', value as DealType)}
             options={DEAL_TYPES}
-            placeholder="Select deal type"
           />
 
           <SelectField
-            label="Property Status"
-            value={formData.status || ''}
-            onValueChange={value =>
-              updateField(
-                'status',
-                value ? (value as PropertyStatus) : undefined
-              )
-            }
-            options={PROPERTY_STATUSES}
-            placeholder="Select status"
+            label="City"
+            value={formData.city || ''}
+            onValueChange={value => {
+              if (value && Object.values(City).includes(value as City)) {
+                updateField('city', value as City)
+              }
+            }}
+            options={CITIES}
+            placeholder="Select city"
           />
 
           <InputField
@@ -379,6 +348,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="e.g., 150000"
           />
         </div>
 
@@ -429,6 +399,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="120"
           />
           <InputField
             label="Rooms"
@@ -440,6 +411,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="3"
           />
           <InputField
             label="Bedrooms"
@@ -451,6 +423,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="2"
           />
           <InputField
             label="Bathrooms"
@@ -462,6 +435,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="2"
           />
           <InputField
             label="Floor"
@@ -473,6 +447,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="5"
           />
           <InputField
             label="Total Floors"
@@ -484,6 +459,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="10"
           />
           <InputField
             label="Ceiling Height (m)"
@@ -496,6 +472,7 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="3.0"
           />
           <InputField
             label="Balcony Area (m²)"
@@ -508,32 +485,24 @@ function DetailsSection({
                 e.target.value ? Number(e.target.value) : undefined
               )
             }
+            placeholder="10.5"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SelectField
-            label="Condition"
-            value={formData.condition || ''}
-            onValueChange={value =>
-              updateField(
-                'condition',
-                value ? (value as PropertyCondition) : undefined
-              )
+        <SelectField
+          label="Occupancy"
+          value={formData.occupancy || ''}
+          onValueChange={value => {
+            if (
+              value &&
+              Object.values(Occupancy).includes(value as Occupancy)
+            ) {
+              updateField('occupancy', value as Occupancy)
             }
-            options={PROPERTY_CONDITIONS}
-            placeholder="Select condition"
-          />
-          <SelectField
-            label="Occupancy"
-            value={formData.occupancy || ''}
-            onValueChange={value =>
-              updateField('occupancy', value ? (value as Occupancy) : undefined)
-            }
-            options={OCCUPANCY_OPTIONS}
-            placeholder="Select occupancy"
-          />
-        </div>
+          }}
+          options={OCCUPANCY_OPTIONS}
+          placeholder="Select occupancy"
+        />
       </Section>
 
       {/* Utilities */}
@@ -542,30 +511,42 @@ function DetailsSection({
           <SelectField
             label="Heating"
             value={formData.heating || ''}
-            onValueChange={value =>
-              updateField('heating', value ? (value as HeatingType) : undefined)
-            }
+            onValueChange={value => {
+              if (
+                value &&
+                Object.values(HeatingType).includes(value as HeatingType)
+              ) {
+                updateField('heating', value as HeatingType)
+              }
+            }}
             options={HEATING_TYPES}
             placeholder="Select heating"
           />
           <SelectField
             label="Hot Water"
             value={formData.hotWater || ''}
-            onValueChange={value =>
-              updateField(
-                'hotWater',
-                value ? (value as HotWaterType) : undefined
-              )
-            }
+            onValueChange={value => {
+              if (
+                value &&
+                Object.values(HotWaterType).includes(value as HotWaterType)
+              ) {
+                updateField('hotWater', value as HotWaterType)
+              }
+            }}
             options={HOT_WATER_TYPES}
             placeholder="Select hot water"
           />
           <SelectField
             label="Parking"
             value={formData.parking || ''}
-            onValueChange={value =>
-              updateField('parking', value ? (value as ParkingType) : undefined)
-            }
+            onValueChange={value => {
+              if (
+                value &&
+                Object.values(ParkingType).includes(value as ParkingType)
+              ) {
+                updateField('parking', value as ParkingType)
+              }
+            }}
             options={PARKING_TYPES}
             placeholder="Select parking"
           />
@@ -584,7 +565,7 @@ function DetailsSection({
                 (formData[key as keyof typeof formData] as boolean) || false
               }
               onCheckedChange={checked =>
-                updateField(key as keyof CreatePropertyDto, checked as any)
+                updateField(key as keyof UpdatePropertyDto, checked as any)
               }
             />
           ))}
@@ -601,7 +582,11 @@ function DetailsSection({
           <Save className="w-4 h-4 mr-2" />
           {isPending ? 'Updating...' : 'Update Property'}
         </Button>
-        <Button variant="outline" onClick={onCancel} className="px-6">
+        <Button
+          variant="outline"
+          onClick={onCancel}
+          className="px-6 bg-transparent"
+        >
           Cancel
         </Button>
       </div>
@@ -639,6 +624,20 @@ function InputField({
   )
 }
 
+function TextareaField({
+  label,
+  ...props
+}: {
+  label: string
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={props.id}>{label}</Label>
+      <Textarea {...props} />
+    </div>
+  )
+}
+
 function SelectField({
   label,
   options,
@@ -655,9 +654,9 @@ function SelectField({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value || undefined} onValueChange={onValueChange}>
         <SelectTrigger>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={placeholder || 'Select an option'} />
         </SelectTrigger>
         <SelectContent>
           {options.map(opt => (

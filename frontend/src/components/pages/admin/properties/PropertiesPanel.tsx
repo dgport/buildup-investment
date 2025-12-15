@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-import { useProperties, useDeleteProperty } from '@/lib/hooks/useProperties'
+import {
+  usePropertiesAdmin,
+  useDeleteProperty,
+} from '@/lib/hooks/useProperties'
 import { Button } from '@/components/ui/button'
 import { Pagination } from '@/components/shared/pagination/Pagination'
 import { AdminPropertyCard } from './AdminPropertyCard'
 import type { Property } from '@/lib/types/properties'
- 
+
 import { EditProperty } from './EditProperty'
 import { CreateProperty } from './CreateProperty'
 
@@ -21,11 +24,12 @@ export default function PropertiesPanel() {
 
   const page = parseInt(searchParams.get('page') || '1', 10)
 
+  // Use usePropertiesAdmin to get ALL properties (public + private)
   const {
     data: propertiesResponse,
     isLoading,
     error,
-  } = useProperties({
+  } = usePropertiesAdmin({
     page,
     limit: PROPERTIES_PER_PAGE,
   })
@@ -89,7 +93,10 @@ export default function PropertiesPanel() {
           <h1 className="text-4xl font-bold tracking-tight text-foreground">
             Properties
           </h1>
-          <p className="text-muted-foreground">Manage your property listings</p>
+          <p className="text-muted-foreground">
+            Manage your property listings (showing all properties including
+            private)
+          </p>
         </div>
 
         <Button onClick={() => setView('create')} className="w-full sm:w-auto">
@@ -113,12 +120,13 @@ export default function PropertiesPanel() {
           <div className="border border-border rounded-lg overflow-hidden bg-card">
             <div className="grid grid-cols-12 gap-4 items-center p-4 bg-muted/50 border-b border-border font-medium text-sm text-muted-foreground">
               <div className="col-span-2">Image</div>
-              <div className="col-span-3">Address</div>
+              <div className="col-span-2">Address</div>
               <div className="col-span-2">Type</div>
               <div className="col-span-1">External ID</div>
               <div className="col-span-1">Area</div>
-              <div className="col-span-2">Price</div>
-              <div className="col-span-1 text-right">Actions</div>
+              <div className="col-span-1">Price</div>
+              <div className="col-span-1">Status</div>
+              <div className="col-span-2 text-right">Actions</div>
             </div>
 
             {properties.map(property => (
