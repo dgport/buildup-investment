@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { Edit, Save } from 'lucide-react'
 import {
@@ -9,8 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { LANGUAGE_OPTIONS } from '@/constants/languages'
 import type { UpsertPropertyTranslationDto } from '@/lib/types/properties'
+import { LANGUAGE_OPTIONS } from '@/constants/languages'
 
 interface PropertyTranslationsManagerProps {
   propertyId: string
@@ -167,7 +169,7 @@ function EditingMode({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Address</Label>
+        <Label className="text-sm font-medium">Address (Translatable)</Label>
         <Input
           type="text"
           value={editingTranslation.address || ''}
@@ -226,7 +228,7 @@ function ViewMode({
           </p>
           {translation.address && (
             <p className="text-xs text-muted-foreground">
-              📍 {translation.address}
+              {translation.address}
             </p>
           )}
           {translation.description && (

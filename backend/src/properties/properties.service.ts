@@ -9,13 +9,15 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { TranslationSyncUtil } from '@/common/utils/translation-sync.util';
 import { LANGUAGES } from '@/common/constants/language';
+import { Region } from '@prisma/client';
 
 interface FindAllParams {
   lang?: string;
   page?: number;
   limit?: number;
   externalId?: string;
-  city?: string;
+  location?: string;
+  region?: Region;
   propertyType?: string;
   dealType?: string;
   priceFrom?: number;
@@ -24,7 +26,7 @@ interface FindAllParams {
   areaTo?: number;
   rooms?: number;
   bedrooms?: number;
-  includePrivate?: boolean; // For admin access
+  includePrivate?: boolean;
 }
 
 @Injectable()
@@ -51,13 +53,36 @@ export class PropertiesService {
     return externalId;
   }
 
+  private async getRegionTranslation(region: Region | null, lang: string) {
+    if (!region) return null;
+
+    const translation = await this.prismaService.regionTranslations.findFirst({
+      where: {
+        region: region,
+        language: lang,
+      },
+    });
+
+    if (!translation && lang !== 'en') {
+      return await this.prismaService.regionTranslations.findFirst({
+        where: {
+          region: region,
+          language: 'en',
+        },
+      });
+    }
+
+    return translation;
+  }
+
   async findAll(params: FindAllParams = {}) {
     const {
       lang = 'en',
       externalId,
       page = 1,
       limit = 10,
-      city,
+      location,
+      region,
       propertyType,
       dealType,
       priceFrom,
@@ -72,34 +97,30 @@ export class PropertiesService {
     const skip = (page - 1) * limit;
     const where: any = {};
 
-    // CRITICAL: Only show public properties to non-admin users
     if (!includePrivate) {
       where.public = true;
     }
 
-    // Basic filters
     if (externalId) {
       where.externalId = { contains: externalId, mode: 'insensitive' };
     }
-    if (city) where.city = city;
+    if (location) where.location = location;
+    if (region) where.region = region;
     if (propertyType) where.propertyType = propertyType;
     if (dealType) where.dealType = dealType;
 
-    // Price range filter
     if (priceFrom !== undefined || priceTo !== undefined) {
       where.price = {};
       if (priceFrom !== undefined) where.price.gte = priceFrom;
       if (priceTo !== undefined) where.price.lte = priceTo;
     }
 
-    // Area range filter
     if (areaFrom !== undefined || areaTo !== undefined) {
       where.totalArea = {};
       if (areaFrom !== undefined) where.totalArea.gte = areaFrom;
       if (areaTo !== undefined) where.totalArea.lte = areaTo;
     }
 
-    // Room filters
     if (rooms !== undefined) {
       where.rooms = rooms;
     }
@@ -114,28 +135,103 @@ export class PropertiesService {
       skip,
       take: limit,
       where,
-      orderBy: [
-        // Hot sale properties first
-        { hotSale: 'desc' },
-        // Then by creation date (newest first)
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ hotSale: 'desc' }, { createdAt: 'desc' }],
       include: {
-        translations: {
-          where: { language: lang },
-          take: 1,
-        },
+        translations: true,
         galleryImages: {
           orderBy: { order: 'asc' },
         },
       },
     });
 
-    const mappedProperties = properties.map((property) => ({
-      ...property,
-      translation: property.translations[0] || null,
-      galleryImages: property.galleryImages,
-    }));
+    // Fetch region translations for all unique regions
+    const uniqueRegions = [
+      ...new Set(properties.map((p) => p.region).filter(Boolean)),
+    ] as Region[];
+
+    const regionTranslations =
+      uniqueRegions.length > 0
+        ? await this.prismaService.regionTranslations.findMany({
+            where: {
+              region: { in: uniqueRegions },
+              language: { in: lang !== 'en' ? [lang, 'en'] : ['en'] },
+            },
+          })
+        : [];
+
+    const regionTranslationMap = new Map<Region, any>();
+    regionTranslations.forEach((rt) => {
+      const existing = regionTranslationMap.get(rt.region);
+      if (!existing || rt.language === lang) {
+        regionTranslationMap.set(rt.region, rt);
+      }
+    });
+
+    const mappedProperties = properties.map((property) => {
+      const regionTranslation = property.region
+        ? regionTranslationMap.get(property.region)
+        : null;
+
+      const translation =
+        property.translations.find(
+          (t) => t.language === lang && t.title && t.title.trim(),
+        ) || property.translations.find((t) => t.language === 'en' && t.title);
+
+      return {
+        id: property.id,
+        externalId: property.externalId,
+        propertyType: property.propertyType,
+        dealType: property.dealType,
+        location: property.location,
+        region: property.region,
+        regionName: regionTranslation?.name || null,
+        address: property.address,
+        price: property.price,
+        hotSale: property.hotSale,
+        public: property.public,
+        createdAt: property.createdAt,
+        updatedAt: property.updatedAt,
+        totalArea: property.totalArea,
+        rooms: property.rooms,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        floors: property.floors,
+        floorsTotal: property.floorsTotal,
+        ceilingHeight: property.ceilingHeight,
+        isNonStandard: property.isNonStandard,
+        occupancy: property.occupancy,
+        heating: property.heating,
+        hotWater: property.hotWater,
+        parking: property.parking,
+        hasConditioner: property.hasConditioner,
+        hasFurniture: property.hasFurniture,
+        hasBed: property.hasBed,
+        hasSofa: property.hasSofa,
+        hasTable: property.hasTable,
+        hasChairs: property.hasChairs,
+        hasStove: property.hasStove,
+        hasRefrigerator: property.hasRefrigerator,
+        hasOven: property.hasOven,
+        hasWashingMachine: property.hasWashingMachine,
+        hasKitchenAppliances: property.hasKitchenAppliances,
+        hasBalcony: property.hasBalcony,
+        balconyArea: property.balconyArea,
+        hasNaturalGas: property.hasNaturalGas,
+        hasInternet: property.hasInternet,
+        hasTV: property.hasTV,
+        hasSewerage: property.hasSewerage,
+        isFenced: property.isFenced,
+        hasYardLighting: property.hasYardLighting,
+        hasGrill: property.hasGrill,
+        hasAlarm: property.hasAlarm,
+        hasVentilation: property.hasVentilation,
+        hasWater: property.hasWater,
+        hasElectricity: property.hasElectricity,
+        hasGate: property.hasGate,
+        translation: translation || null,
+        galleryImages: property.galleryImages,
+      };
+    });
 
     return {
       data: mappedProperties,
@@ -153,7 +249,6 @@ export class PropertiesService {
   async findOne(id: string, lang = 'en', includePrivate = false) {
     const where: any = { id };
 
-    // CRITICAL: Only show public properties to non-admin users
     if (!includePrivate) {
       where.public = true;
     }
@@ -161,9 +256,7 @@ export class PropertiesService {
     const property = await this.prismaService.property.findFirst({
       where,
       include: {
-        translations: {
-          where: { language: lang },
-        },
+        translations: true,
         galleryImages: {
           orderBy: { order: 'asc' },
         },
@@ -174,9 +267,69 @@ export class PropertiesService {
       throw new NotFoundException(`Property with ID "${id}" not found`);
     }
 
+    const regionTranslation = await this.getRegionTranslation(
+      property.region,
+      lang,
+    );
+
+    const translation =
+      property.translations.find(
+        (t) => t.language === lang && t.title && t.title.trim(),
+      ) || property.translations.find((t) => t.language === 'en' && t.title);
+
     return {
-      ...property,
-      translation: property.translations[0] || null,
+      id: property.id,
+      externalId: property.externalId,
+      propertyType: property.propertyType,
+      dealType: property.dealType,
+      location: property.location,
+      region: property.region,
+      regionName: regionTranslation?.name || null,
+      address: property.address,
+      price: property.price,
+      hotSale: property.hotSale,
+      public: property.public,
+      createdAt: property.createdAt,
+      updatedAt: property.updatedAt,
+      totalArea: property.totalArea,
+      rooms: property.rooms,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      floors: property.floors,
+      floorsTotal: property.floorsTotal,
+      ceilingHeight: property.ceilingHeight,
+      isNonStandard: property.isNonStandard,
+      occupancy: property.occupancy,
+      heating: property.heating,
+      hotWater: property.hotWater,
+      parking: property.parking,
+      hasConditioner: property.hasConditioner,
+      hasFurniture: property.hasFurniture,
+      hasBed: property.hasBed,
+      hasSofa: property.hasSofa,
+      hasTable: property.hasTable,
+      hasChairs: property.hasChairs,
+      hasStove: property.hasStove,
+      hasRefrigerator: property.hasRefrigerator,
+      hasOven: property.hasOven,
+      hasWashingMachine: property.hasWashingMachine,
+      hasKitchenAppliances: property.hasKitchenAppliances,
+      hasBalcony: property.hasBalcony,
+      balconyArea: property.balconyArea,
+      hasNaturalGas: property.hasNaturalGas,
+      hasInternet: property.hasInternet,
+      hasTV: property.hasTV,
+      hasSewerage: property.hasSewerage,
+      isFenced: property.isFenced,
+      hasYardLighting: property.hasYardLighting,
+      hasGrill: property.hasGrill,
+      hasAlarm: property.hasAlarm,
+      hasVentilation: property.hasVentilation,
+      hasWater: property.hasWater,
+      hasElectricity: property.hasElectricity,
+      hasGate: property.hasGate,
+      translation: translation || null,
+      galleryImages: property.galleryImages,
     };
   }
 
@@ -188,9 +341,9 @@ export class PropertiesService {
         externalId: generatedExternalId,
         propertyType: dto.propertyType,
         dealType: dto.dealType,
-        city: dto.city || null,
-        address: dto.address || null,
         location: dto.location || null,
+        region: dto.region || null,
+        address: dto.address || null,
         hotSale: dto.hotSale || false,
         public: dto.public !== undefined ? dto.public : true,
         price: dto.price ? parseInt(dto.price as any) : null,
@@ -238,7 +391,6 @@ export class PropertiesService {
       },
     });
 
-    // Create translations for all languages
     await this.prismaService.propertyTranslations.createMany({
       data: LANGUAGES.map((lang) => ({
         propertyId: property.id,
@@ -250,7 +402,6 @@ export class PropertiesService {
       skipDuplicates: true,
     });
 
-    // Handle gallery images
     if (images && images.length > 0) {
       const imageUrls = images
         .map((image, index) => ({
@@ -288,13 +439,12 @@ export class PropertiesService {
 
     const updateData: any = {};
 
-    // Update all optional fields
     if (dto.propertyType !== undefined)
       updateData.propertyType = dto.propertyType;
     if (dto.dealType !== undefined) updateData.dealType = dto.dealType;
-    if (dto.city !== undefined) updateData.city = dto.city || null;
-    if (dto.address !== undefined) updateData.address = dto.address || null;
     if (dto.location !== undefined) updateData.location = dto.location || null;
+    if (dto.region !== undefined) updateData.region = dto.region || null;
+    if (dto.address !== undefined) updateData.address = dto.address || null;
     if (dto.hotSale !== undefined) updateData.hotSale = dto.hotSale;
     if (dto.public !== undefined) updateData.public = dto.public;
     if (dto.price !== undefined)
@@ -328,7 +478,6 @@ export class PropertiesService {
     if (dto.hotWater !== undefined) updateData.hotWater = dto.hotWater;
     if (dto.parking !== undefined) updateData.parking = dto.parking;
 
-    // Boolean fields
     if (dto.hasConditioner !== undefined)
       updateData.hasConditioner = dto.hasConditioner;
     if (dto.hasFurniture !== undefined)
@@ -372,7 +521,6 @@ export class PropertiesService {
       data: updateData,
     });
 
-    // Handle additional images
     if (images && images.length > 0) {
       const existingImages =
         await this.prismaService.propertyGalleryImage.findMany({

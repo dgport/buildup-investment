@@ -21,6 +21,7 @@ import {
   MessageCircle,
   Copy,
   Check,
+  MapPin,
 } from 'lucide-react'
 
 import { Switch } from '@/components/ui/switch'
@@ -28,6 +29,7 @@ import { Button } from '@/components/ui/button'
 import { useProperty } from '@/lib/hooks/useProperties'
 import { getImageUrl } from '@/lib/utils/image-utils'
 import MortgageCalculator from '@/components/shared/calculator/MortgageCalculator'
+import MapboxMap from '@/components/shared/map/MapboxMap'
 import Lightbox from 'yet-another-react-lightbox'
 import 'yet-another-react-lightbox/styles.css'
 import { useTranslation } from 'react-i18next'
@@ -141,7 +143,10 @@ export default function PropertyDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-blue-900 animate-spin" />
+          <p className="text-gray-600">{t('common.loading')}</p>
+        </div>
       </div>
     )
   }
@@ -153,12 +158,13 @@ export default function PropertyDetail() {
           <h2 className="text-2xl font-bold text-red-600 mb-2">
             Property Not Found
           </h2>
-          <button
+          <Button
+            variant="default"
+            size="lg"
             onClick={() => navigate('/properties')}
-            className="text-blue-600 hover:underline"
           >
             Back to Properties
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -170,6 +176,32 @@ export default function PropertyDetail() {
   const lightboxSlides = images.map((src: string) => ({ src }))
 
   const priceInGEL = property.price ? Math.round(property.price * 2.8) : null
+
+  // Parse coordinates from location field (assuming format: "lat,lng")
+  const coordinates = property?.location
+    ? (() => {
+        try {
+          const [lat, lng] = property.location.split(',').map(Number)
+          if (isNaN(lat) || isNaN(lng)) return null
+          return { lat, lng }
+        } catch (error) {
+          return null
+        }
+      })()
+    : null
+
+  // Build location string for display
+  const locationParts = []
+  const streetAddress = property.translation?.address || property.address
+  if (streetAddress) locationParts.push(streetAddress)
+  if (property.regionName) locationParts.push(property.regionName)
+
+  const locationString =
+    locationParts.length > 0
+      ? locationParts.join(', ')
+      : t('propertyPage.noLocation', { defaultValue: 'Location not available' })
+
+  const hasLocation = !!coordinates
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -187,25 +219,14 @@ export default function PropertyDetail() {
                         key={index}
                       >
                         <div
-                          className="relative flex justify-center h-full cursor-zoom-in"
+                          className="relative flex justify-center items-center h-full cursor-zoom-in bg-black/5"
                           onClick={handleImageClick}
                         >
-                          <div
-                            className="absolute inset-0 z-0"
-                            style={{
-                              backgroundImage: `url(${img})`,
-                              backgroundSize: '150%',
-                              backgroundPosition: 'center',
-                              filter: 'blur(15px)',
-                            }}
+                          <img
+                            src={img || '/placeholder.svg'}
+                            alt={property.translation?.title || 'Property'}
+                            className="w-full h-full object-cover"
                           />
-                          <div className="relative z-10 w-full h-full flex items-center justify-center">
-                            <img
-                              src={img || '/placeholder.svg'}
-                              alt={property.translation?.title || 'Property'}
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          </div>
                         </div>
                       </div>
                     ))
@@ -221,13 +242,13 @@ export default function PropertyDetail() {
                 <>
                   <button
                     onClick={scrollPrev}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={scrollNext}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg z-20 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -266,6 +287,15 @@ export default function PropertyDetail() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-[500px] flex flex-col justify-between">
               <div className="space-y-2 sm:space-y-3">
+                <div className="mb-4 sm:mb-5 pb-4 border-b-2 border-gray-300">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
+                    {property.translation?.title ||
+                      t('propertyPage.noTitle', {
+                        defaultValue: 'Untitled Property',
+                      })}
+                  </h1>
+                </div>
+
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
                   <span className="text-xs sm:text-sm font-medium text-gray-600">
                     Property ID
@@ -286,6 +316,18 @@ export default function PropertyDetail() {
                       )}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    Region
+                  </span>
+                  <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
+                    {property.regionName ||
+                      t('propertyPage.notAvailable', {
+                        defaultValue: 'N/A',
+                      })}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
@@ -330,15 +372,6 @@ export default function PropertyDetail() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs sm:text-sm font-medium text-gray-600">
-                    City
-                  </span>
-                  <span className="text-sm sm:text-base font-semibold text-gray-900">
-                    {property.address}
-                  </span>
-                </div>
-
                 <div className="flex items-center justify-between py-2">
                   <span className="text-xs sm:text-sm font-medium text-gray-600">
                     Listed on
@@ -379,7 +412,9 @@ export default function PropertyDetail() {
                   className="w-full border-green-600 text-green-600 hover:bg-green-50 h-10 sm:h-11 lg:h-12 text-sm sm:text-base flex items-center justify-center bg-transparent"
                 >
                   <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-                  Contact WhatsApp
+                  {t('propertyPage.contactWhatsApp', {
+                    defaultValue: 'Contact WhatsApp',
+                  })}
                 </Button>
               </div>
             </div>
@@ -387,24 +422,42 @@ export default function PropertyDetail() {
         </div>
 
         <div className="space-y-6">
+          {/* Description Section */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
-              {property.translation?.title || 'Untitled Property'}
-            </h1>
-
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              {t('propertyPage.description', { defaultValue: 'Description' })}
+            </h2>
             <div className="h-px w-full bg-gray-300 my-4"></div>
             {property.translation?.description ? (
               <p className="text-gray-700 whitespace-pre-line">
                 {property.translation.description}
               </p>
             ) : (
-              <p className="text-gray-500 italic">No description available</p>
+              <p className="text-gray-500 italic">
+                {t('propertyPage.noDescription', {
+                  defaultValue: 'No description available',
+                })}
+              </p>
             )}
           </div>
 
+          {/* Location Display */}
+          {locationString && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-blue-600" />
+                {t('propertyPage.location', { defaultValue: 'Location' })}
+              </h3>
+              <p className="text-gray-700 text-lg">{locationString}</p>
+            </div>
+          )}
+
+          {/* Property Details */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Property Details
+              {t('propertyPage.propertyDetails', {
+                defaultValue: 'Property Details',
+              })}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {property.totalArea && (
@@ -482,28 +535,13 @@ export default function PropertyDetail() {
             </div>
           </div>
 
+          {/* Condition & Utilities */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Condition & Utilities
             </h3>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {property.condition && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-1">Condition</p>
-                  <p className="font-semibold">
-                    {formatEnumValue(property.condition)}
-                  </p>
-                </div>
-              )}
-              {property.status && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-1">Property Status</p>
-                  <p className="font-semibold">
-                    {formatEnumValue(property.status)}
-                  </p>
-                </div>
-              )}
               {property.occupancy && (
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-xs text-gray-500 mb-1">Occupancy</p>
@@ -555,6 +593,7 @@ export default function PropertyDetail() {
             </div>
           </div>
 
+          {/* Amenities & Features */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Amenities & Features
@@ -706,6 +745,18 @@ export default function PropertyDetail() {
               )}
             </div>
           </div>
+          {hasLocation && (
+            <div className="mt-8 lg:mt-12">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 overflow-hidden">
+                <div className="h-[300px] sm:h-[350px] rounded-xl overflow-hidden">
+                  <MapboxMap
+                    latitude={coordinates.lat}
+                    longitude={coordinates.lng}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <MortgageCalculator initialPrice={priceInGEL} />

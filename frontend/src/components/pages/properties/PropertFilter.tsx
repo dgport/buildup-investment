@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Search, X, SlidersHorizontal } from 'lucide-react'
@@ -21,7 +21,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { PropertyType, DealType, City } from '@/lib/types/properties'
+import { PropertyType, DealType } from '@/lib/types/properties'
+import { useProperties } from '@/lib/hooks/useProperties'
 
 interface PropertyFiltersProps {
   onFilterChange?: () => void
@@ -32,10 +33,32 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
 
+  // Fetch all properties to get unique regions
+  const { data: allPropertiesResponse } = useProperties({
+    lang: i18n.language,
+    limit: 1000,
+  })
+
+  const uniqueRegions = useMemo(() => {
+    if (!allPropertiesResponse?.data) return []
+
+    const regionsMap = new Map<string, string>()
+
+    allPropertiesResponse.data.forEach(property => {
+      if (property.region && property.regionName) {
+        regionsMap.set(property.region, property.regionName)
+      }
+    })
+
+    return Array.from(regionsMap.entries())
+      .map(([region, regionName]) => ({ region, regionName }))
+      .sort((a, b) => a.regionName.localeCompare(b.regionName))
+  }, [allPropertiesResponse])
+
   const [filters, setFilters] = useState({
     propertyType: searchParams.get('propertyType') || 'all',
     dealType: searchParams.get('dealType') || 'all',
-    city: searchParams.get('city') || 'all',
+    region: searchParams.get('region') || 'all',
     externalId: searchParams.get('externalId') || '',
     priceFrom: searchParams.get('priceFrom')
       ? parseInt(searchParams.get('priceFrom')!)
@@ -67,7 +90,8 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
       params.set('propertyType', filters.propertyType)
     if (filters.dealType && filters.dealType !== 'all')
       params.set('dealType', filters.dealType)
-    if (filters.city && filters.city !== 'all') params.set('city', filters.city)
+    if (filters.region && filters.region !== 'all')
+      params.set('region', filters.region)
     if (filters.externalId && filters.externalId.trim())
       params.set('externalId', filters.externalId.trim())
 
@@ -98,7 +122,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
     setFilters({
       propertyType: 'all',
       dealType: 'all',
-      city: 'all',
+      region: 'all',
       externalId: '',
       priceFrom: 0,
       priceTo: MAX_PRICE,
@@ -114,7 +138,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   const hasActiveFilters =
     (filters.propertyType && filters.propertyType !== 'all') ||
     (filters.dealType && filters.dealType !== 'all') ||
-    (filters.city && filters.city !== 'all') ||
+    (filters.region && filters.region !== 'all') ||
     (filters.externalId && filters.externalId.trim()) ||
     filters.priceFrom > 0 ||
     filters.priceTo < MAX_PRICE ||
@@ -255,30 +279,32 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
               </Select>
             </div>
 
-            {/* City */}
+            {/* Region */}
             <div className="space-y-3">
               <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                <div className="w-1 h-5 bg-green-500 rounded-full" />
-                {t('filters.city', { defaultValue: 'City' })}
+                <div className="w-1 h-5 bg-teal-500 rounded-full" />
+                {t('filters.region', { defaultValue: 'Region' })}
               </Label>
               <Select
-                value={filters.city}
-                onValueChange={value => setFilters({ ...filters, city: value })}
+                value={filters.region}
+                onValueChange={value =>
+                  setFilters({ ...filters, region: value })
+                }
               >
-                <SelectTrigger className="h-12 border-2 focus:border-green-500">
+                <SelectTrigger className="h-12 border-2 focus:border-teal-500">
                   <SelectValue
-                    placeholder={t('filters.allCities', {
-                      defaultValue: 'All Cities',
+                    placeholder={t('filters.allRegions', {
+                      defaultValue: 'All Regions',
                     })}
                   />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all" className="font-medium">
-                    {t('filters.allCities', { defaultValue: 'All Cities' })}
+                    {t('filters.allRegions', { defaultValue: 'All Regions' })}
                   </SelectItem>
-                  {Object.values(City).map(city => (
-                    <SelectItem key={city} value={city}>
-                      {formatEnumValue(city)}
+                  {uniqueRegions.map(({ region, regionName }) => (
+                    <SelectItem key={region} value={region}>
+                      {regionName}
                     </SelectItem>
                   ))}
                 </SelectContent>

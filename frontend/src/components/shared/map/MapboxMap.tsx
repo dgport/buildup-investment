@@ -9,8 +9,7 @@ mapboxgl.accessToken =
 interface MapboxMapProps {
   latitude: number
   longitude: number
-  title?: string
-  subtitle?: string
+
   zoom?: number
   enable3D?: boolean
   defaultView?: '2d' | '3d'
@@ -23,8 +22,7 @@ interface MapboxMapProps {
 export default function MapboxMap({
   latitude,
   longitude,
-  title,
-  subtitle,
+
   zoom = 16,
   enable3D = true,
   defaultView = '3d',
@@ -60,15 +58,6 @@ export default function MapboxMap({
     })
       .setLngLat([longitude, latitude])
       .addTo(map)
-
-    if (title || subtitle) {
-      markerRef.current.setPopup(
-        new mapboxgl.Popup({ offset: 20 }).setHTML(`
-          ${title ? `<strong>${title}</strong>` : ''}
-          ${subtitle ? `<div>${subtitle}</div>` : ''}
-        `)
-      )
-    }
 
     map.on('load', () => {
       const labelLayerId = map

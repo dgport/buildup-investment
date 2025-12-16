@@ -368,15 +368,6 @@ export default function ProjectPage() {
           </div>
         </div>
 
-        {hasLocation && (
-          <MapboxMap
-            latitude={coordinates.lat}
-            longitude={coordinates.lng}
-            title={project.translation?.projectName || project.projectName}
-            subtitle={locationString}
-          />
-        )}
-
         <div className="mt-8 lg:mt-12">
           {apartments.length > 0 ? (
             <>
@@ -400,6 +391,23 @@ export default function ProjectPage() {
             </div>
           )}
         </div>
+
+        {hasLocation && (
+          <div className="mt-8 lg:mt-12">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 overflow-hidden">
+              <div className="h-[300px] sm:h-[350px] rounded-xl overflow-hidden">
+                <MapboxMap
+                  latitude={coordinates.lat}
+                  longitude={coordinates.lng}
+                  title={
+                    project.translation?.projectName || project.projectName
+                  }
+                  subtitle={locationString}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <Lightbox

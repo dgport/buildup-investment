@@ -1,117 +1,101 @@
 import PropertyCard from '@/components/pages/properties/PropertyCard'
-
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { useProperties } from '@/lib/hooks/useProperties'
-import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { PropertyFilters as PropertyFiltersType } from '@/lib/types/properties'
+import { Link, useSearchParams } from 'react-router-dom'
+import { Building2 } from 'lucide-react'
+import { useProperties } from '@/lib/hooks/useProperties'
 import { PropertyFilters } from '@/components/pages/properties/PropertFilter'
+import { Pagination } from '@/components/shared/pagination/Pagination'
+import { Region } from '@/lib/types/properties' // Import Region enum
 
 export default function Properties() {
   const { t, i18n } = useTranslation()
   const [searchParams] = useSearchParams()
-  const [page, setPage] = useState(1)
-  const limit = 12
 
-  // Build filters from URL params
-  const buildFiltersFromParams = (): PropertyFiltersType => {
-    const filters: PropertyFiltersType = {
-      page,
-      limit,
-      lang: i18n.language,
-    }
+  const page = parseInt(searchParams.get('page') || '1', 10)
+  const externalId = searchParams.get('externalId') || undefined
+  const regionParam = searchParams.get('region') // Get as string first
+  const propertyType = searchParams.get('propertyType') || undefined
+  const dealType = searchParams.get('dealType') || undefined
+  const priceFrom = searchParams.get('priceFrom')
+    ? parseInt(searchParams.get('priceFrom')!)
+    : undefined
+  const priceTo = searchParams.get('priceTo')
+    ? parseInt(searchParams.get('priceTo')!)
+    : undefined
+  const areaFrom = searchParams.get('areaFrom')
+    ? parseInt(searchParams.get('areaFrom')!)
+    : undefined
+  const areaTo = searchParams.get('areaTo')
+    ? parseInt(searchParams.get('areaTo')!)
+    : undefined
+  const rooms = searchParams.get('rooms')
+    ? parseInt(searchParams.get('rooms')!)
+    : undefined
+  const bedrooms = searchParams.get('bedrooms')
+    ? parseInt(searchParams.get('bedrooms')!)
+    : undefined
 
-    // Property ID search
-    const externalId = searchParams.get('externalId')
-    if (externalId) filters.externalId = externalId
+  // Validate and cast region to enum or undefined
+  const region =
+    regionParam && regionParam in Region ? (regionParam as Region) : undefined
 
-    // Property Type
-    const propertyType = searchParams.get('propertyType')
-    if (propertyType) filters.propertyType = propertyType
+  const {
+    data: propertiesResponse,
+    isLoading,
+    error,
+  } = useProperties({
+    lang: i18n.language,
+    page: page,
+    limit: 12,
+    externalId,
+    region,
+    propertyType,
+    dealType,
+    priceFrom,
+    priceTo,
+    areaFrom,
+    areaTo,
+    rooms,
+    bedrooms,
+  })
 
-    // Deal Type
-    const dealType = searchParams.get('dealType')
-    if (dealType) filters.dealType = dealType
+  const properties = propertiesResponse?.data || []
+  const meta = propertiesResponse?.meta
 
-    // City
-    const city = searchParams.get('city')
-    if (city) filters.city = city
-
-    // Price range
-    const priceFrom = searchParams.get('priceFrom')
-    if (priceFrom) filters.priceFrom = parseInt(priceFrom)
-
-    const priceTo = searchParams.get('priceTo')
-    if (priceTo) filters.priceTo = parseInt(priceTo)
-
-    // Area range
-    const areaFrom = searchParams.get('areaFrom')
-    if (areaFrom) filters.areaFrom = parseInt(areaFrom)
-
-    const areaTo = searchParams.get('areaTo')
-    if (areaTo) filters.areaTo = parseInt(areaTo)
-
-    // Room counts
-    const rooms = searchParams.get('rooms')
-    if (rooms) filters.rooms = parseInt(rooms)
-
-    const bedrooms = searchParams.get('bedrooms')
-    if (bedrooms) filters.bedrooms = parseInt(bedrooms)
-
-    return filters
+  if (isLoading) {
+    return (
+      <div className="min-h-screen">
+        <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              {t('properties.title')}
+            </h1>
+          </div>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            <p className="ml-4 text-gray-600">{t('common.loading')}</p>
+          </div>
+        </div>
+      </div>
+    )
   }
-
-  const filters = buildFiltersFromParams()
-  const { data, isLoading, error } = useProperties(filters)
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    const pageParam = searchParams.get('page')
-    if (pageParam) {
-      setPage(parseInt(pageParam))
-    } else {
-      setPage(1)
-    }
-  }, [searchParams])
-
-  const transformedProperties =
-    data?.data.map(property => ({
-      id: property.id,
-      externalId: property.externalId,
-      image: property.galleryImages?.[0]?.imageUrl
-        ? property.galleryImages[0].imageUrl
-        : 'https://via.placeholder.com/800x600?text=No+Image',
-      galleryImages: property.galleryImages,
-      priceUSD: property.price ?? null,
-      priceGEL: property.price ? property.price * 2.8 : 0,
-      location: property.address,
-      floors: property.floors ?? 0,
-      rooms: property.rooms ?? 0,
-      bedrooms: property.bedrooms ?? 0,
-      dateAdded: property.createdAt,
-      title: property.translation?.title ?? 'Untitled Property',
-      totalArea: property.totalArea ?? null,
-      propertyType: property.propertyType,
-      hotSale: property.hotSale,
-    })) || []
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">
-            {t('properties.errorTitle', {
-              defaultValue: 'Error Loading Properties',
-            })}
-          </h2>
-          <p className="text-gray-600">
-            {error instanceof Error
-              ? error.message
-              : t('properties.errorMessage', {
-                  defaultValue: 'Something went wrong',
-                })}
-          </p>
+      <div className="min-h-screen">
+        <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              {t('properties.title')}
+            </h1>
+          </div>
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">
+              {t('properties.errorLoading', {
+                defaultValue: t('common.error'),
+              })}
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -119,77 +103,78 @@ export default function Properties() {
 
   return (
     <div className="min-h-screen">
-      <div className="py-8 px-4 sm:px-6 lg:px-28 mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            {t('properties.title', { defaultValue: 'Properties' })}
+      <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {t('properties.title')}
           </h1>
-
-          {/* Filter Component */}
-          <PropertyFilters />
-
-          {data?.meta && (
-            <p className="text-sm text-gray-500 mt-4">
-              {t('properties.showing', {
-                defaultValue: 'Showing {{count}} of {{total}} properties',
-                count: data.data.length,
-                total: data.meta.total,
+          {meta && (
+            <p className="text-gray-600">
+              {t('properties.totalProperties', {
+                count: meta.total,
+                defaultValue: `${meta.total} properties`,
               })}
             </p>
           )}
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-          </div>
-        ) : transformedProperties.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">
-              {t('properties.noProperties', {
-                defaultValue: 'No properties found',
-              })}
+        <div className="mb-4">
+          <PropertyFilters />
+        </div>
+
+        {properties.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 mb-4">
+              {properties.map(property => (
+                <Link key={property.id} to={`/properties/${property.id}`}>
+                  <PropertyCard
+                    property={{
+                      id: property.id,
+                      externalId: property.externalId,
+                      image: property.galleryImages?.[0]?.imageUrl
+                        ? property.galleryImages[0].imageUrl
+                        : 'https://via.placeholder.com/800x600?text=No+Image',
+                      galleryImages: property.galleryImages,
+                      priceUSD: property.price ?? null,
+                      priceGEL: property.price ? property.price * 2.8 : 0,
+                      location: property.address,
+                      floors: property.floors ?? 0,
+                      rooms: property.rooms ?? 0,
+                      bedrooms: property.bedrooms ?? 0,
+                      dateAdded: property.createdAt,
+                      title: property.translation?.title ?? 'Untitled Property',
+                      totalArea: property.totalArea ?? null,
+                      propertyType: property.propertyType,
+                      hotSale: property.hotSale,
+                    }}
+                  />
+                </Link>
+              ))}
+            </div>
+
+            {meta && (
+              <div className="flex justify-center mt-20 md:mt-28 pb-8">
+                <Pagination
+                  currentPage={meta.page}
+                  totalPages={meta.totalPages}
+                  hasNextPage={meta.hasNextPage}
+                  hasPreviousPage={meta.hasPreviousPage}
+                />
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg mb-2">
+              {t('properties.noProperties')}
             </p>
-            <p className="text-gray-400 text-sm mt-2">
-              {t('properties.tryAdjusting', {
+            <p className="text-gray-400 text-sm">
+              {t('properties.tryDifferentFilters', {
                 defaultValue: 'Try adjusting your filters',
               })}
             </p>
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {transformedProperties.map(property => (
-                <PropertyCard key={property.id} property={property} />
-              ))}
-            </div>
-
-            {data?.meta && data.meta.totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-12">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={!data.meta.hasPreviousPage}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  {t('pagination.previous', { defaultValue: 'Previous' })}
-                </button>
-                <span className="text-gray-600">
-                  {t('pagination.pageInfo', {
-                    defaultValue: 'Page {{current}} of {{total}}',
-                    current: page,
-                    total: data.meta.totalPages,
-                  })}
-                </span>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={!data.meta.hasNextPage}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  {t('pagination.next', { defaultValue: 'Next' })}
-                </button>
-              </div>
-            )}
-          </>
         )}
       </div>
     </div>

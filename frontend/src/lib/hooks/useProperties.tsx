@@ -13,8 +13,6 @@ import { propertiesService } from '../services/properties.service'
 
 /**
  * Get all PUBLIC properties with filters (for public-facing pages)
- * This hook ALWAYS shows only public properties, even for logged-in admins
- * Use `usePropertiesAdmin` hook in admin area to see all properties
  */
 export const useProperties = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
@@ -28,7 +26,6 @@ export const useProperties = (filters?: PropertyFilters) => {
 
 /**
  * Get ALL properties including private ones (for admin area only)
- * Requires admin authentication
  */
 export const usePropertiesAdmin = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
@@ -41,9 +38,7 @@ export const usePropertiesAdmin = (filters?: PropertyFilters) => {
 }
 
 /**
- * Get single PUBLIC property by ID (for public-facing pages)
- * This hook ALWAYS shows only public properties, even for logged-in admins
- * Use `usePropertyAdmin` hook in admin area to see all properties
+ * Get single PUBLIC property by ID
  */
 export const useProperty = (id: string, lang?: string) => {
   return useQuery<Property>({
@@ -58,7 +53,6 @@ export const useProperty = (id: string, lang?: string) => {
 
 /**
  * Get property by ID including private ones (for admin area only)
- * Requires admin authentication
  */
 export const usePropertyAdmin = (id: string, lang?: string) => {
   return useQuery<Property>({
@@ -214,7 +208,7 @@ export const useDeletePropertyImage = () => {
 }
 
 /**
- * Add images to property (Admin only - convenience hook)
+ * Add images to property (Admin only)
  */
 export const useAddPropertyImages = () => {
   return useMutation({

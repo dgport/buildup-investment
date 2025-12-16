@@ -166,21 +166,16 @@ enum Occupancy {
   NINE
   TEN_PLUS
 }
-
-enum City {
-  BATUMI
-  TBILISI
-}
-
+ 
  
 model Property {
   id              String           @id @default(cuid())
   externalId      String           @unique @map("external_id")
   propertyType    PropertyType     @map("property_type")
   dealType        DealType         @map("deal_type")
-  city            City?
-  address         String?
-  location        String?
+  location        String?         
+  region          Region?          // Region enum (BATUMI, KOBULETI, etc.)
+  address         String?          // Street address
   price           Int?
   hotSale         Boolean          @map("hot_sale") @default(false)
   public          Boolean          @default(true)
@@ -229,7 +224,9 @@ model Property {
 
   @@map("properties")
   @@index([propertyType])
-  @@index([city])
+ 
+  @@index([region])
+  @@index([location])
   @@index([price])
   @@index([dealType])
   @@index([hotSale])
@@ -242,9 +239,8 @@ model PropertyTranslations {
   property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   language        String
   
- 
   title           String
-  address         String?
+  address         String?  // Translatable street address
   description     String?  @db.Text
 
   @@unique([propertyId, language])

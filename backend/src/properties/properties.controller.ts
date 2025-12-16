@@ -30,14 +30,12 @@ import { UpsertPropertyTranslationDto } from './dto/UpsertPropertyTranslation.dt
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
 import { AuthGuard } from '@/auth/guards/basic-auth.guard';
+import { Region } from '@prisma/client';
 
 @ApiTags('Properties')
 @Controller('properties')
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
-
-  // ==================== PUBLIC ENDPOINTS ====================
-  // These ALWAYS return only public properties, regardless of auth status
 
   @Get()
   @ApiOperation({
@@ -70,10 +68,16 @@ export class PropertiesController {
     example: '591595',
   })
   @ApiQuery({
-    name: 'city',
+    name: 'location',
     required: false,
-    description: 'Filter by city',
-    enum: ['BATUMI', 'TBILISI'],
+    description: 'Filter by location (city name)',
+    example: 'Batumi',
+  })
+  @ApiQuery({
+    name: 'region',
+    required: false,
+    description: 'Filter by region',
+    enum: ['BATUMI', 'KOBULETI', 'CHAKVI', 'MAKHINJAURI', 'GONIO', 'UREKI'],
   })
   @ApiQuery({
     name: 'propertyType',
@@ -132,7 +136,8 @@ export class PropertiesController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('externalId') externalId?: string,
-    @Query('city') city?: string,
+    @Query('location') location?: string,
+    @Query('region') region?: string,
     @Query('propertyType') propertyType?: string,
     @Query('dealType') dealType?: string,
     @Query('priceFrom') priceFrom?: string,
@@ -142,13 +147,13 @@ export class PropertiesController {
     @Query('rooms') rooms?: string,
     @Query('bedrooms') bedrooms?: string,
   ) {
-    // ALWAYS return only public properties (includePrivate: false)
     return this.propertiesService.findAll({
       lang,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       externalId,
-      city,
+      location,
+      region: region as Region | undefined,
       propertyType,
       dealType,
       priceFrom: priceFrom ? parseInt(priceFrom, 10) : undefined,
@@ -157,7 +162,7 @@ export class PropertiesController {
       areaTo: areaTo ? parseInt(areaTo, 10) : undefined,
       rooms: rooms ? parseInt(rooms, 10) : undefined,
       bedrooms: bedrooms ? parseInt(bedrooms, 10) : undefined,
-      includePrivate: false, // ALWAYS false for public endpoint
+      includePrivate: false,
     });
   }
 
@@ -176,12 +181,8 @@ export class PropertiesController {
   })
   @ApiResponse({ status: 404, description: 'Property not found' })
   async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
-    // ALWAYS return only public properties (includePrivate: false)
     return this.propertiesService.findOne(id, lang, false);
   }
-
-  // ==================== ADMIN ENDPOINTS ====================
-  // These return ALL properties (public + private) and require authentication
 
   @Get('admin/all')
   @UseGuards(AuthGuard)
@@ -216,10 +217,16 @@ export class PropertiesController {
     example: '591595',
   })
   @ApiQuery({
-    name: 'city',
+    name: 'location',
     required: false,
-    description: 'Filter by city',
-    enum: ['BATUMI', 'TBILISI'],
+    description: 'Filter by location (city name)',
+    example: 'Batumi',
+  })
+  @ApiQuery({
+    name: 'region',
+    required: false,
+    description: 'Filter by region',
+    enum: ['BATUMI', 'KOBULETI', 'CHAKVI', 'MAKHINJAURI', 'GONIO', 'UREKI'],
   })
   @ApiQuery({
     name: 'propertyType',
@@ -279,7 +286,8 @@ export class PropertiesController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('externalId') externalId?: string,
-    @Query('city') city?: string,
+    @Query('location') location?: string,
+    @Query('region') region?: string,
     @Query('propertyType') propertyType?: string,
     @Query('dealType') dealType?: string,
     @Query('priceFrom') priceFrom?: string,
@@ -289,13 +297,13 @@ export class PropertiesController {
     @Query('rooms') rooms?: string,
     @Query('bedrooms') bedrooms?: string,
   ) {
-    // Return ALL properties including private ones (includePrivate: true)
     return this.propertiesService.findAll({
       lang,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       externalId,
-      city,
+      location,
+      region: region as Region | undefined,
       propertyType,
       dealType,
       priceFrom: priceFrom ? parseInt(priceFrom, 10) : undefined,
@@ -304,7 +312,7 @@ export class PropertiesController {
       areaTo: areaTo ? parseInt(areaTo, 10) : undefined,
       rooms: rooms ? parseInt(rooms, 10) : undefined,
       bedrooms: bedrooms ? parseInt(bedrooms, 10) : undefined,
-      includePrivate: true, // ALWAYS true for admin endpoint
+      includePrivate: true,
     });
   }
 
@@ -328,7 +336,6 @@ export class PropertiesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   async findOneAdmin(@Param('id') id: string, @Query('lang') lang?: string) {
-    // Return property even if private (includePrivate: true)
     return this.propertiesService.findOne(id, lang, true);
   }
 

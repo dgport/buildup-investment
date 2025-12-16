@@ -1,10 +1,13 @@
+'use client'
+
+import type React from 'react'
+
 import { useState, useEffect } from 'react'
-import { X, Save, Home, ImageIcon } from 'lucide-react'
+import { X, Save, Home, ImageIcon, MapPin } from 'lucide-react'
 import { useUpdateProperty } from '@/lib/hooks/useProperties'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
@@ -21,10 +24,12 @@ import {
   ParkingType,
   HotWaterType,
   Occupancy,
-  City,
+  type Region,
+  REGION_NAMES,
 } from '@/lib/types/properties'
 import { PropertyImagesManager } from './PropertyImagesManager'
 import { PropertyTranslationsManager } from './PropertyTranslationManager'
+import { ProjectLocationMapPicker } from '@/components/shared/map/MapPin'
 
 interface EditPropertyProps {
   property: Property
@@ -38,11 +43,6 @@ const PROPERTY_TYPES = [
   { value: PropertyType.COMMERCIAL, label: 'Commercial' },
   { value: PropertyType.LAND, label: 'Land' },
   { value: PropertyType.HOTEL, label: 'Hotel' },
-]
-
-const CITIES = [
-  { value: City.BATUMI, label: 'Batumi' },
-  { value: City.TBILISI, label: 'Tbilisi' },
 ]
 
 const DEAL_TYPES = [
@@ -113,7 +113,7 @@ const AMENITIES = [
 
 const propertyToFormData = (property: Property): UpdatePropertyDto => ({
   propertyType: property.propertyType,
-  city: property.city || undefined,
+  region: property.region || undefined,
   address: property.address || undefined,
   location: property.location || undefined,
   dealType: property.dealType || undefined,
@@ -171,6 +171,7 @@ export function EditProperty({
     propertyToFormData(property)
   )
   const [hasChanges, setHasChanges] = useState(false)
+  const [showMap, setShowMap] = useState(false)
 
   const updateProperty = useUpdateProperty()
 
@@ -200,55 +201,92 @@ export function EditProperty({
     }
   }
 
+  const getCoordinatesDisplay = () => {
+    if (!formData.location) return null
+    const [lat, lng] = formData.location.split(',').map(Number)
+    if (isNaN(lat) || isNaN(lng)) return null
+    return { lat, lng }
+  }
+
+  const handleLocationSelect = (location: {
+    coordinates: [number, number]
+    address: string
+  }) => {
+    const coordsString = `${location.coordinates[1]},${location.coordinates[0]}`
+    updateField('location', coordsString)
+    updateField('address', location.address)
+    setShowMap(false)
+  }
+
+  const clearLocation = () => {
+    updateField('location', undefined)
+    updateField('address', undefined)
+  }
+
+  const coords = getCoordinatesDisplay()
+
   return (
-    <div className="bg-background rounded-lg border border-border shadow-sm p-8">
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-foreground tracking-tight">
-            Edit Property
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {property.translation?.title ||
-              property.address ||
-              'Untitled Property'}
-          </p>
+    <>
+      <div className="bg-background rounded-lg border border-border shadow-sm p-8">
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-foreground tracking-tight">
+              Edit Property
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {property.translation?.title ||
+                property.address ||
+                'Untitled Property'}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="h-10 w-10"
+          >
+            <X className="w-5 h-5" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onBack}
-          className="h-10 w-10"
-        >
-          <X className="w-5 h-5" />
-        </Button>
+
+        <TabNavigation
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+
+        <div className="space-y-6">
+          {activeSection === 'details' && (
+            <DetailsSection
+              formData={formData}
+              updateField={updateField}
+              hasChanges={hasChanges}
+              isPending={updateProperty.isPending}
+              onSubmit={handleSubmit}
+              onCancel={onBack}
+              coords={coords}
+              onShowMap={() => setShowMap(true)}
+              onClearLocation={clearLocation}
+            />
+          )}
+
+          {activeSection === 'images' && (
+            <PropertyImagesManager propertyId={property.id} />
+          )}
+
+          {activeSection === 'translations' && (
+            <PropertyTranslationsManager propertyId={property.id} />
+          )}
+        </div>
       </div>
 
-      <TabNavigation
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-      />
-
-      <div className="space-y-6">
-        {activeSection === 'details' && (
-          <DetailsSection
-            formData={formData}
-            updateField={updateField}
-            hasChanges={hasChanges}
-            isPending={updateProperty.isPending}
-            onSubmit={handleSubmit}
-            onCancel={onBack}
-          />
-        )}
-
-        {activeSection === 'images' && (
-          <PropertyImagesManager propertyId={property.id} />
-        )}
-
-        {activeSection === 'translations' && (
-          <PropertyTranslationsManager propertyId={property.id} />
-        )}
-      </div>
-    </div>
+      {showMap && (
+        <ProjectLocationMapPicker
+          onLocationSelect={handleLocationSelect}
+          onClose={() => setShowMap(false)}
+          initialLocation={coords ? { lng: coords.lng, lat: coords.lat } : null}
+        />
+      )}
+    </>
   )
 }
 
@@ -263,7 +301,7 @@ function TabNavigation({
   const tabs = [
     { id: 'details', label: 'Details', icon: Home },
     { id: 'images', label: 'Images', icon: ImageIcon },
-    { id: 'translations', label: '🌐 Translations', icon: null },
+    { id: 'translations', label: 'Translations', icon: null },
   ]
 
   return (
@@ -286,7 +324,6 @@ function TabNavigation({
   )
 }
 
-// Details Section Component
 function DetailsSection({
   formData,
   updateField,
@@ -294,6 +331,9 @@ function DetailsSection({
   isPending,
   onSubmit,
   onCancel,
+  coords,
+  onShowMap,
+  onClearLocation,
 }: {
   formData: UpdatePropertyDto
   updateField: <K extends keyof UpdatePropertyDto>(
@@ -304,6 +344,9 @@ function DetailsSection({
   isPending: boolean
   onSubmit: () => void
   onCancel: () => void
+  coords: { lat: number; lng: number } | null
+  onShowMap: () => void
+  onClearLocation: () => void
 }) {
   return (
     <div className="space-y-8">
@@ -326,18 +369,6 @@ function DetailsSection({
             options={DEAL_TYPES}
           />
 
-          <SelectField
-            label="City"
-            value={formData.city || ''}
-            onValueChange={value => {
-              if (value && Object.values(City).includes(value as City)) {
-                updateField('city', value as City)
-              }
-            }}
-            options={CITIES}
-            placeholder="Select city"
-          />
-
           <InputField
             label="Price ($)"
             type="number"
@@ -352,24 +383,10 @@ function DetailsSection({
           />
         </div>
 
-        <InputField
-          label="Address"
-          value={formData.address || ''}
-          onChange={e => updateField('address', e.target.value || undefined)}
-          placeholder="e.g., 123 Main Street, Batumi"
-        />
-
-        <InputField
-          label="Location"
-          value={formData.location || ''}
-          onChange={e => updateField('location', e.target.value || undefined)}
-          placeholder="e.g., 41.6168° N, 41.6367° E"
-        />
-
         <div className="grid grid-cols-2 gap-4">
           <CheckboxField
             id="hotSale"
-            label="🔥 Mark as Hot Sale"
+            label="Mark as Hot Sale"
             checked={formData.hotSale || false}
             onCheckedChange={checked =>
               updateField('hotSale', checked as boolean)
@@ -377,7 +394,7 @@ function DetailsSection({
           />
           <CheckboxField
             id="public"
-            label="👁️ Make Public"
+            label="Make Public"
             checked={formData.public ?? true}
             onCheckedChange={checked =>
               updateField('public', checked as boolean)
@@ -385,6 +402,80 @@ function DetailsSection({
           />
         </div>
       </Section>
+
+      {/* Location Details */}
+      <div className="border border-border rounded-lg p-4 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <MapPin className="w-4 h-4" />
+          Location Details
+        </h3>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-foreground">Region</Label>
+          <Select
+            value={formData.region || ''}
+            onValueChange={value => updateField('region', value as Region)}
+          >
+            <SelectTrigger className="bg-background border-border">
+              <SelectValue placeholder="Select a region" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(REGION_NAMES).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-foreground">
+            Street Address & Coordinates
+          </Label>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              value={formData.address || ''}
+              readOnly
+              placeholder="Select location from map"
+              className="bg-background border-border"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onShowMap}
+              className="shrink-0 bg-transparent"
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              Pick Location
+            </Button>
+          </div>
+          {coords && (
+            <div className="bg-muted/50 rounded-md p-3 border border-border">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Coordinates saved:
+                  </p>
+                  <p className="text-xs font-mono text-foreground">
+                    Lat: {coords.lat.toFixed(6)}, Lng: {coords.lng.toFixed(6)}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearLocation}
+                  className="h-6 px-2 text-xs"
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Property Details */}
       <Section title="Property Details">
@@ -620,20 +711,6 @@ function InputField({
     <div className="space-y-2">
       <Label htmlFor={props.id}>{label}</Label>
       <Input {...props} />
-    </div>
-  )
-}
-
-function TextareaField({
-  label,
-  ...props
-}: {
-  label: string
-} & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={props.id}>{label}</Label>
-      <Textarea {...props} />
     </div>
   )
 }

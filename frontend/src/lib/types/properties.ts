@@ -1,4 +1,4 @@
-// types/properties.ts
+// Property enums
 export enum PropertyType {
   APARTMENT = 'APARTMENT',
   VILLA = 'VILLA',
@@ -7,14 +7,9 @@ export enum PropertyType {
   HOTEL = 'HOTEL',
 }
 
-export enum City {
-  BATUMI = 'BATUMI',
-  TBILISI = 'TBILISI',
-}
-
 export enum DealType {
-  RENT = 'RENT',
   SALE = 'SALE',
+  RENT = 'RENT',
   DAILY_RENT = 'DAILY_RENT',
 }
 
@@ -26,17 +21,17 @@ export enum HeatingType {
   NONE = 'NONE',
 }
 
-export enum ParkingType {
-  PARKING_SPACE = 'PARKING_SPACE',
-  GARAGE = 'GARAGE',
-  OPEN_LOT = 'OPEN_LOT',
-  NONE = 'NONE',
-}
-
 export enum HotWaterType {
   CENTRAL_HEATING = 'CENTRAL_HEATING',
   BOILER = 'BOILER',
   SOLAR = 'SOLAR',
+  NONE = 'NONE',
+}
+
+export enum ParkingType {
+  PARKING_SPACE = 'PARKING_SPACE',
+  GARAGE = 'GARAGE',
+  OPEN_LOT = 'OPEN_LOT',
   NONE = 'NONE',
 }
 
@@ -53,6 +48,33 @@ export enum Occupancy {
   TEN_PLUS = 'TEN_PLUS',
 }
 
+export enum Region {
+  BATUMI = 'BATUMI',
+  KOBULETI = 'KOBULETI',
+  CHAKVI = 'CHAKVI',
+  MAKHINJAURI = 'MAKHINJAURI',
+  GONIO = 'GONIO',
+  UREKI = 'UREKI',
+}
+
+export const REGION_NAMES: Record<string, string> = {
+  BATUMI: 'Batumi',
+  KOBULETI: 'Kobuleti',
+  CHAKVI: 'Chakvi',
+  MAKHINJAURI: 'Makhinjauri',
+  GONIO: 'Gonio',
+  UREKI: 'Ureki',
+}
+
+export interface PropertyTranslation {
+  id: number
+  language: string
+  title: string
+  address: string | null
+  description: string | null
+  propertyId: string
+}
+
 export interface PropertyGalleryImage {
   id: number
   propertyId: string
@@ -61,36 +83,18 @@ export interface PropertyGalleryImage {
   createdAt: string
 }
 
-export interface PropertyTranslation {
-  id: number
-  propertyId: string
-  language: string
-  title: string
-  address: string | null
-  description: string | null
-}
-
 export interface Property {
   id: string
   externalId: string
-
-  // Required fields
   propertyType: PropertyType
   dealType: DealType
-
-  // Location fields (all optional)
-  city: City | null
-  address: string | null
-  location: string | null
-
-  // Optional fields
-  price: number | null
+  location: string | null // City name like "Batumi", "Tbilisi"
+  region: Region | null // Region enum
+  regionName: string | null // Translated region name
+  address: string | null // Street address
   hotSale: boolean
   public: boolean
-  createdAt: string
-  updatedAt: string
-
-  // Property specifications (all optional)
+  price: number | null
   totalArea: number | null
   rooms: number | null
   bedrooms: number | null
@@ -99,16 +103,11 @@ export interface Property {
   floorsTotal: number | null
   ceilingHeight: number | null
   isNonStandard: boolean
-
-  // Occupancy (optional)
   occupancy: Occupancy | null
-
-  // Utilities (all optional)
   heating: HeatingType | null
   hotWater: HotWaterType | null
   parking: ParkingType | null
-
-  // Amenities
+  balconyArea: number | null
   hasConditioner: boolean
   hasFurniture: boolean
   hasBed: boolean
@@ -121,7 +120,6 @@ export interface Property {
   hasWashingMachine: boolean
   hasKitchenAppliances: boolean
   hasBalcony: boolean
-  balconyArea: number | null
   hasNaturalGas: boolean
   hasInternet: boolean
   hasTV: boolean
@@ -134,64 +132,20 @@ export interface Property {
   hasWater: boolean
   hasElectricity: boolean
   hasGate: boolean
-
-  translations: PropertyTranslation[]
+  translation: PropertyTranslation | null
   galleryImages: PropertyGalleryImage[]
-  translation?: PropertyTranslation | null
-}
-
-export interface PropertiesResponse {
-  data: Property[]
-  meta: {
-    total: number
-    page: number
-    limit: number
-    totalPages: number
-    hasNextPage: boolean
-    hasPreviousPage: boolean
-  }
-}
-
-// Simplified filters - only what backend supports
-export interface PropertyFilters {
-  // Pagination & Language
-  page?: number
-  limit?: number
-  lang?: string
-
-  // Core filters (what backend actually supports)
-  externalId?: string
-  city?: string
-  propertyType?: string
-  dealType?: string
-  priceFrom?: number
-  priceTo?: number
-  areaFrom?: number
-  areaTo?: number
-  rooms?: number
-  bedrooms?: number
-}
-
-export interface UpsertPropertyTranslationDto {
-  language: string
-  title: string
-  address?: string
-  description?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreatePropertyDto {
-  // REQUIRED fields
   propertyType: PropertyType
   dealType: DealType
   title: string
-
-  // Location (all optional strings)
-  city?: City
-  address?: string
-  location?: string
-
-  // Optional fields
   description?: string
+  location?: string // City name like "Batumi", "Tbilisi"
+  region?: Region
+  address?: string // Street address
   hotSale?: boolean
   public?: boolean
   price?: number
@@ -207,8 +161,7 @@ export interface CreatePropertyDto {
   heating?: HeatingType
   hotWater?: HotWaterType
   parking?: ParkingType
-
-  // Amenities (all optional booleans)
+  balconyArea?: number
   hasConditioner?: boolean
   hasFurniture?: boolean
   hasBed?: boolean
@@ -221,7 +174,6 @@ export interface CreatePropertyDto {
   hasWashingMachine?: boolean
   hasKitchenAppliances?: boolean
   hasBalcony?: boolean
-  balconyArea?: number
   hasNaturalGas?: boolean
   hasInternet?: boolean
   hasTV?: boolean
@@ -237,3 +189,39 @@ export interface CreatePropertyDto {
 }
 
 export type UpdatePropertyDto = Partial<CreatePropertyDto>
+
+export interface UpsertPropertyTranslationDto {
+  language: string
+  title: string
+  address?: string
+  description?: string
+}
+
+export interface PropertyFilters {
+  lang?: string
+  page?: number
+  limit?: number
+  externalId?: string
+  region?: Region // Region enum filter
+  propertyType?: PropertyType | string
+  dealType?: DealType | string
+  priceFrom?: number
+  priceTo?: number
+  areaFrom?: number
+  areaTo?: number
+  rooms?: number
+  bedrooms?: number
+  hotSale?: boolean
+}
+
+export interface PropertiesResponse {
+  data: Property[]
+  meta: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+    hasNextPage: boolean
+    hasPreviousPage: boolean
+  }
+}
