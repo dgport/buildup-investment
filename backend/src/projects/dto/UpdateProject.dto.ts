@@ -1,34 +1,53 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsDateString,
   Min,
   IsBoolean,
+  IsEnum,
 } from 'class-validator';
 
-const toBoolean = ({ value }: { value: any }): boolean => {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
-    const lower = value.toLowerCase();
-    return lower === 'true' || lower === '1';
-  }
-  if (typeof value === 'number') return value === 1;
-  return false;
-};
-
+export enum Region {
+  BATUMI = 'BATUMI',
+  KOBULETI = 'KOBULETI',
+  CHAKVI = 'CHAKVI',
+  MAKHINJAURI = 'MAKHINJAURI',
+  GONIO = 'GONIO',
+  UREKI = 'UREKI',
+}
 export class UpdateProjectDto {
   @ApiPropertyOptional({ example: 'Luxury Residence' })
   @IsOptional()
   @IsString()
   projectName?: string;
 
-  @ApiPropertyOptional({ example: 'Batumi, Georgia' })
+  @ApiPropertyOptional({
+    example: '41.6168,41.6401',
+    description: 'Coordinates (latitude,longitude)',
+  })
   @IsOptional()
   @IsString()
-  projectLocation?: string;
+  location?: string;
+
+  @ApiPropertyOptional({
+    example: 'Rustaveli Avenue 45, Batumi',
+    description: 'Street address from map',
+  })
+  @IsOptional()
+  @IsString()
+  street?: string;
+
+  @ApiPropertyOptional({
+    enum: Region,
+    example: Region.BATUMI,
+  })
+  @IsOptional()
+  @IsEnum(Region)
+  region?: Region;
 
   @ApiPropertyOptional({
     type: 'string',
@@ -84,7 +103,11 @@ export class UpdateProjectDto {
 
   @ApiPropertyOptional({ description: 'Mark as hot sale', default: false })
   @IsOptional()
-  @Transform(toBoolean)
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return false;
+  })
   @IsBoolean()
   hotSale?: boolean;
 
@@ -93,7 +116,11 @@ export class UpdateProjectDto {
     default: true,
   })
   @IsOptional()
-  @Transform(toBoolean)
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return true;
+  })
   @IsBoolean()
   public?: boolean;
 

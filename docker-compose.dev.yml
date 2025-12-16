@@ -1,54 +1,39 @@
-# version: "3.8"
-# services:
-#   postgres:
-#     image: postgres:15-alpine
-#     container_name: real_estate_postgres
-#     restart: unless-stopped
-#     environment:
-#       POSTGRES_USER: postgres
-#       POSTGRES_PASSWORD: postgres
-#       POSTGRES_DB: realestate
-#     ports:
-#       - "5432:5432"
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U postgres"]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: real_estate_postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: realestate
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-#   backend:
-#     build: ./backend
-#     container_name: real_estate_backend
-#     restart: unless-stopped
-#     ports:
-#       - "3000:3000"
-#     env_file:
-#       - ./backend/.env
-#     volumes:
-#       - ./backend:/app # Sync code for hot reload
-#       - /app/node_modules
-#       - ./backend/public/uploads:/app/public/uploads # Local uploads
-#     depends_on:
-#       postgres:
-#         condition: service_healthy
-#     command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:dev"
+  backend:
+    build: ./backend
+    container_name: real_estate_backend_dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app # 🔥 live code
+      - /app/node_modules
+      - uploads_data:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run start:dev # watch mode only
 
-#   frontend:
-#     build: ./frontend
-#     container_name: real_estate_frontend
-#     restart: unless-stopped
-#     ports:
-#       - "5173:5173"
-#     env_file:
-#       - ./frontend/.env
-#     volumes:
-#       - ./frontend:/app # Sync code for hot reload
-#       - /app/node_modules
-#     depends_on:
-#       - backend
-#     command: npm run dev
-
-# volumes:
-#   postgres_data:
+volumes:
+  postgres_data:
+  uploads_data:

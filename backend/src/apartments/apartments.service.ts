@@ -9,7 +9,7 @@ import { CreateApartmentDto } from './dto/CreateApartment.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { TranslationSyncUtil } from '@/common/utils/translation-sync.util';
-import { LANGUAGES } from '@/common/constants/language';
+import { Region } from '@prisma/client';
 
 interface FindAllParams {
   lang?: string;
@@ -22,6 +22,29 @@ interface FindAllParams {
 @Injectable()
 export class ApartmentsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  private async getRegionTranslation(region: Region | null, lang: string) {
+    if (!region) return null;
+
+    const translation = await this.prismaService.regionTranslations.findFirst({
+      where: {
+        region: region,
+        language: lang,
+      },
+    });
+
+    // Fallback to English if translation not found
+    if (!translation && lang !== 'en') {
+      return await this.prismaService.regionTranslations.findFirst({
+        where: {
+          region: region,
+          language: 'en',
+        },
+      });
+    }
+
+    return translation;
+  }
 
   async findAll(params: FindAllParams = {}) {
     const { lang = 'en', page = 1, limit = 10, projectId, hotSale } = params;
@@ -42,12 +65,14 @@ export class ApartmentsService {
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        translations: { where: { language: lang }, take: 1 },
+        translations: true, // ✅ Fetch all translations
         project: {
           select: {
             id: true,
             projectName: true,
-            projectLocation: true,
+            location: true,
+            street: true,
+            region: true,
             image: true,
             gallery: true,
             priceFrom: true,
@@ -55,20 +80,70 @@ export class ApartmentsService {
             numFloors: true,
             numApartments: true,
             hotSale: true,
+            translations: true, // ✅ Fetch all translations
           },
         },
       },
     });
 
-    const mappedApartments = apartments.map((apartment) => ({
-      id: apartment.id,
-      room: apartment.room,
-      area: apartment.area,
-      images: apartment.images,
-      description: apartment.translations[0]?.description || null,
-      createdAt: apartment.createdAt,
-      project: apartment.project,
-    }));
+    // Fetch region translations (both requested language and English fallback)
+    const uniqueRegions = [
+      ...new Set(apartments.map((a) => a.project?.region).filter(Boolean)),
+    ] as Region[];
+
+    const regionTranslations =
+      uniqueRegions.length > 0
+        ? await this.prismaService.regionTranslations.findMany({
+            where: {
+              region: { in: uniqueRegions },
+              language: { in: lang !== 'en' ? [lang, 'en'] : ['en'] },
+            },
+          })
+        : [];
+
+    const regionTranslationMap = new Map<Region, any>();
+    regionTranslations.forEach((rt) => {
+      const existing = regionTranslationMap.get(rt.region);
+      if (!existing || rt.language === lang) {
+        regionTranslationMap.set(rt.region, rt);
+      }
+    });
+
+    const mappedApartments = apartments.map((apartment) => {
+      // ✅ Get translation with fallback to English (skip empty descriptions)
+      const translation =
+        apartment.translations.find(
+          (t) => t.language === lang && t.description && t.description.trim(),
+        ) ||
+        apartment.translations.find(
+          (t) => t.language === 'en' && t.description,
+        );
+
+      // ✅ Get project translation (projects may have different fields like projectName, street, etc.)
+      const projectTranslation =
+        apartment.project?.translations.find((t) => t.language === lang) ||
+        apartment.project?.translations.find((t) => t.language === 'en');
+
+      const regionTranslation = apartment.project?.region
+        ? regionTranslationMap.get(apartment.project.region)
+        : null;
+
+      return {
+        id: apartment.id,
+        room: apartment.room,
+        area: apartment.area,
+        images: apartment.images,
+        description: translation?.description || null,
+        createdAt: apartment.createdAt,
+        project: apartment.project
+          ? {
+              ...apartment.project,
+              regionName: regionTranslation?.name || null,
+              translation: projectTranslation || null,
+            }
+          : null,
+      };
+    });
 
     return {
       data: mappedApartments,
@@ -87,16 +162,16 @@ export class ApartmentsService {
     const apartment = await this.prismaService.apartments.findUnique({
       where: { id },
       include: {
-        translations: {
-          where: { language: lang },
-          take: 1,
-        },
+        translations: true, // ✅ Fetch all translations
         project: {
           select: {
             id: true,
             projectName: true,
-            projectLocation: true,
+            location: true,
+            street: true,
+            region: true,
             image: true,
+            translations: true, // ✅ Fetch all translations
           },
         },
       },
@@ -106,14 +181,37 @@ export class ApartmentsService {
       throw new NotFoundException(`Apartment with ID "${id}" not found`);
     }
 
+    // ✅ Get translation with fallback to English (skip empty descriptions)
+    const translation =
+      apartment.translations.find(
+        (t) => t.language === lang && t.description && t.description.trim(),
+      ) ||
+      apartment.translations.find((t) => t.language === 'en' && t.description);
+
+    // ✅ Get project translation (projects may have different fields like projectName, street, etc.)
+    const projectTranslation =
+      apartment.project?.translations.find((t) => t.language === lang) ||
+      apartment.project?.translations.find((t) => t.language === 'en');
+
+    const regionTranslation = await this.getRegionTranslation(
+      apartment.project?.region || null,
+      lang,
+    );
+
     return {
       id: apartment.id,
       room: apartment.room,
       area: apartment.area,
       images: apartment.images,
-      description: apartment.translations[0]?.description || null,
+      description: translation?.description || null,
       createdAt: apartment.createdAt,
-      project: apartment.project,
+      project: apartment.project
+        ? {
+            ...apartment.project,
+            regionName: regionTranslation?.name || null,
+            translation: projectTranslation || null,
+          }
+        : null,
     };
   }
 
@@ -146,13 +244,14 @@ export class ApartmentsService {
       },
     });
 
-    await this.prismaService.apartmentTranslations.createMany({
-      data: LANGUAGES.map((lang) => ({
+    // ✅ Only create English translation initially
+    // Other translations created on-demand when actually filled
+    await this.prismaService.apartmentTranslations.create({
+      data: {
         apartmentId: apartment.id,
-        language: lang,
-        description: lang === 'en' ? dto.description || '' : '',
-      })),
-      skipDuplicates: true,
+        language: 'en',
+        description: dto.description || '',
+      },
     });
 
     return apartment;
@@ -210,7 +309,9 @@ export class ApartmentsService {
           select: {
             id: true,
             projectName: true,
-            projectLocation: true,
+            location: true,
+            street: true,
+            region: true,
           },
         },
       },

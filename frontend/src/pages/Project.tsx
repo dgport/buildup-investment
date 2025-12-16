@@ -18,6 +18,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { getImageUrl } from '@/lib/utils/image-utils'
 import Lightbox from 'yet-another-react-lightbox'
 import 'yet-another-react-lightbox/styles.css'
+import MapboxMap from '@/components/shared/map/MapboxMap'
 
 const getQuarter = (dateString: string | null | undefined): string | null => {
   if (!dateString) return null
@@ -33,7 +34,7 @@ const PHONE_NUMBER = '+995 595 80 47 95'
 const PHONE_NUMBER_CLEAN = '995595804795'
 
 export default function ProjectPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const projectId = Number(id)
@@ -46,11 +47,12 @@ export default function ProjectPage() {
     data: project,
     isLoading: projectLoading,
     error,
-  } = useProject(projectId)
+  } = useProject(projectId, i18n.language)
 
   const { data: apartmentsResponse, isLoading: apartmentsLoading } =
     useApartments({
       projectId,
+      lang: i18n.language,
     })
 
   const apartments = apartmentsResponse?.data || []
@@ -94,6 +96,18 @@ export default function ProjectPage() {
     }
   }, [emblaApi, onSelect])
 
+  const coordinates = project?.location
+    ? (() => {
+        try {
+          const [lat, lng] = project.location.split(',').map(Number)
+          if (isNaN(lat) || isNaN(lng)) return null
+          return { lat, lng }
+        } catch (error) {
+          return null
+        }
+      })()
+    : null
+
   const handleImageClick = () => {
     setLightboxIndex(selectedIndex)
     setLightboxOpen(true)
@@ -110,7 +124,8 @@ export default function ProjectPage() {
   }
 
   const handleWhatsApp = () => {
-    const projectName = project?.projectName || 'a project'
+    const projectName =
+      project?.translation?.projectName || project?.projectName || 'a project'
     const message = encodeURIComponent(
       `Hello! I'm interested in ${projectName}`
     )
@@ -161,11 +176,22 @@ export default function ProjectPage() {
 
   const lightboxSlides = images.map((src: string) => ({ src }))
 
+  const locationParts = []
+  const streetAddress = project.translation?.street || project.street
+  if (streetAddress) locationParts.push(streetAddress)
+  if (project.regionName) locationParts.push(project.regionName)
+
+  const locationString =
+    locationParts.length > 0
+      ? locationParts.join(', ')
+      : t('projectPage.noLocation')
+
+  const hasLocation = !!coordinates
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Left side - Images */}
           <div className="lg:col-span-2 h-[500px]">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">
               <div className="overflow-hidden h-full" ref={emblaRef}>
@@ -180,7 +206,6 @@ export default function ProjectPage() {
                           className="relative flex justify-center items-center h-full cursor-zoom-in bg-black/5"
                           onClick={handleImageClick}
                         >
-                          {/* Main image ONLY (no blur background) */}
                           <img
                             src={img || '/placeholder.svg'}
                             alt={project.projectName || 'Project'}
@@ -246,18 +271,24 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          {/* Right side - Property Info */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-[500px] flex flex-col justify-between">
-              {/* Top Info */}
               <div className="space-y-2 sm:space-y-3">
                 <div className="mb-4 sm:mb-5 pb-4 border-b-2 border-gray-300">
                   <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
-                    {project.projectName || t('projectPage.noName')}
+                    {project.translation?.projectName ||
+                      project.projectName ||
+                      t('projectPage.noName')}
                   </h1>
-                  <p className="text-xs sm:text-sm text-gray-600">
-                    {project.projectLocation || t('projectPage.noLocation')}
-                  </p>
+                </div>
+
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
+                    {t('projectPage.region')}
+                  </span>
+                  <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
+                    {project.regionName || t('projectPage.notAvailable')}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
@@ -266,7 +297,7 @@ export default function ProjectPage() {
                   </span>
                   <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
                     {project.priceFrom
-                      ? `${project.priceFrom.toLocaleString()}`
+                      ? `$${project.priceFrom.toLocaleString()}`
                       : t('projectPage.notAvailable')}
                   </span>
                 </div>
@@ -301,7 +332,6 @@ export default function ProjectPage() {
                 </div>
               </div>
 
-              {/* Bottom Actions */}
               <div className="space-y-2 pt-3 sm:pt-4">
                 <div className="relative">
                   <Button
@@ -337,6 +367,15 @@ export default function ProjectPage() {
             </div>
           </div>
         </div>
+
+        {hasLocation && (
+          <MapboxMap
+            latitude={coordinates.lat}
+            longitude={coordinates.lng}
+            title={project.translation?.projectName || project.projectName}
+            subtitle={locationString}
+          />
+        )}
 
         <div className="mt-8 lg:mt-12">
           {apartments.length > 0 ? (

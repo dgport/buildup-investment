@@ -1,4 +1,4 @@
-import { useMutation, useQuery, keepPreviousData } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '../tanstack/query-client'
 import { apartmentsService } from '../services/apartments.service'
 import type {
@@ -8,15 +8,13 @@ import type {
   UpsertTranslationDto,
 } from '../types/apartments'
 
-export const useApartments = (params: GetApartmentsParams = {}) => {
+export const useApartments = (params?: GetApartmentsParams) => {
   return useQuery<ApartmentsResponse>({
     queryKey: ['apartments', params],
     queryFn: async () => {
       const response = await apartmentsService.getAll(params)
       return response.data
     },
-
-    placeholderData: keepPreviousData,
   })
 }
 
@@ -51,10 +49,7 @@ export const useUpdateApartment = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['apartments'] })
-
-      queryClient.invalidateQueries({
-        queryKey: ['apartments', variables.id],
-      })
+      queryClient.invalidateQueries({ queryKey: ['apartments', variables.id] })
     },
   })
 }
@@ -73,20 +68,12 @@ export const useDeleteApartment = () => {
 
 export const useDeleteApartmentImage = () => {
   return useMutation({
-    mutationFn: async ({
-      id,
-      imageIndex,
-    }: {
-      id: number
-      imageIndex: number
-    }) => {
+    mutationFn: async ({ id, imageIndex }: { id: number; imageIndex: number }) => {
       const response = await apartmentsService.deleteImage(id, imageIndex)
       return response.data
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['apartments', variables.id],
-      })
+      queryClient.invalidateQueries({ queryKey: ['apartments', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['apartments'] })
     },
   })
@@ -105,13 +92,7 @@ export const useApartmentTranslations = (id: number) => {
 
 export const useUpsertApartmentTranslation = () => {
   return useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: number
-      data: UpsertTranslationDto
-    }) => {
+    mutationFn: async ({ id, data }: { id: number; data: UpsertTranslationDto }) => {
       const response = await apartmentsService.upsertTranslation(id, data)
       return response.data
     },
@@ -119,10 +100,7 @@ export const useUpsertApartmentTranslation = () => {
       queryClient.invalidateQueries({
         queryKey: ['apartments', variables.id, 'translations'],
       })
-
-      queryClient.invalidateQueries({
-        queryKey: ['apartments', variables.id],
-      })
+      queryClient.invalidateQueries({ queryKey: ['apartments', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['apartments'] })
     },
   })
@@ -138,10 +116,7 @@ export const useDeleteApartmentTranslation = () => {
       queryClient.invalidateQueries({
         queryKey: ['apartments', variables.id, 'translations'],
       })
-
-      queryClient.invalidateQueries({
-        queryKey: ['apartments', variables.id],
-      })
+      queryClient.invalidateQueries({ queryKey: ['apartments', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['apartments'] })
     },
   })

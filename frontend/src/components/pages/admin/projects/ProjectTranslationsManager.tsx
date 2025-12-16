@@ -24,11 +24,9 @@ export function ProjectTranslationsManager({
   const upsertTranslation = useUpsertProjectTranslation()
 
   const handleSaveTranslation = async () => {
-    if (
-      !editingTranslation?.projectName?.trim() ||
-      !editingTranslation?.projectLocation?.trim()
-    )
+    if (!editingTranslation?.projectName?.trim()) {
       return
+    }
 
     try {
       await upsertTranslation.mutateAsync({
@@ -63,7 +61,7 @@ export function ProjectTranslationsManager({
         ) : (
           translations.map(translation => {
             const projectName = translation.projectName ?? ''
-            const projectLocation = translation.projectLocation ?? ''
+            const street = translation.street ?? ''
 
             return (
               <Card key={translation.language} className="overflow-hidden">
@@ -83,34 +81,36 @@ export function ProjectTranslationsManager({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label className="text-sm font-medium">
-                            Project Name
+                            Project Name <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             type="text"
-                            value={editingTranslation.projectName ?? ''}
+                            value={editingTranslation.projectName}
                             onChange={e =>
                               setEditingTranslation({
                                 ...editingTranslation,
                                 projectName: e.target.value,
                               })
                             }
+                            placeholder="Enter project name"
                             className="mt-2"
                           />
                         </div>
 
                         <div>
                           <Label className="text-sm font-medium">
-                            Project Location
+                            Street Address
                           </Label>
                           <Input
                             type="text"
-                            value={editingTranslation.projectLocation ?? ''}
+                            value={editingTranslation.street ?? ''}
                             onChange={e =>
                               setEditingTranslation({
                                 ...editingTranslation,
-                                projectLocation: e.target.value,
+                                street: e.target.value || undefined,
                               })
                             }
+                            placeholder="Enter street address (optional)"
                             className="mt-2"
                           />
                         </div>
@@ -119,7 +119,10 @@ export function ProjectTranslationsManager({
                       <div className="flex gap-2 pt-2">
                         <Button
                           onClick={handleSaveTranslation}
-                          disabled={upsertTranslation.isPending}
+                          disabled={
+                            upsertTranslation.isPending ||
+                            !editingTranslation.projectName?.trim()
+                          }
                           className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <Save className="w-4 h-4 mr-2" /> Save
@@ -142,19 +145,17 @@ export function ProjectTranslationsManager({
                         <div className="text-sm space-y-1">
                           <div>
                             <span className="text-muted-foreground">Name:</span>{' '}
-                            &nbsp;
                             <span className="text-foreground font-medium">
-                              {projectName}
+                              {projectName || '(Empty)'}
                             </span>
                           </div>
 
                           <div>
                             <span className="text-muted-foreground">
-                              Location:
+                              Street:
                             </span>{' '}
-                            &nbsp;
                             <span className="text-foreground font-medium">
-                              {projectLocation}
+                              {street || '(Not set)'}
                             </span>
                           </div>
                         </div>
@@ -167,7 +168,7 @@ export function ProjectTranslationsManager({
                           setEditingTranslation({
                             language: translation.language,
                             projectName,
-                            projectLocation,
+                            street: street || undefined,
                           })
                         }
                         className="text-blue-600 hover:bg-blue-50"

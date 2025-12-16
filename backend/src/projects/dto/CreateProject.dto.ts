@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -8,18 +8,57 @@ import {
   IsDateString,
   Min,
   IsBoolean,
+  IsEnum,
 } from 'class-validator';
 
+export enum Region {
+  BATUMI = 'BATUMI',
+  KOBULETI = 'KOBULETI',
+  CHAKVI = 'CHAKVI',
+  MAKHINJAURI = 'MAKHINJAURI',
+  GONIO = 'GONIO',
+  UREKI = 'UREKI',
+}
+
 export class CreateProjectDto {
-  @ApiProperty({ example: 'Luxury Residence', description: 'Project name' })
+  @ApiProperty({
+    example: 'Luxury Residence',
+    description: 'Project name (Required)',
+  })
   @IsString()
   @IsNotEmpty()
   projectName: string;
 
-  @ApiProperty({ example: 'Batumi, Georgia', description: 'Project location' })
-  @IsString()
+  @ApiProperty({ example: 1, description: 'Partner ID (Required)' })
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
   @IsNotEmpty()
-  projectLocation: string;
+  partnerId: number;
+
+  @ApiPropertyOptional({
+    example: '41.6168,41.6401',
+    description: 'Coordinates from map (latitude,longitude)',
+  })
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @ApiPropertyOptional({
+    example: 'Rustaveli Avenue 45, Batumi',
+    description: 'Street address from map (translatable)',
+  })
+  @IsOptional()
+  @IsString()
+  street?: string;
+
+  @ApiPropertyOptional({
+    enum: Region,
+    example: Region.BATUMI,
+    description: 'Region (selectable enum)',
+  })
+  @IsOptional()
+  @IsEnum(Region)
+  region?: Region;
 
   @ApiPropertyOptional({
     type: 'string',
@@ -76,12 +115,6 @@ export class CreateProjectDto {
   @ApiPropertyOptional({ description: 'Mark as hot sale', default: false })
   @IsOptional()
   @Transform(({ value }) => {
-    console.log(
-      '🔥 hotSale TRANSFORM - raw value:',
-      JSON.stringify(value),
-      'type:',
-      typeof value,
-    );
     if (value === 'true' || value === true) return true;
     if (value === 'false' || value === false) return false;
     return undefined;
@@ -95,22 +128,10 @@ export class CreateProjectDto {
   })
   @IsOptional()
   @Transform(({ value }) => {
-    console.log(
-      '👁️ public TRANSFORM - raw value:',
-      JSON.stringify(value),
-      'type:',
-      typeof value,
-    );
     if (value === 'true' || value === true) return true;
     if (value === 'false' || value === false) return false;
     return undefined;
   })
   @IsBoolean()
   public?: boolean;
-
-  @ApiProperty({ example: 1, description: 'Partner ID' })
-  @Transform(({ value }) => parseInt(value, 10))
-  @IsInt()
-  @IsNotEmpty()
-  partnerId: number;
 }

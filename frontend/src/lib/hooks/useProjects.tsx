@@ -101,6 +101,8 @@ export const useProjectTranslations = (id: number) => {
   })
 }
 
+ 
+
 export const useUpsertProjectTranslation = () => {
   return useMutation({
     mutationFn: async ({

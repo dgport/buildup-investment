@@ -7,6 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+enum Region {
+  BATUMI
+  KOBULETI
+  CHAKVI
+  MAKHINJAURI
+  GONIO
+  UREKI
+}
+
 model Partners {
   id          Int      @id @default(autoincrement())
   companyName String   @map("company_name") @unique
@@ -21,8 +31,10 @@ model Partners {
 
 model Projects {
   id              Int       @id @default(autoincrement())
-  projectName     String    @map("project_name") @unique
-  projectLocation String    @map("project_location")
+  projectName     String    @map("project_name")
+  location        String?   
+  street          String?    
+  region          Region?   
   image           String?
   gallery         String[]  @default([]) 
   priceFrom       Int?      @map("price_from")  
@@ -40,6 +52,8 @@ model Projects {
   apartments   Apartments[]
 
   @@map("projects")
+  @@index([region])
+  @@index([location])
 }
 
 model Apartments {
@@ -69,18 +83,28 @@ model PartnerTranslations {
 }
 
 model ProjectTranslations {
-  id              Int    @id @default(autoincrement())
-  projectId       Int    @map("project_id")
-  language        String
-  projectName     String @map("project_name")
-  projectLocation String @map("project_location")
+  id          Int    @id @default(autoincrement())
+  projectId   Int    @map("project_id")
+  language    String
+  projectName String @map("project_name")
+  street      String?  
 
   project Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, language])
   @@map("project_translations")
-}
+} 
 
+
+model RegionTranslations {
+  id       Int    @id @default(autoincrement())
+  region   Region
+  language String
+  name     String
+
+  @@unique([region, language], name: "region_language")  
+  @@map("region_translations")
+}
 model ApartmentTranslations {
   id          Int     @id @default(autoincrement())
   apartmentId Int     @map("apartment_id")
@@ -92,9 +116,6 @@ model ApartmentTranslations {
   @@unique([apartmentId, language])
   @@map("apartment_translations")
 }
-
-
-////////////////////////////////////////////////
 
 
 enum PropertyType {
@@ -151,28 +172,20 @@ enum City {
   TBILISI
 }
 
-// Updated Property model - removed PropertyStatus and PropertyCondition enums
+ 
 model Property {
   id              String           @id @default(cuid())
   externalId      String           @unique @map("external_id")
-  
-  // Required fields
   propertyType    PropertyType     @map("property_type")
   dealType        DealType         @map("deal_type")
-  
-  // Location fields (all optional, both strings)
   city            City?
   address         String?
   location        String?
-  
-  // Optional fields
   price           Int?
   hotSale         Boolean          @map("hot_sale") @default(false)
   public          Boolean          @default(true)
   createdAt       DateTime         @map("created_at") @default(now())
   updatedAt       DateTime         @map("updated_at") @updatedAt
-
-  // Property specifications (all optional)
   totalArea       Int?             @map("total_area")
   rooms           Int?
   bedrooms        Int?
@@ -180,19 +193,11 @@ model Property {
   floors          Int?
   floorsTotal     Int?             @map("floors_total")
   ceilingHeight   Float?           @map("ceiling_height")
-
-  // Removed: status and condition fields
   isNonStandard   Boolean          @map("is_non_standard") @default(false)
-
-  // Occupancy (optional)
   occupancy       Occupancy?
-
-  // Utilities (all optional)
   heating         HeatingType?
   hotWater        HotWaterType?    @map("hot_water")
   parking         ParkingType?
-
-  // Amenities (all optional with defaults)
   hasConditioner      Boolean @map("has_conditioner") @default(false)
   hasFurniture        Boolean @map("has_furniture") @default(false)
   hasBed              Boolean @map("has_bed") @default(false)
@@ -237,7 +242,7 @@ model PropertyTranslations {
   property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   language        String
   
-  // Translatable fields - title is required, rest optional
+ 
   title           String
   address         String?
   description     String?  @db.Text

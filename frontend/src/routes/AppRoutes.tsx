@@ -12,15 +12,15 @@ const Contact = lazy(() => import('@/pages/Contact'))
 const Properties = lazy(() => import('@/pages/Properties'))
 const Project = lazy(() => import('@/pages/Project'))
 const Partners = lazy(() => import('@/pages/Partners'))
-const InventoryMap = lazy(() => import('@/pages/Map'))
+const InventoryMap = lazy(() => import('@/components/shared/map/MapPin'))
 const Projects = lazy(() => import('@/pages/Projects'))
 const Property = lazy(() => import('@/pages/Property'))
 
 export const AppRoutes = () => {
-  return ( 
+  return (
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
-        <Route path={ROUTES.HOME}   element={<Home />} />
+        <Route path={ROUTES.HOME} element={<Home />} />
         <Route path={ROUTES.SIGNIN} element={<Signin />} />
         <Route path={ROUTES.CONTACT} element={<Contact />} />
         <Route path={ROUTES.PARTNERS} element={<Partners />} />

@@ -5,19 +5,28 @@ import ProjectCard from '@/components/pages/projects/ProjectCard'
 import { useProjects } from '@/lib/hooks/useProjects'
 import { ProjectFilters } from '@/components/pages/projects/ProjectsFilter'
 import { Pagination } from '@/components/shared/pagination/Pagination'
+import { Region } from '@/lib/types/projects' // ✅ Import Region enum
 
 export default function Projects() {
   const { t, i18n } = useTranslation()
   const [searchParams, _] = useSearchParams()
 
   const page = parseInt(searchParams.get('page') || '1', 10)
-  const location = searchParams.get('location') || undefined
+  const regionParam = searchParams.get('region') // ✅ Get as string first
   const priceFrom = searchParams.get('priceFrom')
     ? parseInt(searchParams.get('priceFrom')!)
+    : undefined
+  const priceTo = searchParams.get('priceTo')
+    ? parseInt(searchParams.get('priceTo')!)
     : undefined
   const partnerId = searchParams.get('partnerId')
     ? parseInt(searchParams.get('partnerId')!)
     : undefined
+
+  // ✅ Validate and cast region to enum or undefined
+  const region =
+    regionParam && regionParam in Region ? (regionParam as Region) : undefined
+
   const {
     data: projectsResponse,
     isLoading,
@@ -26,8 +35,9 @@ export default function Projects() {
     lang: i18n.language,
     page: page,
     limit: 8,
-    location,
+    region,
     priceFrom,
+    priceTo,
     partnerId,
   })
 
@@ -92,7 +102,7 @@ export default function Projects() {
         </div>
         {projects.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-x-6 gap-y-10 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 mb-4">
               {projects.map(project => (
                 <Link key={project.id} to={`/projects/${project.id}`}>
                   <ProjectCard project={project} />

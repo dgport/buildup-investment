@@ -9,13 +9,14 @@ import { CreateProjectDto } from './dto/CreateProject.dto';
 import { FileUtils } from '@/common/utils/file.utils';
 import { UpdateProjectDto } from './dto/UpdateProject.dto';
 import { TranslationSyncUtil } from '@/common/utils/translation-sync.util';
-import { LANGUAGES } from '@/common/constants/language';
+import { Region } from '@prisma/client';
 
 interface FindAllParams {
   lang?: string;
   page?: number;
   limit?: number;
   location?: string;
+  region?: Region;
   priceFrom?: number;
   priceTo?: number;
   partnerId?: number;
@@ -26,51 +27,53 @@ interface FindAllParams {
 export class ProjectsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findAll(params: FindAllParams = {}) {
-    const {
-      lang = 'en',
-      page = 1,
-      limit = 9,
-      location,
-      priceFrom,
-      priceTo,
-      partnerId,
-      public: isPublic,
-    } = params;
+  private async getRegionTranslation(region: Region | null, lang: string) {
+    if (!region) return null;
 
+    const translation = await this.prismaService.regionTranslations.findFirst({
+      where: {
+        region: region,
+        language: lang,
+      },
+    });
+
+    // Fallback to English if translation not found
+    if (!translation && lang !== 'en') {
+      return await this.prismaService.regionTranslations.findFirst({
+        where: {
+          region: region,
+          language: 'en',
+        },
+      });
+    }
+
+    return translation;
+  }
+
+  async findAll(params: FindAllParams = {}) {
+    const { lang = 'en', page = 1, limit = 10 } = params;
     const skip = (page - 1) * limit;
     const where: any = {};
 
-    if (location) {
-      where.translations = {
-        some: {
-          language: lang,
-          projectLocation: {
-            contains: location,
-            mode: 'insensitive',
-          },
-        },
-      };
+    if (params.location) {
+      where.location = params.location;
     }
 
-    if (priceFrom !== undefined || priceTo !== undefined) {
-      where.priceFrom = {};
-      if (priceFrom !== undefined) {
-        where.priceFrom.gte = priceFrom;
-      }
-      if (priceTo !== undefined) {
-        where.priceFrom.lte = priceTo;
-      }
+    if (params.region) {
+      where.region = params.region;
     }
 
-    if (partnerId !== undefined) {
-      where.partnerId = partnerId;
+    if (params.priceFrom !== undefined && params.priceTo !== undefined) {
+      where.priceFrom = { gte: params.priceFrom };
+      where.priceTo = { lte: params.priceTo };
     }
 
-    if (isPublic !== undefined) {
-      where.public = isPublic;
-    } else {
-      where.public = true;
+    if (params.partnerId !== undefined) {
+      where.partnerId = params.partnerId;
+    }
+
+    if (params.public !== undefined) {
+      where.public = params.public;
     }
 
     const total = await this.prismaService.projects.count({ where });
@@ -87,43 +90,81 @@ export class ProjectsService {
       include: {
         partner: {
           include: {
-            translations: {
-              where: { language: lang },
-              take: 1,
-            },
+            translations: true,
           },
         },
-        translations: {
-          where: { language: lang },
-          take: 1,
-        },
+        translations: true,
       },
     });
 
-    const mappedProjects = projects.map((project) => ({
-      id: project.id,
-      projectName: project.projectName,
-      projectLocation: project.projectLocation,
-      image: project.image,
-      gallery: project.gallery,
-      priceFrom: project.priceFrom,
-      deliveryDate: project.deliveryDate,
-      numFloors: project.numFloors,
-      numApartments: project.numApartments,
-      hotSale: project.hotSale,
-      public: project.public,
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
-      translation: project.translations[0] || null,
-      partner: project.partner
-        ? {
-            id: project.partner.id,
-            companyName: project.partner.companyName,
-            image: project.partner.image,
-            translation: project.partner.translations[0] || null,
-          }
-        : null,
-    }));
+    const uniqueRegions = [
+      ...new Set(projects.map((p) => p.region).filter(Boolean)),
+    ] as Region[];
+
+    const regionTranslations =
+      uniqueRegions.length > 0
+        ? await this.prismaService.regionTranslations.findMany({
+            where: {
+              region: { in: uniqueRegions },
+              language: { in: lang !== 'en' ? [lang, 'en'] : ['en'] },
+            },
+          })
+        : [];
+
+    const regionTranslationMap = new Map<Region, any>();
+    regionTranslations.forEach((rt) => {
+      const existing = regionTranslationMap.get(rt.region);
+      if (!existing || rt.language === lang) {
+        regionTranslationMap.set(rt.region, rt);
+      }
+    });
+
+    const mappedProjects = projects.map((project) => {
+      const regionTranslation = project.region
+        ? regionTranslationMap.get(project.region)
+        : null;
+
+      const translation =
+        project.translations.find(
+          (t) => t.language === lang && t.projectName && t.projectName.trim(),
+        ) ||
+        project.translations.find((t) => t.language === 'en' && t.projectName);
+
+      const partnerTranslation =
+        project.partner?.translations.find(
+          (t) => t.language === lang && t.companyName && t.companyName.trim(),
+        ) ||
+        project.partner?.translations.find(
+          (t) => t.language === 'en' && t.companyName,
+        );
+
+      return {
+        id: project.id,
+        projectName: project.projectName,
+        location: project.location,
+        street: project.street,
+        region: project.region,
+        regionName: regionTranslation?.name || null,
+        image: project.image,
+        gallery: project.gallery,
+        priceFrom: project.priceFrom,
+        deliveryDate: project.deliveryDate,
+        numFloors: project.numFloors,
+        numApartments: project.numApartments,
+        hotSale: project.hotSale,
+        public: project.public,
+        createdAt: project.createdAt,
+        translation: translation || null,
+        partner: project.partner
+          ? {
+              id: project.partner.id,
+              companyName: project.partner.companyName,
+              image: project.partner.image,
+              translation: partnerTranslation || null,
+            }
+          : null,
+      };
+    });
 
     return {
       data: mappedProjects,
@@ -138,22 +179,16 @@ export class ProjectsService {
     };
   }
 
-  async findOne(id: number, lang: string = 'en') {
+  async findOne(id: number, lang = 'en') {
     const project = await this.prismaService.projects.findUnique({
       where: { id },
       include: {
         partner: {
           include: {
-            translations: {
-              where: { language: lang },
-              take: 1,
-            },
+            translations: true,
           },
         },
-        translations: {
-          where: { language: lang },
-          take: 1,
-        },
+        translations: true,
       },
     });
 
@@ -161,10 +196,32 @@ export class ProjectsService {
       throw new NotFoundException(`Project with ID "${id}" not found`);
     }
 
+    const translation =
+      project.translations.find(
+        (t) => t.language === lang && t.projectName && t.projectName.trim(),
+      ) ||
+      project.translations.find((t) => t.language === 'en' && t.projectName);
+
+    const partnerTranslation =
+      project.partner?.translations.find(
+        (t) => t.language === lang && t.companyName && t.companyName.trim(),
+      ) ||
+      project.partner?.translations.find(
+        (t) => t.language === 'en' && t.companyName,
+      );
+
+    const regionTranslation = await this.getRegionTranslation(
+      project.region,
+      lang,
+    );
+
     return {
       id: project.id,
       projectName: project.projectName,
-      projectLocation: project.projectLocation,
+      location: project.location,
+      street: project.street,
+      region: project.region,
+      regionName: regionTranslation?.name || null,
       image: project.image,
       gallery: project.gallery,
       priceFrom: project.priceFrom,
@@ -174,13 +231,13 @@ export class ProjectsService {
       hotSale: project.hotSale,
       public: project.public,
       createdAt: project.createdAt,
-      translation: project.translations[0] || null,
+      translation: translation || null,
       partner: project.partner
         ? {
             id: project.partner.id,
             companyName: project.partner.companyName,
             image: project.partner.image,
-            translation: project.partner.translations[0] || null,
+            translation: partnerTranslation || null,
           }
         : null,
     };
@@ -191,20 +248,7 @@ export class ProjectsService {
     image?: Express.Multer.File,
     gallery?: Express.Multer.File[],
   ) {
-    console.log('=== CREATE PROJECT DEBUG ===');
-    console.log('DTO received:', dto);
-
     await this.validatePartnerExists(dto.partnerId);
-
-    const existingProject = await this.prismaService.projects.findUnique({
-      where: { projectName: dto.projectName },
-    });
-
-    if (existingProject) {
-      throw new ConflictException(
-        `Project "${dto.projectName}" already exists`,
-      );
-    }
 
     const galleryUrls = gallery
       ? gallery
@@ -215,7 +259,9 @@ export class ProjectsService {
     const project = await this.prismaService.projects.create({
       data: {
         projectName: dto.projectName,
-        projectLocation: dto.projectLocation,
+        location: dto.location ?? null,
+        street: dto.street ?? null,
+        region: dto.region ?? null,
         image: image ? FileUtils.generateImageUrl(image, 'projects') : null,
         gallery: galleryUrls,
         priceFrom: dto.priceFrom ?? null,
@@ -231,14 +277,13 @@ export class ProjectsService {
       },
     });
 
-    await this.prismaService.projectTranslations.createMany({
-      data: LANGUAGES.map((lang) => ({
+    await this.prismaService.projectTranslations.create({
+      data: {
         projectId: project.id,
-        language: lang,
-        projectName: lang === 'en' ? dto.projectName : '',
-        projectLocation: lang === 'en' ? dto.projectLocation : '',
-      })),
-      skipDuplicates: true,
+        language: 'en',
+        projectName: dto.projectName,
+        street: dto.street ?? null,
+      },
     });
 
     return project;
@@ -250,18 +295,6 @@ export class ProjectsService {
     image?: Express.Multer.File,
     gallery?: Express.Multer.File[],
   ) {
-    console.log('=== UPDATE PROJECT DEBUG ===');
-    console.log('Project ID:', id);
-    console.log('DTO received:', dto);
-    console.log('Types:', {
-      priceFrom: typeof dto.priceFrom,
-      numFloors: typeof dto.numFloors,
-      numApartments: typeof dto.numApartments,
-      hotSale: typeof dto.hotSale,
-      public: typeof dto.public,
-      partnerId: typeof dto.partnerId,
-    });
-
     const project = await this.prismaService.projects.findUnique({
       where: { id },
     });
@@ -299,8 +332,14 @@ export class ProjectsService {
     if (dto.projectName !== undefined) {
       updateData.projectName = dto.projectName;
     }
-    if (dto.projectLocation !== undefined) {
-      updateData.projectLocation = dto.projectLocation;
+    if (dto.location !== undefined) {
+      updateData.location = dto.location;
+    }
+    if (dto.street !== undefined) {
+      updateData.street = dto.street;
+    }
+    if (dto.region !== undefined) {
+      updateData.region = dto.region;
     }
     if (dto.partnerId !== undefined) {
       updateData.partnerId = dto.partnerId;
@@ -323,8 +362,6 @@ export class ProjectsService {
     if (dto.public !== undefined) {
       updateData.public = dto.public;
     }
-
-    console.log('Update data:', updateData);
 
     const updatedProject = await this.prismaService.projects.update({
       where: { id },
@@ -373,7 +410,7 @@ export class ProjectsService {
     projectId: number,
     language: string,
     projectName: string,
-    projectLocation: string,
+    street?: string,
   ) {
     const project = await this.prismaService.projects.findUnique({
       where: { id: projectId },
@@ -392,13 +429,13 @@ export class ProjectsService {
       },
       update: {
         projectName,
-        projectLocation,
+        street: street ?? null,
       },
       create: {
         projectId,
         language,
         projectName,
-        projectLocation,
+        street: street ?? null,
       },
     });
 
@@ -424,7 +461,7 @@ export class ProjectsService {
       entityIdField: 'projectId',
       translationModel: this.prismaService.projectTranslations,
       existingTranslations: project.translations,
-      defaultFields: { projectName: '', projectLocation: '' },
+      defaultFields: { projectName: '', street: null },
     });
 
     const updatedProject = await this.prismaService.projects.findUnique({
@@ -505,7 +542,7 @@ export class ProjectsService {
       this.prismaService.projects,
       'projectId',
       this.prismaService.projectTranslations,
-      () => ({ projectName: '', projectLocation: '' }),
+      () => ({ projectName: '', street: null }),
     );
   }
 

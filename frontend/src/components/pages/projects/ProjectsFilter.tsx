@@ -42,44 +42,45 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
     limit: 1000,
   })
 
-  const uniqueLocations = useMemo(() => {
+  const uniqueRegions = useMemo(() => {
     if (!allProjectsResponse?.data) return []
 
-    const locations = allProjectsResponse.data
-      .map(project => {
-        const location =
-          project.translation?.projectLocation || project.projectLocation
-        return location?.trim()
-      })
-      .filter(Boolean)
-      .filter((value, index, self) => self.indexOf(value) === index)
-      .sort()
+    const regionsMap = new Map<string, string>()
 
-    return locations
+    allProjectsResponse.data.forEach(project => {
+      if (project.region && project.regionName) {
+        regionsMap.set(project.region, project.regionName)
+      }
+    })
+
+    return Array.from(regionsMap.entries())
+      .map(([region, regionName]) => ({ region, regionName }))
+      .sort((a, b) => a.regionName.localeCompare(b.regionName))
   }, [allProjectsResponse])
 
   const [filters, setFilters] = useState({
-    location: searchParams.get('location') || 'all',
+    region: searchParams.get('region') || 'all',
     priceFrom: searchParams.get('priceFrom')
-      ? parseInt(searchParams.get('priceFrom')!)
+      ? parseInt(searchParams.get('priceFrom')!, 10)
       : 0,
     partnerId: searchParams.get('partnerId') || 'all',
   })
 
-  const MAX_PRICE = 10000
-  const PRICE_STEP = 500
-
   const applyFilters = () => {
     const params = new URLSearchParams()
     params.set('page', '1')
-    if (filters.location && filters.location !== 'all')
-      params.set('location', filters.location)
 
-    if (filters.priceFrom > 0)
+    if (filters.region !== 'all') {
+      params.set('region', filters.region)
+    }
+
+    if (filters.priceFrom > 0) {
       params.set('priceFrom', filters.priceFrom.toString())
+    }
 
-    if (filters.partnerId && filters.partnerId !== 'all')
+    if (filters.partnerId !== 'all') {
       params.set('partnerId', filters.partnerId)
+    }
 
     setSearchParams(params)
     onFilterChange?.()
@@ -88,7 +89,7 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
 
   const clearFilters = () => {
     setFilters({
-      location: 'all',
+      region: 'all',
       priceFrom: 0,
       partnerId: 'all',
     })
@@ -97,9 +98,9 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
   }
 
   const hasActiveFilters =
-    (filters.location && filters.location !== 'all') ||
+    filters.region !== 'all' ||
     filters.priceFrom > 0 ||
-    (filters.partnerId && filters.partnerId !== 'all')
+    filters.partnerId !== 'all'
 
   return (
     <div className="mb-6">
@@ -142,53 +143,41 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
 
           <div className="mt-8 space-y-8">
             <div className="space-y-3">
-              <Label
-                htmlFor="location"
-                className="text-base font-semibold text-foreground flex items-center gap-2"
-              >
+              <Label className="text-base font-semibold flex items-center gap-2">
                 <div className="w-1 h-5 bg-blue-500 rounded-full" />
-                {t('filters.location', { defaultValue: 'Location' })}
+                {t('filters.region', { defaultValue: 'Region' })}
               </Label>
               <Select
-                value={filters.location}
+                value={filters.region}
                 onValueChange={value =>
-                  setFilters({ ...filters, location: value })
+                  setFilters({ ...filters, region: value })
                 }
               >
-                <SelectTrigger
-                  id="location"
-                  className="h-12 border-2 focus:border-blue-500 transition-colors"
-                >
+                <SelectTrigger className="h-12 border-2 focus:border-blue-500">
                   <SelectValue
-                    placeholder={t('filters.allLocations', {
-                      defaultValue: 'All Locations',
+                    placeholder={t('filters.allRegions', {
+                      defaultValue: 'All Regions',
                     })}
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all" className="font-medium">
-                    {t('filters.allLocations', {
-                      defaultValue: 'All Locations',
+                  <SelectItem value="all">
+                    {t('filters.allRegions', {
+                      defaultValue: 'All Regions',
                     })}
                   </SelectItem>
-                  {uniqueLocations.map(location => (
-                    <SelectItem
-                      key={location}
-                      value={location}
-                      className="cursor-pointer hover:bg-blue-50"
-                    >
-                      {location}
+                  {uniqueRegions.map(({ region, regionName }) => (
+                    <SelectItem key={region} value={region}>
+                      {regionName}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-3">
-              <Label
-                htmlFor="partner"
-                className="text-base font-semibold text-foreground flex items-center gap-2"
-              >
-                <div className="w-1 h-5 bg-blue-400 rounded-full" />
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <div className="w-1 h-5 bg-purple-500 rounded-full" />
                 {t('filters.partner', { defaultValue: 'Developer' })}
               </Label>
               <Select
@@ -197,10 +186,7 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
                   setFilters({ ...filters, partnerId: value })
                 }
               >
-                <SelectTrigger
-                  id="partner"
-                  className="h-12 border-2 focus:border-blue-400 transition-colors"
-                >
+                <SelectTrigger className="h-12 border-2 focus:border-purple-500">
                   <SelectValue
                     placeholder={t('filters.allPartners', {
                       defaultValue: 'All Developers',
@@ -208,68 +194,48 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all" className="font-medium">
+                  <SelectItem value="all">
                     {t('filters.allPartners', {
                       defaultValue: 'All Developers',
                     })}
                   </SelectItem>
                   {partners.map(partner => (
-                    <SelectItem
-                      key={partner.id}
-                      value={partner.id.toString()}
-                      className="cursor-pointer hover:bg-blue-50"
-                    >
+                    <SelectItem key={partner.id} value={partner.id.toString()}>
                       {partner.translation?.companyName || partner.companyName}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="priceFrom"
-                  className="text-base font-semibold text-foreground flex items-center gap-2"
-                >
-                  <div className="w-1 h-5 bg-blue-500 rounded-full" />
-                  {t('filters.priceFrom', {
-                    defaultValue: 'Min Price',
-                  })}
+                <Label className="text-base font-semibold flex items-center gap-2">
+                  <div className="w-1 h-5 bg-orange-500 rounded-full" />
+                  {t('filters.priceFrom', { defaultValue: 'Min Price' })}
                 </Label>
-                <span className="text-lg font-bold text-blue-600">
+                <span className="text-lg font-bold text-orange-600">
                   {filters.priceFrom > 0
                     ? `$${filters.priceFrom.toLocaleString()}`
                     : t('filters.any', { defaultValue: 'Any' })}
                 </span>
               </div>
 
-              <div className="relative pt-2 pb-4">
-                <Slider
-                  id="priceFrom"
-                  min={0}
-                  max={MAX_PRICE}
-                  step={PRICE_STEP}
-                  value={[filters.priceFrom]}
-                  onValueChange={value =>
-                    setFilters({ ...filters, priceFrom: value[0] })
-                  }
-                  className="w-full [&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-blue-500/30 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&>.bg-primary]:bg-blue-500 [&>.bg-primary]:h-2"
-                />
-              </div>
-
-              <div className="flex justify-between text-sm font-medium text-muted-foreground">
-                <span className="bg-muted px-3 py-1 rounded-full">$0</span>
-                <span className="bg-muted px-3 py-1 rounded-full">
-                  ${MAX_PRICE.toLocaleString()}
-                </span>
-              </div>
+              <Slider
+                min={0}
+                max={10000}
+                step={500}
+                value={[filters.priceFrom]}
+                onValueChange={value =>
+                  setFilters({ ...filters, priceFrom: value[0] })
+                }
+              />
             </div>
 
             <div className="pt-6 space-y-3 border-t">
               <Button
                 onClick={applyFilters}
-                className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-base font-semibold shadow-lg"
-                size="lg"
+                className="w-full h-12 bg-blue-500 hover:bg-blue-600"
               >
                 <Search className="w-5 h-5 mr-2" />
                 {t('filters.apply', { defaultValue: 'Apply Filters' })}
@@ -279,8 +245,7 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  className="w-full h-12 border-2 text-base font-semibold hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
-                  size="lg"
+                  className="w-full h-12"
                 >
                   <X className="w-5 h-5 mr-2" />
                   {t('filters.clear', {

@@ -31,6 +31,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertProjectTranslationDto } from './dto/UpsertProjectTranslations.dto';
 import { AuthGuard } from '@/auth/guards/basic-auth.guard';
+import { Region } from '@prisma/client';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -62,8 +63,14 @@ export class ProjectsController {
   @ApiQuery({
     name: 'location',
     required: false,
-    description: 'Filter by project location',
+    description: 'Filter by location (city)',
     example: 'Batumi',
+  })
+  @ApiQuery({
+    name: 'region',
+    required: false,
+    description: 'Filter by region',
+    example: 'ADJARA',
   })
   @ApiQuery({
     name: 'priceFrom',
@@ -100,6 +107,7 @@ export class ProjectsController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('location') location?: string,
+    @Query('region') region?: string, // ✅ Changed from Region to string
     @Query('priceFrom') priceFrom?: string,
     @Query('priceTo') priceTo?: string,
     @Query('partnerId') partnerId?: string,
@@ -110,6 +118,7 @@ export class ProjectsController {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       location,
+      region: region as Region | undefined, // ✅ Cast to Region enum
       priceFrom: priceFrom ? parseFloat(priceFrom) : undefined,
       priceTo: priceTo ? parseFloat(priceTo) : undefined,
       partnerId: partnerId ? parseInt(partnerId, 10) : undefined,
@@ -267,7 +276,7 @@ export class ProjectsController {
       id,
       dto.language,
       dto.projectName,
-      dto.projectLocation,
+      dto.street,
     );
   }
 

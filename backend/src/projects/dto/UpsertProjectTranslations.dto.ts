@@ -1,6 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
-
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class UpsertProjectTranslationDto {
   @ApiProperty({ example: 'ka' })
   @IsString()
@@ -12,8 +11,8 @@ export class UpsertProjectTranslationDto {
   @IsNotEmpty()
   projectName: string;
 
-  @ApiProperty({ example: 'თბილისი, საქართველო' })
+  @ApiPropertyOptional({ example: 'რუსთაველის გამზირი 45, ბათუმი' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  projectLocation: string;
+  street?: string;
 }
