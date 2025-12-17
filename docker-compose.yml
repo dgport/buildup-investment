@@ -8,7 +8,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: realestate
-    # REMOVED ports mapping - only expose internally
     expose:
       - "5432"
     volumes:
@@ -33,21 +32,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: sh -c "npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run start:dev"
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run start:prod"
 
   frontend:
     build: ./frontend
     container_name: real_estate_frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "4173:4173"
     env_file:
       - ./frontend/.env
     volumes:
       - /app/node_modules
     depends_on:
       - backend
-    command: npm run dev
+    # Use Vite's preview mode (built + served)
+    command: sh -c "npm run build && npm run preview -- --host 0.0.0.0 --port 4173"
 
 volumes:
   postgres_data:
