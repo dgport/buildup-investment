@@ -6,9 +6,27 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from 'react-i18next'
+import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
+ 
 
 const Contact = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+
+  useDocumentMeta({
+    title: t(
+      'meta.contact.title',
+      'Contact Us | United Construction and Real Estate'
+    ),
+    description: t(
+      'meta.contact.description',
+      'Get in touch with United Construction and Real Estate. Contact us in Georgia or Israel for property inquiries, consultations, and real estate services.'
+    ),
+    keywords: t(
+      'meta.contact.keywords',
+      'contact United Construction, real estate Georgia contact, property inquiry Batumi, real estate consultation'
+    ),
+    lang: i18n.language,
+  })
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -46,7 +64,7 @@ const Contact = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/55 via-gray-900/60 to-slate-800/65"></div>
       </div>
 
-      <div className="relative z-10 px-6 sm:px-8 md:px-12 lg:px-16 py-10 w-full xl:max-w-7xl">
+      <div className="relative z-10 px-8 md:px-12 lg:px-16 py-10 w-full xl:max-w-7xl">
         <div className="grid md:grid-cols-5 gap-8 lg:gap-12 md:items-start">
           <div className="md:col-span-2 space-y-6 flex flex-col">
             <div className="flex flex-col gap-6 flex-1">

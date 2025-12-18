@@ -26,7 +26,7 @@ import { PropertyDetailsSection } from '@/components/pages/properties/PropertyDe
 import { ConditionUtilitiesSection } from '@/components/pages/properties/ConditionUtilitiesSection'
 import { AmenitiesFeaturesSection } from '@/components/pages/properties/AmenitiesFeatureSection'
 import { useCurrency } from '@/lib/context/CurrencyContext'
- 
+import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 
 const PHONE_NUMBER = '+995 595 80 47 95'
 const PHONE_NUMBER_CLEAN = '995595804795'
@@ -42,6 +42,52 @@ export default function PropertyDetail() {
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const { data: property, isLoading, error } = useProperty(id!, i18n.language)
+
+  const formatEnumValue = (value: string | null): string => {
+    if (!value) return 'Property'
+    return value
+      .split('_')
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
+  // Add meta tags when property data is available
+  useEffect(() => {
+    if (property) {
+      const priceText = property.price
+        ? `$${property.price.toLocaleString()}`
+        : 'Price on request'
+
+      const propertyType = formatEnumValue(property.propertyType)
+      const roomsText = property.rooms
+        ? `${property.rooms} room${property.rooms > 1 ? 's' : ''}`
+        : ''
+      const areaText = property.totalArea ? `${property.totalArea}m²` : ''
+
+      useDocumentMeta({
+        title: property.translation?.title
+          ? `${property.translation.title} | United Construction`
+          : t(
+              'meta.property.title',
+              `Property ${property.externalId || property.id} | United Construction`
+            ),
+        description: property.translation?.description
+          ? property.translation.description.substring(0, 160)
+          : t(
+              'meta.property.description',
+              `${propertyType} in ${property.regionName || 'Batumi'}. ${roomsText}${roomsText && areaText ? ', ' : ''}${areaText}. ${priceText}. Contact us for more information.`
+            ).substring(0, 160),
+        keywords: t(
+          'meta.property.keywords',
+          `property ${property.externalId}, ${propertyType} ${property.regionName}, ${roomsText} apartment, real estate ${property.regionName}, ${property.regionName} property for sale`
+        ),
+        ogImage: property.galleryImages?.[0]?.imageUrl
+          ? getImageUrl(property.galleryImages[0].imageUrl)
+          : undefined,
+        lang: i18n.language,
+      })
+    }
+  }, [property, i18n.language, t])
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [thumbsRef, thumbsApi] = useEmblaCarousel({
@@ -66,22 +112,24 @@ export default function PropertyDetail() {
     [emblaApi]
   )
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return
-    setSelectedIndex(emblaApi.selectedScrollSnap())
-  }, [emblaApi])
-
   useEffect(() => {
-    if (!emblaApi) return
+    if (!emblaApi || !thumbsApi) return
+
+    const onSelect = () => {
+      const index = emblaApi.selectedScrollSnap()
+      setSelectedIndex(index)
+      thumbsApi.scrollTo(index) // Scroll thumbnails to keep selected one visible
+    }
+
     onSelect()
     emblaApi.on('select', onSelect)
     emblaApi.on('reInit', onSelect)
+
     return () => {
       emblaApi.off('select', onSelect)
       emblaApi.off('reInit', onSelect)
     }
-  }, [emblaApi, onSelect])
-
+  }, [emblaApi, thumbsApi])
   const formatPrice = (priceUSD: number | null): string => {
     if (!priceUSD) return 'Price on request'
     if (currency === 'USD') {
@@ -89,14 +137,6 @@ export default function PropertyDetail() {
     }
     const priceGEL = Math.round(priceUSD * exchangeRate)
     return `₾${priceGEL.toLocaleString()}`
-  }
-
-  const formatEnumValue = (value: string | null): string => {
-    if (!value) return 'N/A'
-    return value
-      .split('_')
-      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(' ')
   }
 
   const handleCopyId = async () => {
@@ -173,7 +213,7 @@ export default function PropertyDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8   lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 h-[350px] lg:h-[500px]">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">

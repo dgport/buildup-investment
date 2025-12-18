@@ -8,7 +8,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: realestate
-    # REMOVED ports mapping - only expose internally
     expose:
       - "5432"
     volumes:
@@ -36,18 +35,15 @@ services:
     command: sh -c "npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run start:dev"
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     container_name: real_estate_frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
-    env_file:
-      - ./frontend/.env
-    volumes:
-      - /app/node_modules
+      - "80:80"
     depends_on:
       - backend
-    command: npm run dev
 
 volumes:
   postgres_data:

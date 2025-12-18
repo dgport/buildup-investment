@@ -1,12 +1,10 @@
 import type React from 'react'
-
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import type { Apartment } from '@/lib/types/apartments'
-import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 
 export const ProjectApartmentCard = ({

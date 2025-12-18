@@ -12,7 +12,6 @@ const Contact = lazy(() => import('@/pages/Contact'))
 const Properties = lazy(() => import('@/pages/Properties'))
 const Project = lazy(() => import('@/pages/Project'))
 const Partners = lazy(() => import('@/pages/Partners'))
-const InventoryMap = lazy(() => import('@/components/shared/map/MapPin'))
 const Projects = lazy(() => import('@/pages/Projects'))
 const Property = lazy(() => import('@/pages/Property'))
 
@@ -28,7 +27,6 @@ export const AppRoutes = () => {
         <Route path={ROUTES.PROJECTS} element={<Projects />} />
         <Route path={ROUTES.PROPERTIES} element={<Properties />} />
         <Route path={ROUTES.PROPERTY} element={<Property />} />
-        <Route path="/map" element={<InventoryMap />} />
         <Route element={<ProtectedRoutes redirectTo={ROUTES.SIGNIN} />}>
           <Route path={ROUTES.ADMIN} element={<Admin />} />
         </Route>

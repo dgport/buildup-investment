@@ -8,6 +8,7 @@ import { Pagination } from '@/components/shared/pagination/Pagination'
 import { Region } from '@/lib/types/properties'
 import { LoadingOverlay } from '@/components/shared/loaders/LoadingOverlay'
 import IsError from '@/components/shared/loaders/IsError'
+import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 
 export default function Properties() {
   const { t, i18n } = useTranslation()
@@ -63,6 +64,22 @@ export default function Properties() {
   const properties = propertiesResponse?.data || []
   const meta = propertiesResponse?.meta
 
+  useDocumentMeta({
+    title: t(
+      'meta.properties.title',
+      'All Properties | United Construction and Real Estate'
+    ),
+    description: t(
+      'meta.properties.description',
+      'Explore all available properties in Batumi, Georgia. Find apartments, houses, commercial spaces for sale or rent. Filter by location, price, area, and property type.'
+    ),
+    keywords: t(
+      'meta.properties.keywords',
+      'properties Batumi, real estate for sale, apartments for rent, houses Batumi, commercial property Georgia'
+    ),
+    lang: i18n.language,
+  })
+
   if (isLoading) {
     return <LoadingOverlay isLoading={isLoading} />
   }
@@ -73,7 +90,7 @@ export default function Properties() {
 
   return (
     <div className="min-h-screen">
-      <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
+      <div className="w-full mx-auto px-8 md:px-12 lg:px-16 xl:px-28 py-10">
         <div className="mb-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {t('properties.title')}

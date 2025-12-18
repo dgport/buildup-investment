@@ -35,6 +35,7 @@ export interface ProjectTranslation {
   language: string
   projectName: string
   street?: string
+  description?: string
 }
 
 export interface PartnerTranslation {

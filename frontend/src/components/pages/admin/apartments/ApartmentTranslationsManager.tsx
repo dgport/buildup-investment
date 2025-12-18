@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Edit, Save, X, Loader2 } from 'lucide-react'
+import { Edit, Save, Loader2 } from 'lucide-react'
 import {
   useApartmentTranslations,
   useUpsertApartmentTranslation,

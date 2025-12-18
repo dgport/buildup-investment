@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import PartnerCard from '@/components/pages/partners/PartnerCard'
 import { usePartners } from '@/lib/hooks/usePartners'
 import { Pagination } from '@/components/shared/pagination/Pagination'
-
+import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
+ 
 export default function Partners() {
   const { t, i18n } = useTranslation()
   const [searchParams, _] = useSearchParams()
@@ -19,9 +20,25 @@ export default function Partners() {
   const partners = data?.data || []
   const meta = data?.meta
 
+  useDocumentMeta({
+    title: t(
+      'meta.partners.title',
+      'Our Partners | United Construction and Real Estate'
+    ),
+    description: t(
+      'meta.partners.description',
+      'Discover our trusted network of real estate developers and construction partners in Georgia. Browse projects from leading developers in Batumi.'
+    ),
+    keywords: t(
+      'meta.partners.keywords',
+      'real estate developers Georgia, construction partners Batumi, property developers, trusted developers'
+    ),
+    lang: i18n.language,
+  })
+
   if (isLoading) {
     return (
-      <div className="min-h-screen py-12 px-4 sm:px-6 md:px-8 lg:px-20">
+      <div className="min-h-screen py-12 px-8 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl text-center sm:text-4xl font-bold text-gray-800 mb-8">
             {t('partners.title')}
@@ -36,7 +53,7 @@ export default function Partners() {
 
   if (error) {
     return (
-      <div className="min-h-screen py-12 px-4 sm:px-6 md:px-8 lg:px-20">
+      <div className="min-h-screen py-12 px-8 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl text-center sm:text-4xl font-bold text-gray-800 mb-8">
             {t('partners.title')}
@@ -50,7 +67,7 @@ export default function Partners() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 md:px-8 lg:px-20">
+    <div className="min-h-screen py-12 px-8 lg:px-20">
       <div className="max-w-7xl mx-auto">
         {partners.length > 0 ? (
           <>

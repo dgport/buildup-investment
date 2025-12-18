@@ -35,7 +35,7 @@ const Section = memo(({ section, isLast, isActive, onClick }: any) => (
     onClick={onClick}
   >
     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
-    <div className="relative z-20 flex flex-col justify-end pb-12 items-center h-full px-6 text-center">
+    <div className="relative z-20 flex flex-col justify-end pb-12 items-center h-full px-8 text-center">
       <div
         className={`transform transition-all duration-700 ${isActive ? 'scale-105' : 'scale-100'}`}
       >
@@ -188,7 +188,7 @@ const FeaturesSection = () => {
 
       <div className="relative z-10 md:hidden h-full">
         <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/50 to-transparent pointer-events-none" />
-        <div className="relative z-20 flex flex-col justify-end pb-16 items-center h-full px-6 text-center">
+        <div className="relative z-20 flex flex-col justify-end pb-16 items-center h-full px-8 text-center">
           <h2 className="text-2xl font-light text-white mb-4">
             {currentMobileSection.title}
           </h2>

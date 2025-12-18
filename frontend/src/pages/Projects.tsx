@@ -5,14 +5,15 @@ import ProjectCard from '@/components/pages/projects/ProjectCard'
 import { useProjects } from '@/lib/hooks/useProjects'
 import { ProjectFilters } from '@/components/pages/projects/ProjectsFilter'
 import { Pagination } from '@/components/shared/pagination/Pagination'
-import { Region } from '@/lib/types/projects' // ✅ Import Region enum
+import { Region } from '@/lib/types/projects'
+import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 
 export default function Projects() {
   const { t, i18n } = useTranslation()
   const [searchParams, _] = useSearchParams()
 
   const page = parseInt(searchParams.get('page') || '1', 10)
-  const regionParam = searchParams.get('region') // ✅ Get as string first
+  const regionParam = searchParams.get('region')
   const priceFrom = searchParams.get('priceFrom')
     ? parseInt(searchParams.get('priceFrom')!)
     : undefined
@@ -23,7 +24,6 @@ export default function Projects() {
     ? parseInt(searchParams.get('partnerId')!)
     : undefined
 
-  // ✅ Validate and cast region to enum or undefined
   const region =
     regionParam && regionParam in Region ? (regionParam as Region) : undefined
 
@@ -44,10 +44,26 @@ export default function Projects() {
   const projects = projectsResponse?.data || []
   const meta = projectsResponse?.meta
 
+  useDocumentMeta({
+    title: t(
+      'meta.projects.title',
+      'Developer Projects | United Construction and Real Estate'
+    ),
+    description: t(
+      'meta.projects.description',
+      'Browse premium real estate projects from trusted developers in Batumi, Georgia. Find new construction apartments, luxury residential complexes, and investment opportunities.'
+    ),
+    keywords: t(
+      'meta.projects.keywords',
+      'real estate projects Batumi, developer projects Georgia, new construction Batumi, residential complexes, investment property'
+    ),
+    lang: i18n.language,
+  })
+
   if (isLoading) {
     return (
       <div className="min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-8 py-12">
           <div className="mb-4">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {t('projects.title')}
@@ -65,7 +81,7 @@ export default function Projects() {
   if (error) {
     return (
       <div className="min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-8 py-12">
           <div className="mb-4">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {t('projects.title')}
@@ -83,7 +99,7 @@ export default function Projects() {
 
   return (
     <div className="min-h-screen">
-      <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
+      <div className="w-full mx-auto px-8 md:px-12 lg:px-16 xl:px-28 py-10">
         <div className="mb-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {t('projects.title')}

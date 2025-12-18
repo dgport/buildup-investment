@@ -19,13 +19,13 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
         <div className="flex gap-4 justify-center">
           <button
             onClick={resetErrorBoundary}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+            className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
           >
             Try Again
           </button>
           <button
             onClick={() => (window.location.href = '/')}
-            className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300"
+            className="px-8 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300"
           >
             Go Home
           </button>

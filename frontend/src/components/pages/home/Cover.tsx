@@ -62,7 +62,7 @@ export default function Cover() {
           <div className="relative z-10 container mx-auto w-full h-full flex flex-col justify-center items-center text-center px-4">
             <div className="w-96 h-16 bg-white/20 rounded-lg animate-pulse"></div>
           </div>
-          <div className="hidden md:block absolute bottom-8 left-0 right-0 z-20 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
+          <div className="hidden md:block absolute bottom-8 left-0 right-0 z-20 px-8 sm:px-8 md:px-12 lg:px-16 xl:px-28">
             <PropertyTypeCards t={t} />
           </div>
         </div>
@@ -91,7 +91,7 @@ export default function Cover() {
               {t('home.findYourDreamProperty')}
             </h1>
           </div>
-          <div className="hidden md:block absolute bottom-8 left-0 right-0 z-20 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
+          <div className="hidden md:block absolute bottom-8 left-0 right-0 z-20 px-8 sm:px-8 md:px-12 lg:px-16 xl:px-28">
             <PropertyTypeCards t={t} />
           </div>
         </div>
@@ -169,7 +169,7 @@ export default function Cover() {
                 }`}
               >
                 <h1
-                  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white px-6"
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white px-8"
                   style={{
                     textShadow:
                       '0 8px 24px rgba(0,0,0,0.8), 0 4px 12px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4)',
@@ -193,7 +193,7 @@ export default function Cover() {
           </div>
         </div>
 
-        <div className="hidden md:block absolute bottom-8 left-0 right-0 z-20 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
+        <div className="hidden md:block absolute bottom-8 left-0 right-0 z-20 px-8 md:px-12 lg:px-16 xl:px-28">
           <PropertyTypeCards t={t} />
         </div>
       </div>
@@ -251,7 +251,7 @@ function PropertyTypeCards({ t }: { t: (key: string) => string }) {
 
   return (
     <div className="w-full bg-white md:bg-transparent py-8 md:py-0">
-      <div className="grid w-full px-6 md:px-0 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-8 auto-rows-fr">
+      <div className="grid w-full px-8 md:px-0 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-8 auto-rows-fr">
         {cards.map((card, index) => (
           <a
             key={index}

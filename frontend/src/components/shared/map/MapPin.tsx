@@ -218,7 +218,7 @@ export function ProjectLocationMapPicker({
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-slate-900 w-full max-w-6xl h-[90vh] rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
-        <header className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
+        <header className="flex items-center justify-between px-8 py-4 border-b border-slate-700">
           <div className="flex items-center gap-3">
             <MapPin className="text-cyan-400" />
             <div>
@@ -248,7 +248,7 @@ export function ProjectLocationMapPicker({
           </button>
         </div>
 
-        <footer className="px-6 py-4 border-t border-slate-700 bg-slate-800">
+        <footer className="px-8 py-4 border-t border-slate-700 bg-slate-800">
           <div className="flex justify-between items-center gap-4">
             <div className="flex-1">
               {loading ? (

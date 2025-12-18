@@ -8,9 +8,27 @@ import FeaturesSection from '@/components/pages/home/FeaturesSection'
 import Cover from '@/components/pages/home/Cover'
 import PartnersCarousel from '@/components/pages/home/PartnerCarousel'
 import MortgageCalculator from '@/components/shared/calculator/MortgageCalculator'
+import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 
 const HomePage = () => {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
+
+  useDocumentMeta({
+    title: t(
+      'meta.home.title',
+      'United Construction and Real Estate | Premium Properties in Batumi'
+    ),
+    description: t(
+      'meta.home.description',
+      'Find your dream property in Batumi, Georgia. Explore apartments, houses, and commercial real estate from trusted developers. Expert construction and real estate services.'
+    ),
+    keywords: t(
+      'meta.home.keywords',
+      'real estate Batumi, property Georgia, apartments Batumi, construction Georgia, real estate investment, Batumi developers, buy apartment Batumi'
+    ),
+    ogImage: '/og-image.jpg',
+    lang: i18n.language,
+  })
 
   const { data: partnersResponse, isLoading: partnersLoading } = usePartners({
     lang: i18n.language,
@@ -28,7 +46,7 @@ const HomePage = () => {
     <main className="min-h-screen w-full">
       <Cover />
 
-      <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
+      <section className="px-8 md:px-12 lg:px-16 xl:px-28">
         <PropertyCarousel />
       </section>
       {projectsLoading ? (
@@ -36,7 +54,7 @@ const HomePage = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
       ) : projectsResponse ? (
-        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
+        <section className="px-8 md:px-12 lg:px-16 xl:px-28">
           <ProjectsCarousel projectsResponse={projectsResponse} />
         </section>
       ) : null}
@@ -50,7 +68,7 @@ const HomePage = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
       ) : partners.length > 0 ? (
-        <section className="px-6 sm:px-8 md:px-12 lg:px-16 xl:px-28">
+        <section className="px-8 md:px-12 lg:px-16 xl:px-28">
           <PartnersCarousel partners={partners} />
         </section>
       ) : null}

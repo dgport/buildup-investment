@@ -9,7 +9,7 @@ mapboxgl.accessToken =
 interface MapboxMapProps {
   latitude: number
   longitude: number
-
+  title?: string
   zoom?: number
   enable3D?: boolean
   defaultView?: '2d' | '3d'

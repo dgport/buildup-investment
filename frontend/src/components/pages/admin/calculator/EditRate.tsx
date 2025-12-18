@@ -4,7 +4,6 @@ import { useUpdateMortgageRate } from '@/lib/hooks/useCalculator'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import type { MortgageRate } from '@/lib/types/calculator'
 
 interface EditRateProps {

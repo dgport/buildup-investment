@@ -19,6 +19,7 @@ import { getImageUrl } from '@/lib/utils/image-utils'
 import Lightbox from 'yet-another-react-lightbox'
 import 'yet-another-react-lightbox/styles.css'
 import MapboxMap from '@/components/shared/map/MapboxMap'
+import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 
 const getQuarter = (dateString: string | null | undefined): string | null => {
   if (!dateString) return null
@@ -57,6 +58,41 @@ export default function ProjectPage() {
 
   const apartments = apartmentsResponse?.data || []
 
+  useEffect(() => {
+    if (project) {
+      const projectName =
+        project.translation?.projectName || project.projectName
+      const priceText = project.priceFrom
+        ? `Starting from $${project.priceFrom.toLocaleString()}`
+        : ''
+      const deliveryText = project.deliveryDate
+        ? `Delivery ${getQuarter(project.deliveryDate)}`
+        : ''
+
+      useDocumentMeta({
+        title: projectName
+          ? `${projectName} | United Construction`
+          : t('meta.project.title', 'Project Details | United Construction'),
+        description: project.translation?.description
+          ? project.translation.description.substring(0, 160)
+          : t(
+              'meta.project.description',
+              `Explore ${projectName || 'this premium real estate project'} in ${project.regionName || 'Batumi'}. ${priceText}. ${deliveryText}. View available apartments and project details.`
+            ).substring(0, 160),
+        keywords: t(
+          'meta.project.keywords',
+          `${projectName}, real estate ${project.regionName}, apartments ${project.regionName}, new construction, ${project.regionName} property`
+        ),
+        ogImage: project.image
+          ? getImageUrl(project.image)
+          : project.gallery?.[0]
+            ? getImageUrl(project.gallery[0])
+            : undefined,
+        lang: i18n.language,
+      })
+    }
+  }, [project, i18n.language, t])
+
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [thumbsRef, thumbsApi] = useEmblaCarousel({
     containScroll: 'keepSnaps',
@@ -80,21 +116,24 @@ export default function ProjectPage() {
     [emblaApi]
   )
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return
-    setSelectedIndex(emblaApi.selectedScrollSnap())
-  }, [emblaApi])
-
   useEffect(() => {
-    if (!emblaApi) return
+    if (!emblaApi || !thumbsApi) return
+
+    const onSelect = () => {
+      const index = emblaApi.selectedScrollSnap()
+      setSelectedIndex(index)
+      thumbsApi.scrollTo(index) // Scroll thumbnails to keep selected one visible
+    }
+
     onSelect()
     emblaApi.on('select', onSelect)
     emblaApi.on('reInit', onSelect)
+
     return () => {
       emblaApi.off('select', onSelect)
       emblaApi.off('reInit', onSelect)
     }
-  }, [emblaApi, onSelect])
+  }, [emblaApi, thumbsApi])
 
   const coordinates = project?.location
     ? (() => {
@@ -181,16 +220,11 @@ export default function ProjectPage() {
   if (streetAddress) locationParts.push(streetAddress)
   if (project.regionName) locationParts.push(project.regionName)
 
-  const locationString =
-    locationParts.length > 0
-      ? locationParts.join(', ')
-      : t('projectPage.noLocation')
-
   const hasLocation = !!coordinates
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 h-[500px]">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">
@@ -402,7 +436,6 @@ export default function ProjectPage() {
                   title={
                     project.translation?.projectName || project.projectName
                   }
-                  subtitle={locationString}
                 />
               </div>
             </div>

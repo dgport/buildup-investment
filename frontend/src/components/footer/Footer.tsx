@@ -34,7 +34,7 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="w-full bg-[#F2F5FF] border-t border-gray-200 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06)]">
+    <footer className="w-full bg-[#F2F5FF] border-t border-gray-200 px-8 sm:px-8 md:px-12 lg:px-16 xl:px-20 shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06)]">
       <div className="container mx-auto pt-12 pb-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-8">
           <div className="space-y-5 col-span-2 lg:col-span-1">

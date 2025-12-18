@@ -39,12 +39,6 @@ export function AdminProjectCard({
 
       <div className="col-span-2">
         <p className="text-sm text-muted-foreground">
-          {project.projectLocation}
-        </p>
-      </div>
-
-      <div className="col-span-2">
-        <p className="text-sm text-muted-foreground">
           {project.partner ? project.partner.companyName : '—'}
         </p>
       </div>
