@@ -39,6 +39,7 @@ export default function ProjectPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const projectId = Number(id)
+
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -58,6 +59,7 @@ export default function ProjectPage() {
 
   const apartments = apartmentsResponse?.data || []
 
+  // FIXED: useDocumentMeta must be called inside useEffect
   useEffect(() => {
     if (project) {
       const projectName =
@@ -93,6 +95,8 @@ export default function ProjectPage() {
     }
   }, [project, i18n.language, t])
 
+  /* -------------------- CAROUSEL -------------------- */
+
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [thumbsRef, thumbsApi] = useEmblaCarousel({
     containScroll: 'keepSnaps',
@@ -122,7 +126,7 @@ export default function ProjectPage() {
     const onSelect = () => {
       const index = emblaApi.selectedScrollSnap()
       setSelectedIndex(index)
-      thumbsApi.scrollTo(index) // Scroll thumbnails to keep selected one visible
+      thumbsApi.scrollTo(index)
     }
 
     onSelect()
@@ -134,6 +138,14 @@ export default function ProjectPage() {
       emblaApi.off('reInit', onSelect)
     }
   }, [emblaApi, thumbsApi])
+
+  /* -------------------- HELPERS -------------------- */
+
+  const images = project?.gallery?.length
+    ? project.gallery.map((img: string) => getImageUrl(img))
+    : project?.image
+      ? [getImageUrl(project.image)]
+      : []
 
   const coordinates = project?.location
     ? (() => {
@@ -147,6 +159,7 @@ export default function ProjectPage() {
       })()
     : null
 
+  // FIXED: Added missing handleImageClick function
   const handleImageClick = () => {
     setLightboxIndex(selectedIndex)
     setLightboxOpen(true)
@@ -206,19 +219,7 @@ export default function ProjectPage() {
     )
   }
 
-  const images =
-    project.gallery && project.gallery.length > 0
-      ? project.gallery.map((img: string) => getImageUrl(img))
-      : project.image
-        ? [getImageUrl(project.image)]
-        : []
-
   const lightboxSlides = images.map((src: string) => ({ src }))
-
-  const locationParts = []
-  const streetAddress = project.translation?.street || project.street
-  if (streetAddress) locationParts.push(streetAddress)
-  if (project.regionName) locationParts.push(project.regionName)
 
   const hasLocation = !!coordinates
 

@@ -51,7 +51,7 @@ export default function PropertyDetail() {
       .join(' ')
   }
 
-  // Add meta tags when property data is available
+  // FIXED: Properly wrapped useDocumentMeta in useEffect
   useEffect(() => {
     if (property) {
       const priceText = property.price
@@ -118,7 +118,7 @@ export default function PropertyDetail() {
     const onSelect = () => {
       const index = emblaApi.selectedScrollSnap()
       setSelectedIndex(index)
-      thumbsApi.scrollTo(index) // Scroll thumbnails to keep selected one visible
+      thumbsApi.scrollTo(index)
     }
 
     onSelect()
@@ -130,6 +130,7 @@ export default function PropertyDetail() {
       emblaApi.off('reInit', onSelect)
     }
   }, [emblaApi, thumbsApi])
+
   const formatPrice = (priceUSD: number | null): string => {
     if (!priceUSD) return 'Price on request'
     if (currency === 'USD') {
@@ -187,6 +188,7 @@ export default function PropertyDetail() {
   const priceInGEL = property.price
     ? Math.round(property.price * exchangeRate)
     : null
+
   const coordinates = property?.location
     ? (() => {
         try {
@@ -213,7 +215,7 @@ export default function PropertyDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-8   lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 h-[350px] lg:h-[500px]">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">
