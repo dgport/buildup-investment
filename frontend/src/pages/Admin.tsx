@@ -1,13 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-  Users,
-  Building,
-  Home,
-  Image,
-  LogOut,
-  Calculator,
-  ArrowLeft,
-} from 'lucide-react'
+import { Users, Building, Home, Image, LogOut, Calculator } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import PartnersPanel from '@/components/pages/admin/partners/PartnersPanel'
 import ProjectsPanel from '@/components/pages/admin/projects/ProjectsPanel'
