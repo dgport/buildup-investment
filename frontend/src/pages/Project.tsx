@@ -59,41 +59,45 @@ export default function ProjectPage() {
 
   const apartments = apartmentsResponse?.data || []
 
-  // FIXED: useDocumentMeta must be called inside useEffect
-  useEffect(() => {
-    if (project) {
-      const projectName =
-        project.translation?.projectName || project.projectName
-      const priceText = project.priceFrom
-        ? `Starting from $${project.priceFrom.toLocaleString()}`
-        : ''
-      const deliveryText = project.deliveryDate
-        ? `Delivery ${getQuarter(project.deliveryDate)}`
-        : ''
+  // Prepare document meta data
+  const projectName = project?.translation?.projectName || project?.projectName
+  const priceText = project?.priceFrom
+    ? `Starting from $${project.priceFrom.toLocaleString()}`
+    : ''
+  const deliveryText = project?.deliveryDate
+    ? `Delivery ${getQuarter(project.deliveryDate)}`
+    : ''
 
-      useDocumentMeta({
-        title: projectName
-          ? `${projectName} | United Construction`
-          : t('meta.project.title', 'Project Details | United Construction'),
-        description: project.translation?.description
-          ? project.translation.description.substring(0, 160)
-          : t(
-              'meta.project.description',
-              `Explore ${projectName || 'this premium real estate project'} in ${project.regionName || 'Batumi'}. ${priceText}. ${deliveryText}. View available apartments and project details.`
-            ).substring(0, 160),
-        keywords: t(
-          'meta.project.keywords',
-          `${projectName}, real estate ${project.regionName}, apartments ${project.regionName}, new construction, ${project.regionName} property`
-        ),
-        ogImage: project.image
-          ? getImageUrl(project.image)
-          : project.gallery?.[0]
-            ? getImageUrl(project.gallery[0])
-            : undefined,
-        lang: i18n.language,
-      })
-    }
-  }, [project, i18n.language, t])
+  const documentTitle = projectName
+    ? `${projectName} | United Construction`
+    : t('meta.project.title', 'Project Details | United Construction')
+
+  const documentDescription = project?.translation?.description
+    ? project.translation.description.substring(0, 160)
+    : t(
+        'meta.project.description',
+        `Explore ${projectName || 'this premium real estate project'} in ${project?.regionName || 'Batumi'}. ${priceText}. ${deliveryText}. View available apartments and project details.`
+      ).substring(0, 160)
+
+  const documentKeywords = t(
+    'meta.project.keywords',
+    `${projectName || ''}, real estate ${project?.regionName || ''}, apartments ${project?.regionName || ''}, new construction, ${project?.regionName || ''} property`
+  )
+
+  const documentOgImage = project?.image
+    ? getImageUrl(project.image)
+    : project?.gallery?.[0]
+      ? getImageUrl(project.gallery[0])
+      : undefined
+
+  // Call useDocumentMeta at top level
+  useDocumentMeta({
+    title: documentTitle,
+    description: documentDescription,
+    keywords: documentKeywords,
+    ogImage: documentOgImage,
+    lang: i18n.language,
+  })
 
   /* -------------------- CAROUSEL -------------------- */
 
@@ -159,7 +163,6 @@ export default function ProjectPage() {
       })()
     : null
 
-  // FIXED: Added missing handleImageClick function
   const handleImageClick = () => {
     setLightboxIndex(selectedIndex)
     setLightboxOpen(true)
@@ -176,10 +179,10 @@ export default function ProjectPage() {
   }
 
   const handleWhatsApp = () => {
-    const projectName =
+    const projectTitle =
       project?.translation?.projectName || project?.projectName || 'a project'
     const message = encodeURIComponent(
-      `Hello! I'm interested in ${projectName}`
+      `Hello! I'm interested in ${projectTitle}`
     )
     window.open(`https://wa.me/${PHONE_NUMBER_CLEAN}?text=${message}`, '_blank')
   }

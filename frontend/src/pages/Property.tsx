@@ -31,6 +31,14 @@ import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 const PHONE_NUMBER = '+995 595 80 47 95'
 const PHONE_NUMBER_CLEAN = '995595804795'
 
+const formatEnumValue = (value: string | null): string => {
+  if (!value) return 'Property'
+  return value
+    .split('_')
+    .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
 export default function PropertyDetail() {
   const { t, i18n } = useTranslation()
   const { id } = useParams()
@@ -43,51 +51,48 @@ export default function PropertyDetail() {
 
   const { data: property, isLoading, error } = useProperty(id!, i18n.language)
 
-  const formatEnumValue = (value: string | null): string => {
-    if (!value) return 'Property'
-    return value
-      .split('_')
-      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(' ')
-  }
+  // Prepare document meta data
+  const priceText = property?.price
+    ? `$${property.price.toLocaleString()}`
+    : 'Price on request'
 
-  // FIXED: Properly wrapped useDocumentMeta in useEffect
-  useEffect(() => {
-    if (property) {
-      const priceText = property.price
-        ? `$${property.price.toLocaleString()}`
-        : 'Price on request'
+  const propertyType = formatEnumValue(property?.propertyType || null)
+  const roomsText = property?.rooms
+    ? `${property.rooms} room${property.rooms > 1 ? 's' : ''}`
+    : ''
+  const areaText = property?.totalArea ? `${property.totalArea}m²` : ''
 
-      const propertyType = formatEnumValue(property.propertyType)
-      const roomsText = property.rooms
-        ? `${property.rooms} room${property.rooms > 1 ? 's' : ''}`
-        : ''
-      const areaText = property.totalArea ? `${property.totalArea}m²` : ''
+  const documentTitle = property?.translation?.title
+    ? `${property.translation.title} | United Construction`
+    : t(
+        'meta.property.title',
+        `Property ${property?.externalId || property?.id || ''} | United Construction`
+      )
 
-      useDocumentMeta({
-        title: property.translation?.title
-          ? `${property.translation.title} | United Construction`
-          : t(
-              'meta.property.title',
-              `Property ${property.externalId || property.id} | United Construction`
-            ),
-        description: property.translation?.description
-          ? property.translation.description.substring(0, 160)
-          : t(
-              'meta.property.description',
-              `${propertyType} in ${property.regionName || 'Batumi'}. ${roomsText}${roomsText && areaText ? ', ' : ''}${areaText}. ${priceText}. Contact us for more information.`
-            ).substring(0, 160),
-        keywords: t(
-          'meta.property.keywords',
-          `property ${property.externalId}, ${propertyType} ${property.regionName}, ${roomsText} apartment, real estate ${property.regionName}, ${property.regionName} property for sale`
-        ),
-        ogImage: property.galleryImages?.[0]?.imageUrl
-          ? getImageUrl(property.galleryImages[0].imageUrl)
-          : undefined,
-        lang: i18n.language,
-      })
-    }
-  }, [property, i18n.language, t])
+  const documentDescription = property?.translation?.description
+    ? property.translation.description.substring(0, 160)
+    : t(
+        'meta.property.description',
+        `${propertyType} in ${property?.regionName || 'Batumi'}. ${roomsText}${roomsText && areaText ? ', ' : ''}${areaText}. ${priceText}. Contact us for more information.`
+      ).substring(0, 160)
+
+  const documentKeywords = t(
+    'meta.property.keywords',
+    `property ${property?.externalId || ''}, ${propertyType} ${property?.regionName || ''}, ${roomsText} apartment, real estate ${property?.regionName || ''}, ${property?.regionName || ''} property for sale`
+  )
+
+  const documentOgImage = property?.galleryImages?.[0]?.imageUrl
+    ? getImageUrl(property.galleryImages[0].imageUrl)
+    : undefined
+
+  // Call useDocumentMeta at top level
+  useDocumentMeta({
+    title: documentTitle,
+    description: documentDescription,
+    keywords: documentKeywords,
+    ogImage: documentOgImage,
+    lang: i18n.language,
+  })
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [thumbsRef, thumbsApi] = useEmblaCarousel({
