@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react'
-import { Users, Building, Home, Image, LogOut, Calculator } from 'lucide-react'
+import {
+  Users,
+  Building,
+  Home,
+  Image,
+  LogOut,
+  Calculator,
+  ArrowLeft,
+} from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import PartnersPanel from '@/components/pages/admin/partners/PartnersPanel'
 import ProjectsPanel from '@/components/pages/admin/projects/ProjectsPanel'
 import ApartmentsPanel from '@/components/pages/admin/apartments/ApartmentsPanel'
 import SlidesPanel from '@/components/pages/admin/slides/SlidesPanel'
 import CalculatorPanel from '@/components/pages/admin/calculator/CalculatorPanel'
-import { Button } from '@/components/ui/button'
 import PropertiesPanel from '@/components/pages/admin/properties/PropertiesPanel'
+import { Button } from '@/components/ui/button'
 
 type MenuType =
   | 'partners'
@@ -17,6 +26,8 @@ type MenuType =
   | 'calculator'
 
 export default function Admin() {
+  const navigate = useNavigate()
+
   const [activeMenu, setActiveMenu] = useState<MenuType>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
@@ -72,16 +83,23 @@ export default function Admin() {
     }
   }, [activeMenu])
 
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token') // clear token
+    navigate('/') // redirect to main page
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white fixed left-0 top-0 h-screen flex flex-col shadow-2xl z-50">
+      <aside className="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white fixed left-0 top-0 h-screen flex flex-col shadow-2xl z-40">
         <div className="p-6 border-b border-gray-700">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
             Admin Panel
           </h1>
           <p className="text-gray-400 text-sm mt-1">Management Dashboard</p>
         </div>
+
         <nav className="flex-1 py-6 px-3 space-y-2 overflow-y-auto">
+          {/* Menu Buttons */}
           <Button
             onClick={() => setActiveMenu('partners')}
             className={`w-full flex justify-start items-center group px-4 py-3 rounded-md transition-all duration-200 ${
@@ -98,7 +116,9 @@ export default function Admin() {
               }`}
             />
             <span
-              className={`font-medium ${activeMenu === 'partners' ? 'font-semibold' : ''}`}
+              className={`font-medium ${
+                activeMenu === 'partners' ? 'font-semibold' : ''
+              }`}
             >
               Partners
             </span>
@@ -120,7 +140,9 @@ export default function Admin() {
               }`}
             />
             <span
-              className={`font-medium ${activeMenu === 'projects' ? 'font-semibold' : ''}`}
+              className={`font-medium ${
+                activeMenu === 'projects' ? 'font-semibold' : ''
+              }`}
             >
               Projects
             </span>
@@ -142,7 +164,9 @@ export default function Admin() {
               }`}
             />
             <span
-              className={`font-medium ${activeMenu === 'apartments' ? 'font-semibold' : ''}`}
+              className={`font-medium ${
+                activeMenu === 'apartments' ? 'font-semibold' : ''
+              }`}
             >
               Apartments
             </span>
@@ -164,7 +188,9 @@ export default function Admin() {
               }`}
             />
             <span
-              className={`font-medium ${activeMenu === 'properties' ? 'font-semibold' : ''}`}
+              className={`font-medium ${
+                activeMenu === 'properties' ? 'font-semibold' : ''
+              }`}
             >
               Properties
             </span>
@@ -206,15 +232,21 @@ export default function Admin() {
               }`}
             />
             <span
-              className={`font-medium ${activeMenu === 'calculator' ? 'font-semibold' : ''}`}
+              className={`font-medium ${
+                activeMenu === 'calculator' ? 'font-semibold' : ''
+              }`}
             >
               Calculator
             </span>
           </Button>
         </nav>
 
+        {/* Logout Button */}
         <div className="p-4 border-t border-gray-700">
-          <Button className="w-full flex justify-start text-gray-300 hover:bg-red-600/20 hover:text-red-400 group">
+          <Button
+            className="w-full flex justify-start text-gray-300 hover:bg-red-600/20 hover:text-red-400 group"
+            onClick={handleLogout}
+          >
             <LogOut className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
             <span className="font-medium">Logout</span>
           </Button>

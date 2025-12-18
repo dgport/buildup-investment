@@ -28,7 +28,7 @@ export const useAdminLogin = () => {
     },
     onSuccess: data => {
       setAccessToken(data.access_token)
-      navigate(ROUTES.HOME)
+      navigate(ROUTES.ADMIN)
     },
     onError: (error: any) => {
       console.error('Login failed:', error)

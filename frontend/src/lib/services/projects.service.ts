@@ -20,18 +20,10 @@ export const projectsService = {
     }),
 
   createProject: (data: FormData) =>
-    api.post<Project>(API_ENDPOINTS.PROJECTS.PROJECTS, data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }),
+    api.post<Project>(API_ENDPOINTS.PROJECTS.PROJECTS, data),
 
   updateProject: (id: number, data: FormData) =>
-    api.patch<Project>(API_ENDPOINTS.PROJECTS.PROJECT_BY_ID(id), data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }),
+    api.patch<Project>(API_ENDPOINTS.PROJECTS.PROJECT_BY_ID(id), data),
 
   deleteProject: (id: number) =>
     api.delete<{ message: string; id: number }>(

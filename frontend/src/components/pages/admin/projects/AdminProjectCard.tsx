@@ -42,7 +42,11 @@ export function AdminProjectCard({
           {project.partner ? project.partner.companyName : '—'}
         </p>
       </div>
-
+      <div className="col-span-2">
+        <p className="text-sm text-foreground font-medium">
+          {project.partner?.companyName}
+        </p>
+      </div>
       <div className="col-span-2">
         <p className="text-sm text-foreground font-medium">
           {project.priceFrom ? `$${project.priceFrom.toLocaleString()}` : '—'}

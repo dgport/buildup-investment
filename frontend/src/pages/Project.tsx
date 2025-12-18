@@ -230,7 +230,7 @@ export default function ProjectPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-8 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 h-[500px]">
+          <div className="lg:col-span-2  h-[350px] lg:h-[500px]">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">
               <div className="overflow-hidden h-full" ref={emblaRef}>
                 <div className="flex h-full">
@@ -310,7 +310,7 @@ export default function ProjectPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-[500px] flex flex-col justify-between">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-auto lg:h-[500px] flex flex-col justify-between">
               <div className="space-y-2 sm:space-y-3">
                 <div className="mb-4 sm:mb-5 pb-4 border-b-2 border-gray-300">
                   <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
