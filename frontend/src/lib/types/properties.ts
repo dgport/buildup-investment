@@ -202,7 +202,7 @@ export interface PropertyFilters {
   page?: number
   limit?: number
   externalId?: string
-  region?: Region // Region enum filter
+  region?: Region
   propertyType?: PropertyType | string
   dealType?: DealType | string
   priceFrom?: number
@@ -211,7 +211,6 @@ export interface PropertyFilters {
   areaTo?: number
   rooms?: number
   bedrooms?: number
-  hotSale?: boolean
 }
 
 export interface PropertiesResponse {

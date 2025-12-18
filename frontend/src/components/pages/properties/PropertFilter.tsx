@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Search, X, SlidersHorizontal } from 'lucide-react'
@@ -33,7 +33,6 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
 
-  // Fetch all properties to get unique regions
   const { data: allPropertiesResponse } = useProperties({
     lang: i18n.language,
     limit: 1000,
@@ -81,11 +80,22 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   const MAX_AREA = 500
   const AREA_STEP = 10
 
+  const isLandSelected = filters.propertyType === PropertyType.LAND
+
+  useEffect(() => {
+    if (isLandSelected) {
+      setFilters(prev => ({
+        ...prev,
+        rooms: 'all',
+        bedrooms: 'all',
+      }))
+    }
+  }, [isLandSelected])
+
   const applyFilters = () => {
     const params = new URLSearchParams()
     params.set('page', '1')
 
-    // Main filters
     if (filters.propertyType && filters.propertyType !== 'all')
       params.set('propertyType', filters.propertyType)
     if (filters.dealType && filters.dealType !== 'all')
@@ -95,22 +105,19 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
     if (filters.externalId && filters.externalId.trim())
       params.set('externalId', filters.externalId.trim())
 
-    // Price range
     if (filters.priceFrom > 0)
       params.set('priceFrom', filters.priceFrom.toString())
     if (filters.priceTo < MAX_PRICE)
       params.set('priceTo', filters.priceTo.toString())
 
-    // Area range
     if (filters.areaFrom > 0)
       params.set('areaFrom', filters.areaFrom.toString())
     if (filters.areaTo < MAX_AREA)
       params.set('areaTo', filters.areaTo.toString())
 
-    // Room counts
-    if (filters.rooms && filters.rooms !== 'all')
+    if (filters.rooms && filters.rooms !== 'all' && !isLandSelected)
       params.set('rooms', filters.rooms)
-    if (filters.bedrooms && filters.bedrooms !== 'all')
+    if (filters.bedrooms && filters.bedrooms !== 'all' && !isLandSelected)
       params.set('bedrooms', filters.bedrooms)
 
     setSearchParams(params)
@@ -176,30 +183,23 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
 
         <SheetContent
           side="left"
-          className="w-full sm:w-[440px] overflow-y-auto z-50"
+          className="w-full sm:w-[420px] overflow-y-auto z-50"
         >
           <SheetHeader>
-            <SheetTitle className="flex items-center gap-2 text-2xl">
-              <div className="p-2 bg-blue-500 rounded-lg">
-                <SlidersHorizontal className="w-6 h-6 text-white" />
+            <SheetTitle className="flex items-center gap-2 text-xl">
+              <div className="p-1.5 bg-blue-500 rounded-lg">
+                <SlidersHorizontal className="w-5 h-5 text-white" />
               </div>
               {t('filters.propertyFilters', {
                 defaultValue: 'Property Filters',
               })}
             </SheetTitle>
-            <SheetDescription>
-              {t('filters.description', {
-                defaultValue:
-                  'Customize your property search with these filters',
-              })}
-            </SheetDescription>
           </SheetHeader>
 
-          <div className="mt-8 space-y-6">
-            {/* Property ID Search */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                <div className="w-1 h-5 bg-orange-500 rounded-full" />
+          <div className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <div className="w-0.5 h-4 bg-orange-500 rounded-full" />
                 {t('filters.propertyId', { defaultValue: 'Property ID' })}
               </Label>
               <Input
@@ -211,14 +211,14 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                 onChange={e =>
                   setFilters({ ...filters, externalId: e.target.value })
                 }
-                className="h-12 border-2 focus:border-orange-500"
+                className="h-10 border-2 focus:border-orange-500"
+                autoFocus={false}
               />
             </div>
 
-            {/* Property Type */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                <div className="w-1 h-5 bg-blue-500 rounded-full" />
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <div className="w-0.5 h-4 bg-blue-500 rounded-full" />
                 {t('filters.propertyType', { defaultValue: 'Property Type' })}
               </Label>
               <Select
@@ -227,7 +227,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   setFilters({ ...filters, propertyType: value })
                 }
               >
-                <SelectTrigger className="h-12 border-2 focus:border-blue-500">
+                <SelectTrigger className="h-10 border-2 focus:border-blue-500">
                   <SelectValue
                     placeholder={t('filters.allTypes', {
                       defaultValue: 'All Types',
@@ -247,10 +247,9 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
               </Select>
             </div>
 
-            {/* Deal Type */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                <div className="w-1 h-5 bg-blue-400 rounded-full" />
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <div className="w-0.5 h-4 bg-blue-400 rounded-full" />
                 {t('filters.dealType', { defaultValue: 'Deal Type' })}
               </Label>
               <Select
@@ -259,7 +258,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   setFilters({ ...filters, dealType: value })
                 }
               >
-                <SelectTrigger className="h-12 border-2 focus:border-blue-400">
+                <SelectTrigger className="h-10 border-2 focus:border-blue-400">
                   <SelectValue
                     placeholder={t('filters.allDeals', {
                       defaultValue: 'All Deals',
@@ -279,10 +278,9 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
               </Select>
             </div>
 
-            {/* Region */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                <div className="w-1 h-5 bg-teal-500 rounded-full" />
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <div className="w-0.5 h-4 bg-teal-500 rounded-full" />
                 {t('filters.region', { defaultValue: 'Region' })}
               </Label>
               <Select
@@ -291,7 +289,7 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   setFilters({ ...filters, region: value })
                 }
               >
-                <SelectTrigger className="h-12 border-2 focus:border-teal-500">
+                <SelectTrigger className="h-10 border-2 focus:border-teal-500">
                   <SelectValue
                     placeholder={t('filters.allRegions', {
                       defaultValue: 'All Regions',
@@ -311,21 +309,20 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
               </Select>
             </div>
 
-            {/* Price Range */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <div className="w-1 h-5 bg-blue-500 rounded-full" />
+                <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <div className="w-0.5 h-4 bg-blue-500 rounded-full" />
                   {t('filters.priceRange', { defaultValue: 'Price Range' })}
                 </Label>
-                <span className="text-lg font-bold text-blue-600">
+                <span className="text-sm font-bold text-blue-600">
                   {filters.priceFrom > 0 || filters.priceTo < MAX_PRICE
                     ? `$${filters.priceFrom.toLocaleString()} - $${filters.priceTo.toLocaleString()}`
                     : t('filters.any', { defaultValue: 'Any' })}
                 </span>
               </div>
 
-              <div className="relative pt-2 pb-4">
+              <div className="relative pt-1 pb-3">
                 <Slider
                   min={0}
                   max={MAX_PRICE}
@@ -334,33 +331,32 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   onValueChange={([from, to]) =>
                     setFilters({ ...filters, priceFrom: from, priceTo: to })
                   }
-                  className="w-full [&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-blue-500/30 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&>.bg-primary]:bg-blue-500 [&>.bg-primary]:h-2"
+                  className="w-full [&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-blue-500/30 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&>.bg-primary]:bg-blue-500 [&>.bg-primary]:h-1.5"
                 />
               </div>
 
-              <div className="flex justify-between text-sm font-medium text-muted-foreground">
-                <span className="bg-muted px-3 py-1 rounded-full">$0</span>
-                <span className="bg-muted px-3 py-1 rounded-full">
+              <div className="flex justify-between text-xs font-medium text-muted-foreground">
+                <span className="bg-muted px-2 py-0.5 rounded-full">$0</span>
+                <span className="bg-muted px-2 py-0.5 rounded-full">
                   ${MAX_PRICE.toLocaleString()}
                 </span>
               </div>
             </div>
 
-            {/* Area Range */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <div className="w-1 h-5 bg-purple-500 rounded-full" />
+                <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <div className="w-0.5 h-4 bg-purple-500 rounded-full" />
                   {t('filters.area', { defaultValue: 'Area (m²)' })}
                 </Label>
-                <span className="text-lg font-bold text-purple-600">
+                <span className="text-sm font-bold text-purple-600">
                   {filters.areaFrom > 0 || filters.areaTo < MAX_AREA
                     ? `${filters.areaFrom} - ${filters.areaTo} m²`
                     : t('filters.any', { defaultValue: 'Any' })}
                 </span>
               </div>
 
-              <div className="relative pt-2 pb-4">
+              <div className="relative pt-1 pb-3">
                 <Slider
                   min={0}
                   max={MAX_AREA}
@@ -369,80 +365,80 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   onValueChange={([from, to]) =>
                     setFilters({ ...filters, areaFrom: from, areaTo: to })
                   }
-                  className="w-full [&_[role=slider]]:bg-purple-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-purple-500/30 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&>.bg-primary]:bg-purple-500 [&>.bg-primary]:h-2"
+                  className="w-full [&_[role=slider]]:bg-purple-500 [&_[role=slider]]:border-0 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-purple-500/30 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&>.bg-primary]:bg-purple-500 [&>.bg-primary]:h-1.5"
                 />
               </div>
 
-              <div className="flex justify-between text-sm font-medium text-muted-foreground">
-                <span className="bg-muted px-3 py-1 rounded-full">0 m²</span>
-                <span className="bg-muted px-3 py-1 rounded-full">
+              <div className="flex justify-between text-xs font-medium text-muted-foreground">
+                <span className="bg-muted px-2 py-0.5 rounded-full">0 m²</span>
+                <span className="bg-muted px-2 py-0.5 rounded-full">
                   {MAX_AREA} m²
                 </span>
               </div>
             </div>
 
-            {/* Rooms and Bedrooms */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  {t('filters.rooms', { defaultValue: 'Rooms' })}
-                </Label>
-                <Select
-                  value={filters.rooms}
-                  onValueChange={value =>
-                    setFilters({ ...filters, rooms: value })
-                  }
-                >
-                  <SelectTrigger className="h-12 border-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      {t('filters.any', { defaultValue: 'Any' })}
-                    </SelectItem>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="4">4</SelectItem>
-                    <SelectItem value="5">5+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {!isLandSelected && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">
+                    {t('filters.rooms', { defaultValue: 'Rooms' })}
+                  </Label>
+                  <Select
+                    value={filters.rooms}
+                    onValueChange={value =>
+                      setFilters({ ...filters, rooms: value })
+                    }
+                  >
+                    <SelectTrigger className="h-10 border-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        {t('filters.any', { defaultValue: 'Any' })}
+                      </SelectItem>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                      <SelectItem value="5">5+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  {t('filters.bedrooms', { defaultValue: 'Bedrooms' })}
-                </Label>
-                <Select
-                  value={filters.bedrooms}
-                  onValueChange={value =>
-                    setFilters({ ...filters, bedrooms: value })
-                  }
-                >
-                  <SelectTrigger className="h-12 border-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      {t('filters.any', { defaultValue: 'Any' })}
-                    </SelectItem>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="4">4+</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">
+                    {t('filters.bedrooms', { defaultValue: 'Bedrooms' })}
+                  </Label>
+                  <Select
+                    value={filters.bedrooms}
+                    onValueChange={value =>
+                      setFilters({ ...filters, bedrooms: value })
+                    }
+                  >
+                    <SelectTrigger className="h-10 border-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        {t('filters.any', { defaultValue: 'Any' })}
+                      </SelectItem>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Action Buttons */}
-            <div className="pt-6 space-y-3 border-t">
+            <div className="pt-4 space-y-2 border-t">
               <Button
                 onClick={applyFilters}
-                className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-base font-semibold shadow-lg"
+                className="w-full h-10 bg-blue-500 hover:bg-blue-600 text-sm font-semibold shadow-lg"
                 size="lg"
               >
-                <Search className="w-5 h-5 mr-2" />
+                <Search className="w-4 h-4 mr-2" />
                 {t('filters.apply', { defaultValue: 'Apply Filters' })}
               </Button>
 
@@ -450,10 +446,10 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  className="w-full h-12 border-2 text-base font-semibold hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
+                  className="w-full h-10 border-2 text-sm font-semibold hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
                   size="lg"
                 >
-                  <X className="w-5 h-5 mr-2" />
+                  <X className="w-4 h-4 mr-2" />
                   {t('filters.clear', { defaultValue: 'Clear All Filters' })}
                 </Button>
               )}

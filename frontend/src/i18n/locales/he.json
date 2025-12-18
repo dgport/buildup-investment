@@ -10,59 +10,115 @@
     "add": "הוספה",
     "search": "חיפוש",
     "noResults": "לא נמצאו תוצאות",
-    "seeAll": "הצג הכל"
+    "seeAll": "צפה בהכל",
+    "company": "חברת בנייה",
+    "allRightsReserved": "כל הזכויות שמורות."
   },
-
   "nav": {
     "home": "בית",
     "ourProjects": "הפרויקטים שלנו",
-    "partnerProjects": "פרויקטים של קבלנים",
+    "partnerProjects": "פרויקטים מיזמים",
     "properties": "כל הנכסים",
     "projects": "פרויקטים",
     "partners": "שותפים",
     "about": "אודות",
     "contact": "צור קשר",
     "allProjects": "כל הפרויקטים",
-    "property": "נכס"
+    "property": "נכס",
+    "quickLinks": "קישורים מהירים",
+    "company": "חברה"
   },
   "contact": {
-    "address": "כתובת",
-    "phone": "טלפון",
-    "email": "דואר אלקטרוני",
+    "title": "צור קשר",
+    "sendMessage": "שלח לנו הודעה",
     "fullName": "שם מלא",
-    "emailAddress": "כתובת דואר אלקטרוני",
+    "emailAddress": "כתובת אימייל",
     "phoneNumber": "מספר טלפון",
     "message": "הודעה",
-    "send": "שלח",
-    "sendMessage": "שלח לנו הודעה",
+    "send": "שלח הודעה",
+    "address": "כתובת",
+    "phone": "טלפון",
+    "email": "אימייל",
+    "locationGeorgia": "בטומי, רחוב אדליה מס' 1",
+    "locationIsrael": "בית לחם - אל-דוחה",
     "followUs": "עקבו אחרינו",
-    "locationGeorgia": "בטומי, רחוב אדליה #1",
-    "locationIsrael": "בית לחם - אל-דוהה"
+    "formSubmitted": "הודעתך נשלחה בהצלחה",
+    "formError": "משהו השתבש, אנא נסה שוב",
+    "getInTouch": "צרו קשר"
   },
   "home": {
     "findYourDreamProperty": "מצא את נכס החלומות שלך",
     "findMore": "גלה עוד",
-    "projectsFromDevelopers": "פרויקטים מהמפתחים",
+    "projectsFromDevelopers": "פרויקטים מיזמים",
     "apartmentsForSale": "דירות למכירה",
     "apartmentsForRent": "דירות להשכרה",
     "commercial": "מסחרי",
-    "landForSale": "קרקעות למכירה"
+    "landForSale": "קרקע למכירה",
+    "featuredProperties": "נכסים נבחרים",
+    "seeAll": "צפה בהכל",
+    "priceOnRequest": "מחיר לפי בקשה",
+    "rooms": "חדרים",
+    "area": "שטח",
+    "perSquareMeter": "/ מ\"ר",
+    "hotSale": "מבצע חם",
+    "fromPrice": "החל מ: ",
+    "projectsTitle": "הפרויקטים שלנו",
+    "partnersTitle": "השותפים שלנו",
+    "featuresSectionTitleAlliance": "Alliance Centropolis",
+    "featuresSectionDescriptionAlliance": "פרויקט הדגל של קבוצת אליאנס בלב בטומי, המציב סטנדרטים חדשים של יוקרה עירונית.",
+    "featuresSectionFeaturesAlliance": [
+      "מרכז העיר",
+      "בית חכם",
+      "מיקום פרימיום"
+    ],
+    "featuresSectionTitleEmaar": "Emaar Eagle Hills",
+    "featuresSectionDescriptionEmaar": "פיתוח חוף ברמה עולמית של Emaar, המשלב מגורי יוקרה עם נוף למרינה.",
+    "featuresSectionFeaturesEmaar": [
+      "נוף למרינה",
+      "מגורי יוקרה",
+      "שירותי נופש"
+    ],
+    "featuresSectionTitleAmbassadori": "Ambassadori Island",
+    "featuresSectionDescriptionAmbassadori": "פיתוח אי בלעדי המציע חיים ביוקרה ללא תחרות עם נוף פנורמי לים.",
+    "featuresSectionFeaturesAmbassadori": [
+      "מיקום אי",
+      "מגורים על המים",
+      "סגנון חיים פרימיום"
+    ],
+    "featuresPrev": "פרויקט קודם",
+    "featuresNext": "פרויקט הבא",
+    "featuresSlideLabel": "גלריית פרויקט"
   },
-
+  "calculator": {
+    "title": "מחשבון משכנתא",
+    "propertyPrice": "מחיר הנכס",
+    "downPayment": "מקדמה",
+    "loanTerm": "תקופת הלוואה",
+    "year": "שנה",
+    "years": "שנים",
+    "loading": "טוען...",
+    "interest": "ריבית",
+    "downPaymentLabel": "הון עצמי",
+    "principal": "קרן",
+    "monthlyPayment": "החזר חודשי",
+    "interestRate": "ריבית שנתית",
+    "loanAmountAfterDown": "סכום ההלוואה (לאחר המקדמה)",
+    "totalPayment": "סך הכל לתשלום (כולל מקדמה)",
+    "requestLoan": "בקש הלוואה"
+  },
   "auth": {
-    "admin": "מנהל",
-    "logout": "התנתקות",
+    "admin": "אדמין",
+    "logout": "התנתק",
     "signingOut": "מתנתק..."
   },
-
   "projects": {
-    "title": "פרויקטים של קבלנים",
+    "title": "פרויקטים מיזמים",
     "addProject": "הוסף פרויקט",
     "editProject": "ערוך פרויקט",
     "deleteProject": "מחק פרויקט",
     "projectName": "שם הפרויקט",
     "projectLocation": "מיקום הפרויקט",
-    "partner": "שותף",
+    "partner": "יזם",
     "image": "תמונה",
     "translations": "תרגומים",
     "details": "פרטים",
@@ -70,9 +126,50 @@
     "createSuccess": "הפרויקט נוצר בהצלחה",
     "updateSuccess": "הפרויקט עודכן בהצלחה",
     "deleteSuccess": "הפרויקט נמחק בהצלחה",
-    "deleteConfirm": "האם אתה בטוח שברצונך למחוק את הפרויקט?"
+    "deleteConfirm": "האם אתה בטוח שברצונך למחוק פרויקט זה?",
+    "totalProjects": "נמצאו {{count}} פרויקטים",
+    "errorLoading": "שגיאה בטעינת פרויקטים",
+    "tryDifferentFilters": "נסה לשנות את הפילטרים"
   },
-
+  "projectPage": {
+    "loadingProject": "טוען פרטי פרויקט...",
+    "projectNotFound": "הפרויקט לא נמצא",
+    "projectNotFoundDescription": "הפרויקט שחיפשת לא קיים או הוסר.",
+    "backToProjects": "חזרה לפרויקטים",
+    "noName": "ללא שם",
+    "noLocation": "ללא מיקום",
+    "startingPrice": "מחיר התחלתי",
+    "delivery": "מסירה",
+    "floors": "קומות",
+    "totalUnits": "סה\"כ יחידות",
+    "showPhoneNumber": "הצג מספר טלפון",
+    "contactWhatsApp": "צור קשר ב-WhatsApp",
+    "availableApartments": "דירות זמינות",
+    "noApartments": "עדיין אין דירות זמינות לפרויקט זה.",
+    "notAvailable": "לא זמין"
+  },
+  "apartmentCard": {
+    "roomApartment": "דירת {{count}} חדרים",
+    "area": "שטח",
+    "noImages": "אין תמונות זמינות",
+    "noDescription": "אין תיאור זמין לדירה זו.",
+    "previousImage": "תמונה קודמת",
+    "nextImage": "תמונה הבאה",
+    "goToImage": "עבור לתמונה {{number}}"
+  },
+  "filters": {
+    "title": "פילטרים",
+    "active": "פעיל",
+    "description": "התאם אישית את חיפוש הפרויקטים",
+    "location": "מיקום",
+    "allLocations": "כל המיקומים",
+    "partner": "יזם",
+    "allPartners": "כל היזמים",
+    "priceFrom": "מחיר מינימלי",
+    "any": "הכל",
+    "apply": "החל פילטרים",
+    "clear": "נקה פילטרים"
+  },
   "partners": {
     "title": "שותפים",
     "addPartner": "הוסף שותף",
@@ -84,7 +181,6 @@
     "updateSuccess": "השותף עודכן בהצלחה",
     "deleteSuccess": "השותף נמחק בהצלחה"
   },
-
   "translations": {
     "addTranslation": "הוסף תרגום",
     "editTranslation": "ערוך תרגום",
@@ -94,31 +190,28 @@
     "noTranslations": "עדיין אין תרגומים",
     "saveTranslation": "שמור תרגום"
   },
-
   "cover": {
     "exploreTitle": "דירות ופרויקטים חדשים",
     "exploreDescription": "מצא את הנכס המושלם במיקומים הטובים ביותר",
-    "sellTitle": "רוצה למכור דירה, בית או קרקע?",
-    "sellDescription": "פרסם את הנכס שלך ומצא קונים במהירות",
+    "sellTitle": "רוצים למכור דירה, בית או קרקע?",
+    "sellDescription": "פרסמו את הנכס ומצאו קונים במהירות",
     "addProperty": "הוסף נכס"
   },
-
   "search": {
-    "propertyType": "סוג הנכס",
+    "propertyType": "סוג נכס",
     "location": "מיקום",
-    "locationPlaceholder": "עיר, כתובת או מספר מזהה",
+    "locationPlaceholder": "עיר, כתובת, מזהה",
     "rooms": "חדרים",
-    "any": "כלשהו",
+    "any": "הכל",
     "allTypes": "כל הסוגים",
     "apartment": "דירה",
     "house": "בית",
     "commercial": "מסחרי",
     "search": "חיפוש"
   },
-
   "categories": {
-    "constructionProjects": "פרויקטים בבנייה",
-    "apartmentsFromDevelopers": "דירות מקבלנים",
+    "constructionProjects": "פרויקטי בנייה",
+    "apartmentsFromDevelopers": "דירות מיזמים",
     "residentialApartments": "דירות מגורים",
     "commercialProperties": "נכסים מסחריים",
     "landsForSale": "קרקעות למכירה",

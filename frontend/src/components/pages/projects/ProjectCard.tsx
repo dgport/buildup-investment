@@ -10,8 +10,14 @@ const ProjectCard = ({ project }: { project: Project }) => {
   const [imageError, setImageError] = useState(false)
   const { t } = useTranslation()
 
-  const getTranslatedValue = (field: TranslatableFields) =>
-    project.translation?.[field] ?? project[field] ?? ''
+  const getTranslatedValue = (field: TranslatableFields): string => {
+    if (project.translation && field in project.translation) {
+      const value = project.translation[field as keyof typeof project.translation]
+      return typeof value === 'string' ? value : ''
+    }
+    const value = project[field as keyof Project]
+    return typeof value === 'string' ? value : ''
+  }
 
   const projectImage = getImageUrl(project.image ?? undefined)
   const projectName = getTranslatedValue('projectName')
@@ -53,8 +59,9 @@ const ProjectCard = ({ project }: { project: Project }) => {
             </div>
           </div>
         )}
+       
       </div>
-
+      
       <div className="p-3 sm:p-4">
         <div className="space-y-3">
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 hover:text-blue-900 transition-colors line-clamp-2">

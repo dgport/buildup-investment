@@ -1,7 +1,4 @@
-'use client'
-
 import type React from 'react'
-
 import {
   Calendar,
   MapPin,
@@ -17,42 +14,40 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { Switch } from '@/components/ui/switch'
 import { useTranslation } from 'react-i18next'
+
 import type { PropertyType } from '@/lib/types/properties'
+import { useCurrency } from '@/lib/context/CurrencyContext'
 
 interface PropertyCardProps {
   property: {
     id: string
     externalId: string
     image?: string
-    images?: string[]
     galleryImages?: Array<{ imageUrl: string; order?: number }>
     priceUSD: number | null
     priceGEL: number
-    location: string | null
+    regionName: string | null
     rooms: number
-    bedrooms: number
-    dateAdded: string
     title: string
     totalArea: number | null
     propertyType: PropertyType
-    floors?: number
-    hotSale?: boolean // Added hotSale property
+    hotSale?: boolean
+    dateAdded: string
   }
 }
 
 const PropertyCard = ({ property }: PropertyCardProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [currency, setCurrency] = useState<'USD' | 'GEL'>('USD')
+  const { currency, setCurrency, exchangeRate } = useCurrency()
   const [copied, setCopied] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  // Get all images - prioritize galleryImages, then images array, then fallback to single image
   const allImages =
     property.galleryImages && property.galleryImages.length > 0
       ? property.galleryImages.map(img => img.imageUrl)
-      : property.images && property.images.length > 0
-        ? property.images
+      : property.galleryImages && property.galleryImages.length > 0
+        ? property.galleryImages
         : property.image
           ? [property.image]
           : []
@@ -97,7 +92,16 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     return `${month}/${day}/${year}`
   }
 
-  console.log(property)
+  const formatPrice = (priceUSD: number | null): string => {
+    if (!priceUSD) return t('home.priceOnRequest')
+
+    if (currency === 'USD') {
+      return priceUSD.toLocaleString()
+    }
+
+    const priceGEL = Math.round(priceUSD * exchangeRate)
+    return priceGEL.toLocaleString()
+  }
 
   return (
     <div
@@ -139,13 +143,9 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                 >
                   <ChevronRight className="w-4 h-4 text-gray-800" />
                 </button>
-
-                {/* Image counter */}
                 <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full z-10">
                   {currentImageIndex + 1} / {allImages.length}
                 </div>
-
-                {/* Dots indicator */}
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 backdrop-blur-sm rounded-full px-2.5 py-1.5">
                   {allImages.map((_, index) => (
                     <button
@@ -174,7 +174,6 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             <p className="text-gray-400">No image available</p>
           </div>
         )}
-
         {property.hotSale && (
           <div className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-orange-500 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-20 animate-pulse">
             <Flame className="w-4 h-4 text-white" />
@@ -183,8 +182,6 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             </span>
           </div>
         )}
-
-        {/* ID badge in top-right corner */}
         <div
           className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-md flex items-center gap-1.5 z-20"
           onClick={e => e.stopPropagation()}
@@ -214,15 +211,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-bold text-gray-900">
-                {property.priceUSD ? (
-                  <>
-                    {currency === 'USD'
-                      ? property.priceUSD.toLocaleString()
-                      : Math.round(property.priceUSD * 2.8).toLocaleString()}
-                  </>
-                ) : (
-                  t('home.priceOnRequest')
-                )}
+                {formatPrice(property.priceUSD)}
               </h3>
               <div
                 onClick={e => {
@@ -263,7 +252,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
 
           <div className="flex items-start gap-2 text-gray-600 text-sm">
             <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
-            <span className="line-clamp-1">{property.location}</span>
+            <span className="line-clamp-1">{property.regionName}</span>
           </div>
 
           <div className="flex items-center gap-4 pt-2 border-t border-gray-100">

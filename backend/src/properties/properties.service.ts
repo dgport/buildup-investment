@@ -144,7 +144,6 @@ export class PropertiesService {
       },
     });
 
-    // Fetch region translations for all unique regions
     const uniqueRegions = [
       ...new Set(properties.map((p) => p.region).filter(Boolean)),
     ] as Region[];
@@ -162,7 +161,7 @@ export class PropertiesService {
     const regionTranslationMap = new Map<Region, any>();
     regionTranslations.forEach((rt) => {
       const existing = regionTranslationMap.get(rt.region);
-      if (!existing || rt.language === lang) {
+      if (!existing || (existing.language !== lang && rt.language === lang)) {
         regionTranslationMap.set(rt.region, rt);
       }
     });

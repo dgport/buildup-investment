@@ -4,6 +4,8 @@ import { useMortgageRates } from '@/lib/hooks/useCalculator'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { useCurrency } from '@/lib/context/CurrencyContext'
+ 
 
 interface MortgageResult {
   loanAmount: number
@@ -20,14 +22,12 @@ interface MortgageCalculatorProps {
   initialPrice?: number | null
 }
 
-type Currency = 'USD' | 'GEL'
-
 const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
   const { t } = useTranslation()
-  const [currency, setCurrency] = useState<Currency>('GEL')
+  const { currency, setCurrency, exchangeRate } = useCurrency()
 
-  // Convert initial price to GEL if provided (assuming it comes in USD)
-  const defaultPriceGEL = initialPrice ? Math.round(initialPrice * 2.8) : 100000
+  // Price is always stored in GEL internally
+  const defaultPriceGEL = initialPrice || 100000
   const [price, setPrice] = useState<number>(defaultPriceGEL)
   const [downPayment, setDownPayment] = useState<number>(defaultPriceGEL * 0.1)
   const [months, setMonths] = useState<number>(12)
@@ -45,9 +45,8 @@ const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
 
   useEffect(() => {
     if (initialPrice) {
-      const priceInGEL = Math.round(initialPrice * 2.8)
-      setPrice(priceInGEL)
-      setDownPayment(priceInGEL * 0.1)
+      setPrice(initialPrice)
+      setDownPayment(initialPrice * 0.1)
     }
   }, [initialPrice])
 
@@ -135,7 +134,7 @@ const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
     if (currency === 'GEL') {
       return `${formatCurrency(valueInGEL)} ₾`
     }
-    const valueInUSD = Math.round(valueInGEL / 2.8)
+    const valueInUSD = Math.round(valueInGEL / exchangeRate)
     return `$${formatCurrency(valueInUSD)}`
   }
 

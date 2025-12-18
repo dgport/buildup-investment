@@ -1,20 +1,7 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useState, useCallback, useEffect } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
-
 import {
-  Home,
-  Bed,
-  Bath,
-  Square,
-  Layers,
-  ArrowUpDown,
-  Ruler,
-  Thermometer,
-  Droplet,
-  Car,
-  CheckCircle2,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   Phone,
@@ -33,8 +20,13 @@ import MapboxMap from '@/components/shared/map/MapboxMap'
 import Lightbox from 'yet-another-react-lightbox'
 import 'yet-another-react-lightbox/styles.css'
 import { useTranslation } from 'react-i18next'
-
-type Currency = 'USD' | 'GEL'
+import IsError from '@/components/shared/loaders/IsError'
+import { LoadingOverlay } from '@/components/shared/loaders/LoadingOverlay'
+import { PropertyDetailsSection } from '@/components/pages/properties/PropertyDetailSection'
+import { ConditionUtilitiesSection } from '@/components/pages/properties/ConditionUtilitiesSection'
+import { AmenitiesFeaturesSection } from '@/components/pages/properties/AmenitiesFeatureSection'
+import { useCurrency } from '@/lib/context/CurrencyContext'
+ 
 
 const PHONE_NUMBER = '+995 595 80 47 95'
 const PHONE_NUMBER_CLEAN = '995595804795'
@@ -42,8 +34,7 @@ const PHONE_NUMBER_CLEAN = '995595804795'
 export default function PropertyDetail() {
   const { t, i18n } = useTranslation()
   const { id } = useParams()
-  const navigate = useNavigate()
-  const [currency, setCurrency] = useState<Currency>('USD')
+  const { currency, setCurrency, exchangeRate } = useCurrency()
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [copiedId, setCopiedId] = useState(false)
   const [copiedPhone, setCopiedPhone] = useState(false)
@@ -96,7 +87,7 @@ export default function PropertyDetail() {
     if (currency === 'USD') {
       return `$${priceUSD.toLocaleString()}`
     }
-    const priceGEL = Math.round(priceUSD * 2.8)
+    const priceGEL = Math.round(priceUSD * exchangeRate)
     return `₾${priceGEL.toLocaleString()}`
   }
 
@@ -141,33 +132,11 @@ export default function PropertyDetail() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-12 h-12 text-blue-900 animate-spin" />
-          <p className="text-gray-600">{t('common.loading')}</p>
-        </div>
-      </div>
-    )
+    return <LoadingOverlay isLoading={isLoading} />
   }
 
   if (error || !property) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">
-            Property Not Found
-          </h2>
-          <Button
-            variant="default"
-            size="lg"
-            onClick={() => navigate('/properties')}
-          >
-            Back to Properties
-          </Button>
-        </div>
-      </div>
-    )
+    return <IsError />
   }
 
   const images =
@@ -175,9 +144,9 @@ export default function PropertyDetail() {
 
   const lightboxSlides = images.map((src: string) => ({ src }))
 
-  const priceInGEL = property.price ? Math.round(property.price * 2.8) : null
-
-  // Parse coordinates from location field (assuming format: "lat,lng")
+  const priceInGEL = property.price
+    ? Math.round(property.price * exchangeRate)
+    : null
   const coordinates = property?.location
     ? (() => {
         try {
@@ -190,7 +159,6 @@ export default function PropertyDetail() {
       })()
     : null
 
-  // Build location string for display
   const locationParts = []
   const streetAddress = property.translation?.address || property.address
   if (streetAddress) locationParts.push(streetAddress)
@@ -207,8 +175,7 @@ export default function PropertyDetail() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Left side - Images */}
-          <div className="lg:col-span-2 h-[500px]">
+          <div className="lg:col-span-2 h-[350px] lg:h-[500px]">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full relative">
               <div className="overflow-hidden h-full" ref={emblaRef}>
                 <div className="flex h-full">
@@ -283,19 +250,9 @@ export default function PropertyDetail() {
             </div>
           </div>
 
-          {/* Right side - Property Info */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-[500px] flex flex-col justify-between">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-5 h-auto lg:h-[500px] flex flex-col justify-between">
               <div className="space-y-2 sm:space-y-3">
-                <div className="mb-4 sm:mb-5 pb-4 border-b-2 border-gray-300">
-                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
-                    {property.translation?.title ||
-                      t('propertyPage.noTitle', {
-                        defaultValue: 'Untitled Property',
-                      })}
-                  </h1>
-                </div>
-
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
                   <span className="text-xs sm:text-sm font-medium text-gray-600">
                     Property ID
@@ -422,11 +379,13 @@ export default function PropertyDetail() {
         </div>
 
         <div className="space-y-6">
-          {/* Description Section */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              {t('propertyPage.description', { defaultValue: 'Description' })}
-            </h2>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">
+              {property.translation?.title ||
+                t('propertyPage.noTitle', {
+                  defaultValue: 'Untitled Property',
+                })}
+            </h1>
             <div className="h-px w-full bg-gray-300 my-4"></div>
             {property.translation?.description ? (
               <p className="text-gray-700 whitespace-pre-line">
@@ -441,310 +400,21 @@ export default function PropertyDetail() {
             )}
           </div>
 
-          {/* Location Display */}
+          <PropertyDetailsSection property={property} />
           {locationString && (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-600" />
                 {t('propertyPage.location', { defaultValue: 'Location' })}
               </h3>
-              <p className="text-gray-700 text-lg">{locationString}</p>
+              <p className="text-gray-700 text-base">{locationString}</p>
             </div>
           )}
 
-          {/* Property Details */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              {t('propertyPage.propertyDetails', {
-                defaultValue: 'Property Details',
-              })}
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {property.totalArea && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Square className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Total Area</p>
-                    <p className="font-semibold">{property.totalArea} m²</p>
-                  </div>
-                </div>
-              )}
-              {property.rooms && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Home className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Rooms</p>
-                    <p className="font-semibold">{property.rooms}</p>
-                  </div>
-                </div>
-              )}
-              {property.bedrooms && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Bed className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Bedrooms</p>
-                    <p className="font-semibold">{property.bedrooms}</p>
-                  </div>
-                </div>
-              )}
-              {property.bathrooms && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Bath className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Bathrooms</p>
-                    <p className="font-semibold">{property.bathrooms}</p>
-                  </div>
-                </div>
-              )}
-              {property.floors && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Layers className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Floor</p>
-                    <p className="font-semibold">{property.floors}</p>
-                  </div>
-                </div>
-              )}
-              {property.floorsTotal && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <ArrowUpDown className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Total Floors</p>
-                    <p className="font-semibold">{property.floorsTotal}</p>
-                  </div>
-                </div>
-              )}
-              {property.ceilingHeight && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Ruler className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Ceiling Height</p>
-                    <p className="font-semibold">{property.ceilingHeight} m</p>
-                  </div>
-                </div>
-              )}
-              {property.balconyArea && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Square className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Balcony Area</p>
-                    <p className="font-semibold">{property.balconyArea} m²</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ConditionUtilitiesSection property={property} />
 
-          {/* Condition & Utilities */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Condition & Utilities
-            </h3>
+          <AmenitiesFeaturesSection property={property} />
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {property.occupancy && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-1">Occupancy</p>
-                  <p className="font-semibold">
-                    {formatEnumValue(property.occupancy)}
-                  </p>
-                </div>
-              )}
-              {property.heating && (
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                  <Thermometer className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Heating</p>
-                    <p className="font-semibold text-sm">
-                      {formatEnumValue(property.heating)}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {property.hotWater && (
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                  <Droplet className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Hot Water</p>
-                    <p className="font-semibold text-sm">
-                      {formatEnumValue(property.hotWater)}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {property.parking && (
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                  <Car className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-xs text-gray-500">Parking</p>
-                    <p className="font-semibold text-sm">
-                      {formatEnumValue(property.parking)}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {property.isNonStandard && (
-                <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                  <p className="font-semibold text-orange-700">
-                    Non-Standard Layout
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Amenities & Features */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Amenities & Features
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {property.hasConditioner && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Air Conditioner</span>
-                </div>
-              )}
-              {property.hasFurniture && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Furniture</span>
-                </div>
-              )}
-              {property.hasBed && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Bed</span>
-                </div>
-              )}
-              {property.hasSofa && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Sofa</span>
-                </div>
-              )}
-              {property.hasTable && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Table</span>
-                </div>
-              )}
-              {property.hasChairs && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Chairs</span>
-                </div>
-              )}
-              {property.hasStove && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Stove</span>
-                </div>
-              )}
-              {property.hasRefrigerator && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Refrigerator</span>
-                </div>
-              )}
-              {property.hasOven && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Oven</span>
-                </div>
-              )}
-              {property.hasWashingMachine && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Washing Machine</span>
-                </div>
-              )}
-              {property.hasKitchenAppliances && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Kitchen Appliances</span>
-                </div>
-              )}
-              {property.hasBalcony && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Balcony</span>
-                </div>
-              )}
-              {property.hasNaturalGas && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Natural Gas</span>
-                </div>
-              )}
-              {property.hasInternet && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Internet</span>
-                </div>
-              )}
-              {property.hasTV && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">TV</span>
-                </div>
-              )}
-              {property.hasSewerage && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Sewerage</span>
-                </div>
-              )}
-              {property.isFenced && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Fenced</span>
-                </div>
-              )}
-              {property.hasYardLighting && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Yard Lighting</span>
-                </div>
-              )}
-              {property.hasGrill && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Grill</span>
-                </div>
-              )}
-              {property.hasAlarm && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Alarm</span>
-                </div>
-              )}
-              {property.hasVentilation && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Ventilation</span>
-                </div>
-              )}
-              {property.hasWater && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Water</span>
-                </div>
-              )}
-              {property.hasElectricity && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Electricity</span>
-                </div>
-              )}
-              {property.hasGate && (
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm">Gate</span>
-                </div>
-              )}
-            </div>
-          </div>
           {hasLocation && (
             <div className="mt-8 lg:mt-12">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 overflow-hidden">

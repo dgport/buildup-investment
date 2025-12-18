@@ -9,6 +9,7 @@ import { ScrollToTop } from './lib/utils/scroll-top'
 import { ErrorFallback } from './components/shared/errors/ErrorFallback'
 import Header from './components/header/Header'
 import { WhatsAppFloat } from './components/shared/whatsapp/WhatsappFloat'
+import { CurrencyProvider } from './lib/context/CurrencyContext'
 
 export const App = () => {
   useEffect(() => {
@@ -29,13 +30,15 @@ export const App = () => {
       }}
     >
       <BrowserRouter>
-        <QueryProvider>
-          <ScrollToTop />
-          <Header />
-          <AppRoutes />
-          <WhatsAppFloat />
-          <Footer />
-        </QueryProvider>
+        <CurrencyProvider>
+          <QueryProvider>
+            <ScrollToTop />
+            <Header />
+            <AppRoutes />
+            <WhatsAppFloat />
+            <Footer />
+          </QueryProvider>
+        </CurrencyProvider>
       </BrowserRouter>
     </ErrorBoundary>
   )

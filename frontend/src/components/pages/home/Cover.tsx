@@ -221,7 +221,7 @@ function PropertyTypeCards({ t }: { t: (key: string) => string }) {
       bg: 'bg-emerald-50/90',
       border: 'border-emerald-200',
       color: 'bg-emerald-600',
-      link: '/properties',
+      link: '/properties?page=1&propertyType=APARTMENT&dealType=SALE',
     },
     {
       label: t('home.apartmentsForRent'),
@@ -229,7 +229,7 @@ function PropertyTypeCards({ t }: { t: (key: string) => string }) {
       bg: 'bg-amber-50/90',
       border: 'border-amber-200',
       color: 'bg-amber-600',
-      link: '/properties',
+      link: '/properties?page=1&propertyType=APARTMENT&dealType=RENT',
     },
     {
       label: t('home.commercial'),
@@ -237,7 +237,7 @@ function PropertyTypeCards({ t }: { t: (key: string) => string }) {
       bg: 'bg-purple-50/90',
       border: 'border-purple-200',
       color: 'bg-purple-600',
-      link: '/properties',
+      link: '/properties?page=1&propertyType=COMMERCIAL',
     },
     {
       label: t('home.landForSale'),
@@ -245,7 +245,7 @@ function PropertyTypeCards({ t }: { t: (key: string) => string }) {
       bg: 'bg-teal-50/90',
       border: 'border-teal-200',
       color: 'bg-teal-600',
-      link: '/properties',
+      link: '/properties?page=1&propertyType=LAND',
     },
   ]
 

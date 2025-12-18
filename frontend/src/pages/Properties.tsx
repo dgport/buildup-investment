@@ -5,7 +5,9 @@ import { Building2 } from 'lucide-react'
 import { useProperties } from '@/lib/hooks/useProperties'
 import { PropertyFilters } from '@/components/pages/properties/PropertFilter'
 import { Pagination } from '@/components/shared/pagination/Pagination'
-import { Region } from '@/lib/types/properties' // Import Region enum
+import { Region } from '@/lib/types/properties'
+import { LoadingOverlay } from '@/components/shared/loaders/LoadingOverlay'
+import IsError from '@/components/shared/loaders/IsError'
 
 export default function Properties() {
   const { t, i18n } = useTranslation()
@@ -13,7 +15,7 @@ export default function Properties() {
 
   const page = parseInt(searchParams.get('page') || '1', 10)
   const externalId = searchParams.get('externalId') || undefined
-  const regionParam = searchParams.get('region') // Get as string first
+  const regionParam = searchParams.get('region')
   const propertyType = searchParams.get('propertyType') || undefined
   const dealType = searchParams.get('dealType') || undefined
   const priceFrom = searchParams.get('priceFrom')
@@ -35,7 +37,6 @@ export default function Properties() {
     ? parseInt(searchParams.get('bedrooms')!)
     : undefined
 
-  // Validate and cast region to enum or undefined
   const region =
     regionParam && regionParam in Region ? (regionParam as Region) : undefined
 
@@ -63,42 +64,11 @@ export default function Properties() {
   const meta = propertiesResponse?.meta
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen">
-        <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {t('properties.title')}
-            </h1>
-          </div>
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-            <p className="ml-4 text-gray-600">{t('common.loading')}</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingOverlay isLoading={isLoading} />
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen">
-        <div className="w-full mx-auto px-6 md:px-12 lg:px-16 xl:px-28 py-10">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {t('properties.title')}
-            </h1>
-          </div>
-          <div className="text-center py-12">
-            <p className="text-red-500 text-lg">
-              {t('properties.errorLoading', {
-                defaultValue: t('common.error'),
-              })}
-            </p>
-          </div>
-        </div>
-      </div>
-    )
+    return <IsError />
   }
 
   return (
@@ -137,15 +107,13 @@ export default function Properties() {
                       galleryImages: property.galleryImages,
                       priceUSD: property.price ?? null,
                       priceGEL: property.price ? property.price * 2.8 : 0,
-                      location: property.address,
-                      floors: property.floors ?? 0,
                       rooms: property.rooms ?? 0,
-                      bedrooms: property.bedrooms ?? 0,
                       dateAdded: property.createdAt,
                       title: property.translation?.title ?? 'Untitled Property',
                       totalArea: property.totalArea ?? null,
                       propertyType: property.propertyType,
                       hotSale: property.hotSale,
+                      regionName: property.regionName,
                     }}
                   />
                 </Link>

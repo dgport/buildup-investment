@@ -9,25 +9,25 @@ import {
 import PropertyCard from '../properties/PropertyCard'
 import { useProperties } from '@/lib/hooks/useProperties'
 import { useTranslation } from 'react-i18next'
+import IsError from '@/components/shared/loaders/IsError'
+import { LoadingOverlay } from '@/components/shared/loaders/LoadingOverlay'
 
 const PropertyCarousel = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { data, isLoading, isError } = useProperties({
     page: 1,
     limit: 12,
-    lang: 'en',
+    lang: i18n.language,
   })
 
   const transformProperty = (property: any) => ({
     id: property.id,
     externalId: property.externalId,
     image: property.galleryImages?.[0]?.imageUrl || '/placeholder-property.jpg',
-    galleryImages: property.galleryImages, // ADD THIS LINE
+    galleryImages: property.galleryImages,
     priceUSD: property.price,
     priceGEL: property.price ? Math.round(property.price * 2.8) : 0,
-    location: property.address,
-    rooms: property.rooms || 0,
-    bedrooms: property.bedrooms || 0,
+    rooms: property.rooms || null,
     dateAdded: property.createdAt,
     title:
       property.translation?.title ||
@@ -36,33 +36,16 @@ const PropertyCarousel = () => {
     totalArea: property.totalArea,
     propertyType: property.propertyType,
     status: property.status,
-    floors: property.floors,
-
     hotSale: property.hotSale,
+    regionName: property.regionName,
   })
 
   if (isLoading) {
-    return (
-      <div className="py-8">
-        <div className="w-full">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-gray-500">{t('common.loading')}</div>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingOverlay isLoading={isLoading} />
   }
 
   if (isError) {
-    return (
-      <div className="py-8">
-        <div className="w-full">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-red-500">{t('common.error')}</div>
-          </div>
-        </div>
-      </div>
-    )
+    return <IsError />
   }
 
   const properties = data?.data?.map(transformProperty) || []

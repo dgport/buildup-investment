@@ -3,20 +3,15 @@ import { cn } from '@/lib/utils/cn'
 
 interface LoadingOverlayProps {
   isLoading: boolean
-  message?: string
-  children: React.ReactNode
   blur?: boolean
 }
 
 export const LoadingOverlay = ({
   isLoading,
-  message,
-  children,
   blur = true,
 }: LoadingOverlayProps) => {
   return (
     <div className="relative">
-      {children}
       {isLoading && (
         <div
           className={cn(
@@ -26,9 +21,6 @@ export const LoadingOverlay = ({
           )}
         >
           <Spinner />
-          {message && (
-            <p className="text-sm text-muted-foreground">{message}</p>
-          )}
         </div>
       )}
     </div>

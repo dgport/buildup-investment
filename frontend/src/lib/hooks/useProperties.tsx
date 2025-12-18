@@ -11,9 +11,6 @@ import type {
 } from '../types/properties'
 import { propertiesService } from '../services/properties.service'
 
-/**
- * Get all PUBLIC properties with filters (for public-facing pages)
- */
 export const useProperties = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
     queryKey: ['properties', filters],
@@ -24,9 +21,6 @@ export const useProperties = (filters?: PropertyFilters) => {
   })
 }
 
-/**
- * Get ALL properties including private ones (for admin area only)
- */
 export const usePropertiesAdmin = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
     queryKey: ['properties', 'admin', filters],
@@ -37,9 +31,6 @@ export const usePropertiesAdmin = (filters?: PropertyFilters) => {
   })
 }
 
-/**
- * Get single PUBLIC property by ID
- */
 export const useProperty = (id: string, lang?: string) => {
   return useQuery<Property>({
     queryKey: ['properties', id, lang],
@@ -51,9 +42,6 @@ export const useProperty = (id: string, lang?: string) => {
   })
 }
 
-/**
- * Get property by ID including private ones (for admin area only)
- */
 export const usePropertyAdmin = (id: string, lang?: string) => {
   return useQuery<Property>({
     queryKey: ['properties', 'admin', id, lang],
@@ -65,9 +53,6 @@ export const usePropertyAdmin = (id: string, lang?: string) => {
   })
 }
 
-/**
- * Create property (Admin only)
- */
 export const useCreateProperty = () => {
   return useMutation({
     mutationFn: async ({
@@ -86,9 +71,6 @@ export const useCreateProperty = () => {
   })
 }
 
-/**
- * Update property (Admin only)
- */
 export const useUpdateProperty = () => {
   return useMutation({
     mutationFn: async ({
@@ -110,9 +92,6 @@ export const useUpdateProperty = () => {
   })
 }
 
-/**
- * Delete property (Admin only)
- */
 export const useDeleteProperty = () => {
   return useMutation({
     mutationFn: async (id: string) => {
@@ -125,9 +104,6 @@ export const useDeleteProperty = () => {
   })
 }
 
-/**
- * Get property translations (Admin only)
- */
 export const usePropertyTranslations = (id: string) => {
   return useQuery<PropertyTranslation[]>({
     queryKey: ['properties', id, 'translations'],
@@ -139,9 +115,6 @@ export const usePropertyTranslations = (id: string) => {
   })
 }
 
-/**
- * Create or update translation (Admin only)
- */
 export const useUpsertPropertyTranslation = () => {
   return useMutation({
     mutationFn: async ({
@@ -163,9 +136,6 @@ export const useUpsertPropertyTranslation = () => {
   })
 }
 
-/**
- * Delete translation (Admin only)
- */
 export const useDeletePropertyTranslation = () => {
   return useMutation({
     mutationFn: async ({ id, language }: { id: string; language: string }) => {
@@ -181,9 +151,6 @@ export const useDeletePropertyTranslation = () => {
   })
 }
 
-/**
- * Delete gallery image (Admin only)
- */
 export const useDeletePropertyImage = () => {
   return useMutation({
     mutationFn: async ({
@@ -207,9 +174,6 @@ export const useDeletePropertyImage = () => {
   })
 }
 
-/**
- * Add images to property (Admin only)
- */
 export const useAddPropertyImages = () => {
   return useMutation({
     mutationFn: async ({ id, images }: { id: string; images: File[] }) => {
