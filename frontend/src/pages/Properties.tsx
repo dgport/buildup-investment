@@ -77,6 +77,7 @@ export default function Properties() {
       'meta.properties.keywords',
       'properties Batumi, real estate for sale, apartments for rent, houses Batumi, commercial property Georgia'
     ),
+    ogImage: '/Logo.png',
     lang: i18n.language,
   })
 

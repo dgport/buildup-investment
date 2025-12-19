@@ -4,7 +4,7 @@ import PartnerCard from '@/components/pages/partners/PartnerCard'
 import { usePartners } from '@/lib/hooks/usePartners'
 import { Pagination } from '@/components/shared/pagination/Pagination'
 import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
- 
+
 export default function Partners() {
   const { t, i18n } = useTranslation()
   const [searchParams, _] = useSearchParams()
@@ -33,6 +33,7 @@ export default function Partners() {
       'meta.partners.keywords',
       'real estate developers Georgia, construction partners Batumi, property developers, trusted developers'
     ),
+    ogImage: '/Logo.png',
     lang: i18n.language,
   })
 

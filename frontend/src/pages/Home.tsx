@@ -26,7 +26,7 @@ const HomePage = () => {
       'meta.home.keywords',
       'real estate Batumi, property Georgia, apartments Batumi, construction Georgia, real estate investment, Batumi developers, buy apartment Batumi'
     ),
-    ogImage: '/og-image.jpg',
+    ogImage: '/Logo.png',
     lang: i18n.language,
   })
 

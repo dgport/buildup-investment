@@ -4,8 +4,7 @@ import { useState } from 'react'
 export const WhatsAppFloat = () => {
   const [isHovered, setIsHovered] = useState(false)
 
-  // Replace with your actual WhatsApp number (include country code without + or 00)
-  const phoneNumber = '+995595804795' // Example: 995595804795 for +995 595 80 47 95
+  const phoneNumber = '995595804795'
   const message = encodeURIComponent(
     'Hello! I am interested in your properties.'
   )
@@ -18,7 +17,7 @@ export const WhatsAppFloat = () => {
       rel="noopener noreferrer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
+      className="fixed bottom-24 right-6 z-50 flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
       aria-label="Contact us on WhatsApp"
     >
       <div className="flex items-center gap-3 py-3 px-4">
@@ -35,7 +34,6 @@ export const WhatsAppFloat = () => {
         </span>
       </div>
 
-      {/* Pulse animation ring */}
       <div className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-20" />
     </a>
   )

@@ -9,7 +9,7 @@
     "edit": "Редактировать",
     "add": "Добавить",
     "search": "Поиск",
-    "noResults": "Результатов не найдено",
+    "noResults": "Ничего не найдено",
     "seeAll": "Посмотреть все",
     "company": "Строительная компания",
     "allRightsReserved": "Все права защищены."
@@ -17,7 +17,7 @@
   "nav": {
     "home": "Главная",
     "ourProjects": "Наши проекты",
-    "partnerProjects": "Проекты от застройщиков",
+    "partnerProjects": "Проекты застройщиков",
     "properties": "Вся недвижимость",
     "projects": "Проекты",
     "partners": "Партнеры",
@@ -29,7 +29,7 @@
     "company": "Компания"
   },
   "contact": {
-    "title": "Свяжитесь с нами",
+    "title": "Связаться с нами",
     "sendMessage": "Отправьте нам сообщение",
     "fullName": "Полное имя",
     "emailAddress": "Электронная почта",
@@ -43,29 +43,29 @@
     "locationIsrael": "Вифлеем - Аль-Доха",
     "followUs": "Подписывайтесь на нас",
     "formSubmitted": "Ваше сообщение отправлено",
-    "formError": "Что-то пошло не так, попробуйте еще раз",
-    "getInTouch": "Связаться с нами"
+    "formError": "Что-то пошло не так, попробуйте снова",
+    "getInTouch": "Свяжитесь с нами"
   },
   "home": {
     "findYourDreamProperty": "Найдите недвижимость своей мечты",
     "findMore": "Узнать больше",
     "projectsFromDevelopers": "Проекты от застройщиков",
-    "apartmentsForSale": "Продажа квартир",
+    "apartmentsForSale": "Квартиры на продажу",
     "apartmentsForRent": "Аренда квартир",
     "commercial": "Коммерческая",
-    "landForSale": "Продажа земли",
-    "featuredProperties": "Рекомендуемые объекты",
-    "seeAll": "Смотреть все",
+    "landForSale": "Земля на продажу",
+    "featuredProperties": "Вся недвижимость",
+    "seeAll": "Посмотреть все",
     "priceOnRequest": "Цена по запросу",
-    "rooms": "Комнат",
+    "rooms": "Комн.",
     "area": "Площадь",
     "perSquareMeter": "/ м²",
     "hotSale": "ГОРЯЧЕЕ ПРЕДЛОЖЕНИЕ",
     "fromPrice": "От: ",
-    "projectsTitle": "Наши проекты",
+    "projectsTitle": "Проекты от застройщиков",
     "partnersTitle": "Наши партнеры",
     "featuresSectionTitleAlliance": "Alliance Centropolis",
-    "featuresSectionDescriptionAlliance": "Флагманский проект Alliance Group в центре Батуми, задающий новые стандарты городской роскоши.",
+    "featuresSectionDescriptionAlliance": "Флагманский проект Alliance Group в центре Батуми, устанавливающий новые стандарты городской роскоши.",
     "featuresSectionFeaturesAlliance": [
       "Центр города",
       "Умный дом",
@@ -79,9 +79,9 @@
       "Курортные удобства"
     ],
     "featuresSectionTitleAmbassadori": "Ambassadori Island",
-    "featuresSectionDescriptionAmbassadori": "Эксклюзивный проект на острове, предлагающий непревзойденную роскошь и панорамные виды на море.",
+    "featuresSectionDescriptionAmbassadori": "Эксклюзивный островной проект, предлагающий непревзойденную роскошь и панорамный вид на море.",
     "featuresSectionFeaturesAmbassadori": [
-      "Островное расположение",
+      "Островная локация",
       "Жизнь у воды",
       "Премиум стиль жизни"
     ],
@@ -97,13 +97,13 @@
     "year": "год",
     "years": "лет",
     "loading": "Загрузка...",
-    "interest": "Процент",
-    "downPaymentLabel": "Первый взнос",
+    "interest": "Проценты",
+    "downPaymentLabel": "Первоначальный взнос",
     "principal": "Основной долг",
     "monthlyPayment": "Ежемесячный платеж",
     "interestRate": "Процентная ставка в год",
     "loanAmountAfterDown": "Сумма кредита (после взноса)",
-    "totalPayment": "Общая сумма (включая первый взнос)",
+    "totalPayment": "Общая сумма (включая взнос)",
     "requestLoan": "Запросить кредит"
   },
   "auth": {
@@ -132,18 +132,18 @@
     "tryDifferentFilters": "Попробуйте изменить фильтры"
   },
   "projectPage": {
-    "loadingProject": "Загрузка деталей проекта...",
+    "loadingProject": "Загрузка данных проекта...",
     "projectNotFound": "Проект не найден",
-    "projectNotFoundDescription": "Проект не существует или был удален.",
+    "projectNotFoundDescription": "Проект, который вы ищете, не существует или был удален.",
     "backToProjects": "Назад к проектам",
-    "noName": "Без названия",
-    "noLocation": "Без локации",
+    "noName": "Нет названия",
+    "noLocation": "Нет локации",
     "startingPrice": "Начальная цена",
     "delivery": "Сдача",
     "floors": "Этажность",
     "totalUnits": "Всего квартир",
     "showPhoneNumber": "Показать номер",
-    "contactWhatsApp": "Связаться через WhatsApp",
+    "contactWhatsApp": "Написать в WhatsApp",
     "availableApartments": "Доступные квартиры",
     "noApartments": "Для этого проекта пока нет доступных квартир.",
     "notAvailable": "Н/Д"
@@ -159,14 +159,14 @@
   },
   "filters": {
     "title": "Фильтры",
-    "active": "Активно",
+    "active": "Активные",
     "description": "Настройте поиск проекта",
-    "location": "Местоположение",
+    "location": "Локация",
     "allLocations": "Все локации",
     "partner": "Застройщик",
     "allPartners": "Все застройщики",
     "priceFrom": "Мин. цена",
-    "any": "Любая",
+    "any": "Любой",
     "apply": "Применить фильтры",
     "clear": "Очистить фильтры"
   },
@@ -177,9 +177,9 @@
     "deletePartner": "Удалить партнера",
     "companyName": "Название компании",
     "noPartners": "Партнеры не найдены",
-    "createSuccess": "Партнер успешно создан",
-    "updateSuccess": "Партнер успешно обновлен",
-    "deleteSuccess": "Партнер успешно удален"
+    "createSuccess": "Партнер успешно добавлен",
+    "updateSuccess": "Данные партнера обновлены",
+    "deleteSuccess": "Партнер удален"
   },
   "translations": {
     "addTranslation": "Добавить перевод",
@@ -192,15 +192,15 @@
   },
   "cover": {
     "exploreTitle": "Квартиры и новостройки",
-    "exploreDescription": "Найдите идеальное жилье в лучших локациях",
-    "sellTitle": "Хотите продать квартиру, дом или участок?",
+    "exploreDescription": "Найдите идеальную недвижимость в лучших локациях",
+    "sellTitle": "Хотите продать квартиру, дом или землю?",
     "sellDescription": "Разместите объект и быстро найдите покупателя",
     "addProperty": "Добавить объект"
   },
   "search": {
     "propertyType": "Тип недвижимости",
-    "location": "Местоположение",
-    "locationPlaceholder": "Город, адрес, ID",
+    "location": "Локация",
+    "locationPlaceholder": "Город, адрес или ID",
     "rooms": "Комнаты",
     "any": "Любое",
     "allTypes": "Все типы",
@@ -215,10 +215,43 @@
     "residentialApartments": "Жилые квартиры",
     "commercialProperties": "Коммерческая недвижимость",
     "landsForSale": "Земельные участки",
-    "projectsCount": "Проектов: {{count}}",
+    "projectsCount": "Объектов: {{count}}",
     "apartmentsCount": "Квартир: {{count}}",
     "residentialCount": "Квартир: {{count}}",
     "commercialCount": "Объектов: {{count}}",
     "landsCount": "Участков: {{count}}"
+  },
+  "properties": {
+    "title": "Вся недвижимость",
+    "totalProperties": "Найдено объектов: {{count}}",
+    "noProperties": "Недвижимость не найдена",
+    "tryDifferentFilters": "Попробуйте изменить фильтры",
+    "filters": {
+      "externalId": "ID объекта",
+      "region": "Регион",
+      "allRegions": "Все регионы",
+      "propertyType": "Тип недвижимости",
+      "allTypes": "Все типы",
+      "dealType": "Тип сделки",
+      "allDeals": "Все типы",
+      "sale": "Продажа",
+      "rent": "Аренда",
+      "priceFrom": "Мин. цена",
+      "priceTo": "Макс. цена",
+      "areaFrom": "Мин. площадь (м²)",
+      "areaTo": "Макс. площадь (м²)",
+      "rooms": "Комнаты",
+      "bedrooms": "Спальни",
+      "any": "Любое",
+      "apply": "Применить",
+      "clear": "Сбросить"
+    }
+  },
+  "meta": {
+    "properties": {
+      "title": "Вся недвижимость | United Construction and Real Estate",
+      "description": "Исследуйте всю доступную недвижимость в Батуми, Грузия. Квартиры, дома, коммерческие площади. Фильтры по цене и типу.",
+      "keywords": "недвижимость Батуми, купить квартиру в Грузии, аренда жилья, дома Батуми, коммерческая недвижимость"
+    }
   }
 }

@@ -1,5 +1,4 @@
 import type React from 'react'
-
 import { useState } from 'react'
 import { Facebook, Mail, Phone, MapPin, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -7,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from 'react-i18next'
 import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
- 
 
 const Contact = () => {
   const { t, i18n } = useTranslation()
@@ -25,6 +23,7 @@ const Contact = () => {
       'meta.contact.keywords',
       'contact United Construction, real estate Georgia contact, property inquiry Batumi, real estate consultation'
     ),
+    ogImage: '/Logo.png',
     lang: i18n.language,
   })
 
@@ -34,6 +33,7 @@ const Contact = () => {
     phone: '',
     message: '',
   })
+  const [result, setResult] = useState('')
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -42,14 +42,44 @@ const Contact = () => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData)
-    setFormData({
-      fullName: '',
-      email: '',
-      phone: '',
-      message: '',
-    })
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setResult('Sending...')
+
+    const formDataToSend = new FormData()
+    formDataToSend.append(
+      'access_key',
+      import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || ''
+    )
+    formDataToSend.append('name', formData.fullName)
+    formDataToSend.append('email', formData.email)
+    formDataToSend.append('phone', formData.phone)
+    formDataToSend.append('message', formData.message)
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formDataToSend,
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setResult('Message sent successfully!')
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          message: '',
+        })
+        setTimeout(() => setResult(''), 5000)
+      } else {
+        setResult('Failed to send message. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      setResult('An error occurred. Please try again.')
+    }
   }
 
   return (
@@ -157,7 +187,10 @@ const Contact = () => {
 
           <div className="md:col-span-3 flex flex-col">
             <div className="bg-white/15 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/25 flex flex-col h-full">
-              <div className="p-6 md:p-8 h-full flex flex-col">
+              <form
+                onSubmit={handleSubmit}
+                className="p-6 md:p-8 h-full flex flex-col"
+              >
                 <h2 className="text-2xl font-bold text-white mb-6">
                   {t('contact.sendMessage')}
                 </h2>
@@ -171,6 +204,7 @@ const Contact = () => {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
+                      required
                     />
                   </div>
 
@@ -184,6 +218,7 @@ const Contact = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        required
                       />
                     </div>
                     <div>
@@ -208,15 +243,30 @@ const Contact = () => {
                       value={formData.message}
                       onChange={handleChange}
                       rows={6}
+                      required
                     />
                   </div>
 
-                  <Button className="w-full" onClick={handleSubmit}>
+                  <Button type="submit" className="w-full">
                     <Send className="w-5 h-5" />
                     {t('contact.send')}
                   </Button>
+
+                  {result && (
+                    <p
+                      className={`text-center font-medium ${
+                        result.includes('success')
+                          ? 'text-emerald-300'
+                          : result.includes('Sending')
+                            ? 'text-blue-300'
+                            : 'text-red-300'
+                      }`}
+                    >
+                      {result}
+                    </p>
+                  )}
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>

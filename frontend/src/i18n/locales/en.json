@@ -57,7 +57,7 @@
     "apartmentsForRent": "Apartments for rent",
     "commercial": "Commercial",
     "landForSale": "Land for sale",
-    "featuredProperties": "Featured Properties",
+    "featuredProperties": "All Property",
     "seeAll": "See All",
     "priceOnRequest": "Price on request",
     "rooms": "Rooms",
@@ -65,7 +65,7 @@
     "perSquareMeter": "/ m²",
     "hotSale": "HOT SALE",
     "fromPrice": "From: ",
-    "projectsTitle": "Our Projects",
+    "projectsTitle": "Projects from developers",
     "partnersTitle": "Our Partners",
     "featuresSectionTitleAlliance": "Alliance Centropolis",
     "featuresSectionDescriptionAlliance": "Alliance Group's flagship development in the heart of Batumi, setting new standards for urban luxury and sophisticated living.",
@@ -234,5 +234,39 @@
     "residentialCount": "{{count}} apartments",
     "commercialCount": "{{count}} properties",
     "landsCount": "{{count}} lands"
+  },
+  "properties": {
+    "title": "All Properties",
+    "totalProperties": "{{count}} properties found",
+    "noProperties": "No properties found",
+    "tryDifferentFilters": "Try adjusting your filters",
+    "filters": {
+      "externalId": "Property ID",
+      "region": "Region",
+      "allRegions": "All Regions",
+      "propertyType": "Property Type",
+      "allTypes": "All Types",
+      "dealType": "Deal Type",
+      "allDeals": "All Deals",
+      "sale": "For Sale",
+      "rent": "For Rent",
+      "priceFrom": "Min Price",
+      "priceTo": "Max Price",
+      "areaFrom": "Min Area (m²)",
+      "areaTo": "Max Area (m²)",
+      "rooms": "Rooms",
+      "bedrooms": "Bedrooms",
+      "any": "Any",
+      "apply": "Apply Filters",
+      "clear": "Clear Filters"
+    }
+  },
+
+  "meta": {
+    "properties": {
+      "title": "All Properties | United Construction and Real Estate",
+      "description": "Explore all available properties in Batumi, Georgia. Find apartments, houses, commercial spaces for sale or rent. Filter by location, price, area, and property type.",
+      "keywords": "properties Batumi, real estate for sale, apartments for rent, houses Batumi, commercial property Georgia"
+    }
   }
 }

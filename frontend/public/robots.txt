@@ -1,0 +1,20 @@
+
+User-agent: *
+Allow: /
+
+ 
+Disallow: /admin
+Disallow: /signin
+Disallow: /signup
+Disallow: /unauthorized
+
+
+Allow: /
+Allow: /properties
+Allow: /projects
+Allow: /partners
+Allow: /contact
+
+
+Sitemap: https://unitedcompany.ge/sitemap.xml
+Crawl-delay: 1

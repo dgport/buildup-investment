@@ -9,12 +9,11 @@
     "edit": "რედაქტირება",
     "add": "დამატება",
     "search": "ძებნა",
-    "noResults": "შედეგი ვერ მოიძებნა",
+    "noResults": "შედეგები ვერ მოიძებნა",
     "seeAll": "ყველას ნახვა",
     "company": "სამშენებლო კომპანია",
     "allRightsReserved": "ყველა უფლება დაცულია."
   },
-
   "nav": {
     "home": "მთავარი",
     "ourProjects": "ჩვენი პროექტები",
@@ -29,11 +28,10 @@
     "quickLinks": "სწრაფი ბმულები",
     "company": "კომპანია"
   },
-
   "contact": {
     "title": "დაგვიკავშირდით",
     "sendMessage": "გამოგვიგზავნეთ შეტყობინება",
-    "fullName": "სახელი და გვარი",
+    "fullName": "სრული სახელი",
     "emailAddress": "ელ. ფოსტის მისამართი",
     "phoneNumber": "ტელეფონის ნომერი",
     "message": "შეტყობინება",
@@ -43,48 +41,47 @@
     "email": "ელ. ფოსტა",
     "locationGeorgia": "ბათუმი, ადლიის ქ. #1",
     "locationIsrael": "ბეთლემი - ალ-დოჰა",
-    "followUs": "შემოგვიერთდით",
-    "formSubmitted": "თქვენი შეტყობინება გაიგზავნა",
+    "followUs": "მოგვყევით",
+    "formSubmitted": "თქვენი შეტყობინება გაგზავნილია",
     "formError": "დაფიქსირდა შეცდომა, გთხოვთ სცადოთ თავიდან",
     "getInTouch": "დაგვიკავშირდით"
   },
-
   "home": {
     "findYourDreamProperty": "იპოვეთ თქვენი ოცნების ქონება",
-    "findMore": "მეტის ნახვა",
+    "findMore": "იხილეთ მეტი",
     "projectsFromDevelopers": "პროექტები დეველოპერებისგან",
     "apartmentsForSale": "ბინები გასაყიდად",
     "apartmentsForRent": "ბინები ქირით",
     "commercial": "კომერციული",
     "landForSale": "მიწა გასაყიდად",
-    "featuredProperties": "რჩეული განცხადებები",
+    "featuredProperties": "ყველა ქონება",
     "seeAll": "ყველას ნახვა",
     "priceOnRequest": "ფასი მოთხოვნით",
     "rooms": "ოთახი",
     "area": "ფართობი",
     "perSquareMeter": "/ მ²",
     "hotSale": "ცხელი შემოთავაზება",
-    "fromPrice": "ფასი: ",
-    "projectsTitle": "ჩვენი პროექტები",
+    "fromPrice": "დან: ",
+    "projectsTitle": "პროექტები დეველოპერებისგან",
     "partnersTitle": "ჩვენი პარტნიორები",
-    "featuresSectionTitleAlliance": "Alliance Centropolis",
-    "featuresSectionDescriptionAlliance": "Alliance Group-ის ფლაგმანი პროექტი ბათუმის ცენტრში, რომელიც ქმნის ურბანული ფუფუნების ახალ სტანდარტებს.",
+    "featuresSectionTitleAlliance": "ალიანს სენტროპოლისი",
+    "featuresSectionDescriptionAlliance": "Alliance Group-ის ფლაგმანი პროექტი ბათუმის ცენტრში, რომელიც ადგენს ურბანული ფუფუნების ახალ სტანდარტებს.",
     "featuresSectionFeaturesAlliance": [
       "ქალაქის ცენტრი",
       "ჭკვიანი სახლის ტექნოლოგია",
       "პრემიუმ ლოკაცია"
     ],
     "featuresSectionTitleEmaar": "Emaar Eagle Hills",
-    "featuresSectionDescriptionEmaar": "Emaar-ის მსოფლიო დონის პროექტი სანაპიროზე, რომელიც აერთიანებს მდიდრულ საცხოვრებელს და იახტკლუბის ხედებს.",
+    "featuresSectionDescriptionEmaar": "მსოფლიო დონის პროექტი სანაპიროზე Emaar-ისგან, რომელიც აერთიანებს მდიდრულ ცხოვრებას და იახტკლუბის ხედებს.",
     "featuresSectionFeaturesEmaar": [
       "ხედები მარინაზე",
       "მდიდრული რეზიდენციები",
-      "კურორტული ინფრასტრუქტურა"
+      "საკურორტო ინფრასტრუქტურა"
     ],
-    "featuresSectionTitleAmbassadori": "Ambassadori Island",
-    "featuresSectionDescriptionAmbassadori": "ექსკლუზიური კუნძულის პროექტი, რომელიც გთავაზობთ შეუდარებელ ფუფუნებას, ზღვის პანორამულ ხედებს და მსოფლიო დონის სერვისებს.",
+    "featuresSectionTitleAmbassadori": "ამბასადორი აილენდი",
+    "featuresSectionDescriptionAmbassadori": "ექსკლუზიური კუნძულის პროექტი, რომელიც გთავაზობთ შეუდარებელ ფუფუნებას ზღვის პანორამული ხედებით.",
     "featuresSectionFeaturesAmbassadori": [
-      "კუნძულის ლოკაცია",
+      "ლოკაცია კუნძულზე",
       "ცხოვრება სანაპიროზე",
       "პრემიუმ ცხოვრების სტილი"
     ],
@@ -92,11 +89,10 @@
     "featuresNext": "შემდეგი პროექტი",
     "featuresSlideLabel": "პროექტის გალერეა"
   },
-
   "calculator": {
     "title": "იპოთეკური კალკულატორი",
     "propertyPrice": "ქონების ფასი",
-    "downPayment": "თანამონაწილეობა",
+    "downPayment": "პირველადი შენატანი",
     "loanTerm": "სესხის ვადა",
     "year": "წელი",
     "years": "წელი",
@@ -106,23 +102,21 @@
     "principal": "ძირითადი თანხა",
     "monthlyPayment": "ყოველთვიური გადასახადი",
     "interestRate": "წლიური საპროცენტო განაკვეთი",
-    "loanAmountAfterDown": "სესხის ოდენობა (პირველადი შენატანის გარეშე)",
-    "totalPayment": "სრული გადასახადი (პირველადი შენატანის ჩათვლით)",
+    "loanAmountAfterDown": "სესხის თანხა (შენატანის შემდეგ)",
+    "totalPayment": "მთლიანი გადახდა (შენატანის ჩათვლით)",
     "requestLoan": "სესხის მოთხოვნა"
   },
-
   "auth": {
-    "admin": "ადმინისტრატორი",
-    "logout": "გამოსვლა",
+    "admin": "ადმინი",
+    "logout": "გასვლა",
     "signingOut": "გამოსვლა..."
   },
-
   "projects": {
     "title": "პროექტები დეველოპერებისგან",
     "addProject": "პროექტის დამატება",
     "editProject": "პროექტის რედაქტირება",
     "deleteProject": "პროექტის წაშლა",
-    "projectName": "პროექტის დასახელება",
+    "projectName": "პროექტის სახელი",
     "projectLocation": "პროექტის მდებარეობა",
     "partner": "პარტნიორი",
     "image": "სურათი",
@@ -134,15 +128,14 @@
     "deleteSuccess": "პროექტი წარმატებით წაიშალა",
     "deleteConfirm": "დარწმუნებული ხართ, რომ გსურთ ამ პროექტის წაშლა?",
     "totalProjects": "ნაპოვნია {{count}} პროექტი",
-    "errorLoading": "შეცდომა პროექტების ჩატვირთვისას",
+    "errorLoading": "პროექტების ჩატვირთვის შეცდომა",
     "tryDifferentFilters": "სცადეთ ფილტრების შეცვლა"
   },
-
   "projectPage": {
-    "loadingProject": "პროექტის დეტალები იტვირთება...",
+    "loadingProject": "პროექტის დეტალების ჩატვირთვა...",
     "projectNotFound": "პროექტი ვერ მოიძებნა",
-    "projectNotFoundDescription": "პროექტი, რომელსაც ეძებთ, არ არსებობს ან წაშლილია.",
-    "backToProjects": "პროექტებზე დაბრუნება",
+    "projectNotFoundDescription": "პროექტი არ არსებობს ან წაშლილია.",
+    "backToProjects": "უკან პროექტებზე",
     "noName": "სახელი არ არის",
     "noLocation": "მდებარეობა არ არის",
     "startingPrice": "საწყისი ფასი",
@@ -153,23 +146,21 @@
     "contactWhatsApp": "კონტაქტი WhatsApp-ით",
     "availableApartments": "ხელმისაწვდომი ბინები",
     "noApartments": "ამ პროექტისთვის ბინები ჯერ არ არის დამატებული.",
-    "notAvailable": "არ არის მითითებული"
+    "notAvailable": "N/A"
   },
-
   "apartmentCard": {
     "roomApartment": "{{count}}-ოთახიანი ბინა",
     "area": "ფართობი",
     "noImages": "სურათები არ არის",
-    "noDescription": "ამ ბინის აღწერა არ არის ხელმისაწვდომი.",
+    "noDescription": "აღწერა არ არის ხელმისაწვდომი.",
     "previousImage": "წინა სურათი",
     "nextImage": "შემდეგი სურათი",
     "goToImage": "გადასვლა სურათზე {{number}}"
   },
-
   "filters": {
     "title": "ფილტრები",
     "active": "აქტიური",
-    "description": "მოარგეთ პროექტის ძებნა ამ ფილტრებს",
+    "description": "მოარგეთ პროექტის ძებნა ამ ფილტრებით",
     "location": "მდებარეობა",
     "allLocations": "ყველა მდებარეობა",
     "partner": "დეველოპერი",
@@ -179,19 +170,17 @@
     "apply": "ფილტრების გამოყენება",
     "clear": "ფილტრების გასუფთავება"
   },
-
   "partners": {
     "title": "პარტნიორები",
     "addPartner": "პარტნიორის დამატება",
     "editPartner": "პარტნიორის რედაქტირება",
     "deletePartner": "პარტნიორის წაშლა",
     "companyName": "კომპანიის სახელი",
-    "noPartners": "პარტნიორები არ არის ხელმისაწვდომი",
-    "createSuccess": "პარტნიორი წარმატებით შეიქმნა",
+    "noPartners": "პარტნიორები არ არის",
+    "createSuccess": "პარტნიორი წარმატებით დაემატა",
     "updateSuccess": "პარტნიორი წარმატებით განახლდა",
     "deleteSuccess": "პარტნიორი წარმატებით წაიშალა"
   },
-
   "translations": {
     "addTranslation": "თარგმანის დამატება",
     "editTranslation": "თარგმანის რედაქტირება",
@@ -201,15 +190,13 @@
     "noTranslations": "თარგმანები ჯერ არ არის",
     "saveTranslation": "თარგმანის შენახვა"
   },
-
   "cover": {
     "exploreTitle": "ბინები და ახალი მშენებლობები",
     "exploreDescription": "იპოვეთ თქვენი იდეალური ქონება საუკეთესო ლოკაციებზე",
     "sellTitle": "გსურთ ბინის, სახლის ან მიწის გაყიდვა?",
-    "sellDescription": "განათავსეთ თქვენი ქონება და იპოვეთ მყიდველი სწრაფად",
+    "sellDescription": "განათავსეთ თქვენი ქონება და სწრაფად იპოვეთ მყიდველი",
     "addProperty": "ქონების დამატება"
   },
-
   "search": {
     "propertyType": "ქონების ტიპი",
     "location": "მდებარეობა",
@@ -222,7 +209,6 @@
     "commercial": "კომერციული",
     "search": "ძებნა"
   },
-
   "categories": {
     "constructionProjects": "სამშენებლო პროექტები",
     "apartmentsFromDevelopers": "ბინები დეველოპერებისგან",
@@ -233,6 +219,39 @@
     "apartmentsCount": "{{count}} ბინა",
     "residentialCount": "{{count}} ბინა",
     "commercialCount": "{{count}} ობიექტი",
-    "landsCount": "{{count}} ნაკვეთი"
+    "landsCount": "{{count}} მიწა"
+  },
+  "properties": {
+    "title": "ყველა ქონება",
+    "totalProperties": "ნაპოვნია {{count}} ქონება",
+    "noProperties": "ქონება ვერ მოიძებნა",
+    "tryDifferentFilters": "სცადეთ ფილტრების შეცვლა",
+    "filters": {
+      "externalId": "ქონების ID",
+      "region": "რეგიონი",
+      "allRegions": "ყველა რეგიონი",
+      "propertyType": "ქონების ტიპი",
+      "allTypes": "ყველა ტიპი",
+      "dealType": "გარიგების ტიპი",
+      "allDeals": "ყველა გარიგება",
+      "sale": "იყიდება",
+      "rent": "ქირავდება",
+      "priceFrom": "მინ. ფასი",
+      "priceTo": "მაქს. ფასი",
+      "areaFrom": "მინ. ფართობი (მ²)",
+      "areaTo": "მაქს. ფართობი (მ²)",
+      "rooms": "ოთახები",
+      "bedrooms": "საძინებლები",
+      "any": "ნებისმიერი",
+      "apply": "ფილტრების გამოყენება",
+      "clear": "ფილტრების გასუფთავება"
+    }
+  },
+  "meta": {
+    "properties": {
+      "title": "ყველა ქონება | United Construction and Real Estate",
+      "description": "აღმოაჩინეთ ყველა ხელმისაწვდომი ქონება ბათუმში. ბინები, სახლები, კომერციული ფართები გასაყიდად ან ქირით.",
+      "keywords": "უძრავი ქონება ბათუმი, ბინები გასაყიდად, ბინები ქირით, სახლები ბათუმი, კომერციული ფართი საქართველო"
+    }
   }
 }

@@ -4,18 +4,18 @@
     "error": "שגיאה",
     "success": "הצלחה",
     "cancel": "ביטול",
-    "save": "שמירה",
-    "delete": "מחיקה",
-    "edit": "עריכה",
-    "add": "הוספה",
+    "save": "שמור",
+    "delete": "מחק",
+    "edit": "ערוך",
+    "add": "הוסף",
     "search": "חיפוש",
     "noResults": "לא נמצאו תוצאות",
-    "seeAll": "צפה בהכל",
+    "seeAll": "ראה הכל",
     "company": "חברת בנייה",
     "allRightsReserved": "כל הזכויות שמורות."
   },
   "nav": {
-    "home": "בית",
+    "home": "דף הבית",
     "ourProjects": "הפרויקטים שלנו",
     "partnerProjects": "פרויקטים מיזמים",
     "properties": "כל הנכסים",
@@ -40,50 +40,46 @@
     "phone": "טלפון",
     "email": "אימייל",
     "locationGeorgia": "בטומי, רחוב אדליה מס' 1",
-    "locationIsrael": "בית לחם - אל-דוחה",
+    "locationIsrael": "בית לחם - א-דוחה",
     "followUs": "עקבו אחרינו",
     "formSubmitted": "הודעתך נשלחה בהצלחה",
     "formError": "משהו השתבש, אנא נסה שוב",
-    "getInTouch": "צרו קשר"
+    "getInTouch": "נהיה בקשר"
   },
   "home": {
     "findYourDreamProperty": "מצא את נכס החלומות שלך",
-    "findMore": "גלה עוד",
+    "findMore": "למידע נוסף",
     "projectsFromDevelopers": "פרויקטים מיזמים",
     "apartmentsForSale": "דירות למכירה",
     "apartmentsForRent": "דירות להשכרה",
     "commercial": "מסחרי",
     "landForSale": "קרקע למכירה",
-    "featuredProperties": "נכסים נבחרים",
-    "seeAll": "צפה בהכל",
-    "priceOnRequest": "מחיר לפי בקשה",
+    "featuredProperties": "כל הנכסים",
+    "seeAll": "ראה הכל",
+    "priceOnRequest": "מחיר לפי דרישה",
     "rooms": "חדרים",
     "area": "שטח",
     "perSquareMeter": "/ מ\"ר",
     "hotSale": "מבצע חם",
     "fromPrice": "החל מ: ",
-    "projectsTitle": "הפרויקטים שלנו",
+    "projectsTitle": "פרויקטים מיזמים",
     "partnersTitle": "השותפים שלנו",
-    "featuresSectionTitleAlliance": "Alliance Centropolis",
-    "featuresSectionDescriptionAlliance": "פרויקט הדגל של קבוצת אליאנס בלב בטומי, המציב סטנדרטים חדשים של יוקרה עירונית.",
+    "featuresSectionTitleAlliance": "אליאנס סנטרופוליס",
+    "featuresSectionDescriptionAlliance": "פרויקט הדגל של קבוצת אליאנס בלב בטומי, המציב סטנדרטים חדשים ליוקרה עירונית.",
     "featuresSectionFeaturesAlliance": [
       "מרכז העיר",
-      "בית חכם",
+      "טכנולוגיית בית חכם",
       "מיקום פרימיום"
     ],
     "featuresSectionTitleEmaar": "Emaar Eagle Hills",
-    "featuresSectionDescriptionEmaar": "פיתוח חוף ברמה עולמית של Emaar, המשלב מגורי יוקרה עם נוף למרינה.",
-    "featuresSectionFeaturesEmaar": [
-      "נוף למרינה",
-      "מגורי יוקרה",
-      "שירותי נופש"
-    ],
-    "featuresSectionTitleAmbassadori": "Ambassadori Island",
-    "featuresSectionDescriptionAmbassadori": "פיתוח אי בלעדי המציע חיים ביוקרה ללא תחרות עם נוף פנורמי לים.",
+    "featuresSectionDescriptionEmaar": "פיתוח חוף ברמה עולמית על ידי Emaar, המשלב מגורי יוקרה עם נופים למרינה.",
+    "featuresSectionFeaturesEmaar": ["נוף למרינה", "מגורי יוקרה", "מתקני נופש"],
+    "featuresSectionTitleAmbassadori": "האי אמבסדורי",
+    "featuresSectionDescriptionAmbassadori": "פיתוח אי בלעדי המציע מגורי יוקרה ללא תחרות עם נוף פנורמי לים.",
     "featuresSectionFeaturesAmbassadori": [
-      "מיקום אי",
-      "מגורים על המים",
-      "סגנון חיים פרימיום"
+      "מיקום על אי",
+      "מגורים על קו המים",
+      "לייף סטייל פרימיום"
     ],
     "featuresPrev": "פרויקט קודם",
     "featuresNext": "פרויקט הבא",
@@ -98,16 +94,16 @@
     "years": "שנים",
     "loading": "טוען...",
     "interest": "ריבית",
-    "downPaymentLabel": "הון עצמי",
+    "downPaymentLabel": "מקדמה",
     "principal": "קרן",
     "monthlyPayment": "החזר חודשי",
     "interestRate": "ריבית שנתית",
-    "loanAmountAfterDown": "סכום ההלוואה (לאחר המקדמה)",
-    "totalPayment": "סך הכל לתשלום (כולל מקדמה)",
+    "loanAmountAfterDown": "סכום ההלוואה (לאחר מקדמה)",
+    "totalPayment": "סה\"כ תשלום (כולל מקדמה)",
     "requestLoan": "בקש הלוואה"
   },
   "auth": {
-    "admin": "אדמין",
+    "admin": "מנהל",
     "logout": "התנתק",
     "signingOut": "מתנתק..."
   },
@@ -123,18 +119,18 @@
     "translations": "תרגומים",
     "details": "פרטים",
     "noProjects": "אין פרויקטים זמינים",
-    "createSuccess": "הפרויקט נוצר בהצלחה",
-    "updateSuccess": "הפרויקט עודכן בהצלחה",
-    "deleteSuccess": "הפרויקט נמחק בהצלחה",
+    "createSuccess": "פרויקט נוצר בהצלחה",
+    "updateSuccess": "פרויקט עודכן בהצלחה",
+    "deleteSuccess": "פרויקט נמחק בהצלחה",
     "deleteConfirm": "האם אתה בטוח שברצונך למחוק פרויקט זה?",
     "totalProjects": "נמצאו {{count}} פרויקטים",
     "errorLoading": "שגיאה בטעינת פרויקטים",
-    "tryDifferentFilters": "נסה לשנות את הפילטרים"
+    "tryDifferentFilters": "נסה לשנות את המסננים"
   },
   "projectPage": {
     "loadingProject": "טוען פרטי פרויקט...",
-    "projectNotFound": "הפרויקט לא נמצא",
-    "projectNotFoundDescription": "הפרויקט שחיפשת לא קיים או הוסר.",
+    "projectNotFound": "פרויקט לא נמצא",
+    "projectNotFoundDescription": "הפרויקט שחיפשת אינו קיים או הוסר.",
     "backToProjects": "חזרה לפרויקטים",
     "noName": "ללא שם",
     "noLocation": "ללא מיקום",
@@ -143,10 +139,10 @@
     "floors": "קומות",
     "totalUnits": "סה\"כ יחידות",
     "showPhoneNumber": "הצג מספר טלפון",
-    "contactWhatsApp": "צור קשר ב-WhatsApp",
+    "contactWhatsApp": "צור קשר בוואטסאפ",
     "availableApartments": "דירות זמינות",
     "noApartments": "עדיין אין דירות זמינות לפרויקט זה.",
-    "notAvailable": "לא זמין"
+    "notAvailable": "לא רלוונטי"
   },
   "apartmentCard": {
     "roomApartment": "דירת {{count}} חדרים",
@@ -158,17 +154,17 @@
     "goToImage": "עבור לתמונה {{number}}"
   },
   "filters": {
-    "title": "פילטרים",
+    "title": "מסננים",
     "active": "פעיל",
-    "description": "התאם אישית את חיפוש הפרויקטים",
+    "description": "התאם את חיפוש הפרויקטים בעזרת המסננים",
     "location": "מיקום",
     "allLocations": "כל המיקומים",
     "partner": "יזם",
     "allPartners": "כל היזמים",
-    "priceFrom": "מחיר מינימלי",
+    "priceFrom": "מחיר מינימום",
     "any": "הכל",
-    "apply": "החל פילטרים",
-    "clear": "נקה פילטרים"
+    "apply": "החל מסננים",
+    "clear": "נקה הכל"
   },
   "partners": {
     "title": "שותפים",
@@ -177,9 +173,9 @@
     "deletePartner": "מחק שותף",
     "companyName": "שם החברה",
     "noPartners": "אין שותפים זמינים",
-    "createSuccess": "השותף נוצר בהצלחה",
-    "updateSuccess": "השותף עודכן בהצלחה",
-    "deleteSuccess": "השותף נמחק בהצלחה"
+    "createSuccess": "שותף נוסף בהצלחה",
+    "updateSuccess": "שותף עודכן בהצלחה",
+    "deleteSuccess": "שותף נמחק בהצלחה"
   },
   "translations": {
     "addTranslation": "הוסף תרגום",
@@ -187,14 +183,14 @@
     "deleteTranslation": "מחק תרגום",
     "language": "שפה",
     "existingTranslations": "תרגומים קיימים",
-    "noTranslations": "עדיין אין תרגומים",
+    "noTranslations": "אין תרגומים עדיין",
     "saveTranslation": "שמור תרגום"
   },
   "cover": {
     "exploreTitle": "דירות ופרויקטים חדשים",
     "exploreDescription": "מצא את הנכס המושלם במיקומים הטובים ביותר",
-    "sellTitle": "רוצים למכור דירה, בית או קרקע?",
-    "sellDescription": "פרסמו את הנכס ומצאו קונים במהירות",
+    "sellTitle": "רוצה למכור דירה, בית או קרקע?",
+    "sellDescription": "פרסם את הנכס שלך ומצא קונים במהירות",
     "addProperty": "הוסף נכס"
   },
   "search": {
@@ -220,5 +216,38 @@
     "residentialCount": "{{count}} דירות",
     "commercialCount": "{{count}} נכסים",
     "landsCount": "{{count}} קרקעות"
+  },
+  "properties": {
+    "title": "כל הנכסים",
+    "totalProperties": "נמצאו {{count}} נכסים",
+    "noProperties": "לא נמצאו נכסים",
+    "tryDifferentFilters": "נסה לשנות את המסננים",
+    "filters": {
+      "externalId": "מזהה נכס",
+      "region": "אזור",
+      "allRegions": "כל האזורים",
+      "propertyType": "סוג נכס",
+      "allTypes": "כל הסוגים",
+      "dealType": "סוג עסקה",
+      "allDeals": "כל העסקאות",
+      "sale": "למכירה",
+      "rent": "להשכרה",
+      "priceFrom": "מחיר מינימום",
+      "priceTo": "מחיר מקסימום",
+      "areaFrom": "שטח מינימום (מ\"ר)",
+      "areaTo": "שטח מקסימום (מ\"ר)",
+      "rooms": "חדרים",
+      "bedrooms": "חדרי שינה",
+      "any": "הכל",
+      "apply": "החל מסננים",
+      "clear": "נקה מסננים"
+    }
+  },
+  "meta": {
+    "properties": {
+      "title": "כל הנכסים | יונייטד בנייה ונדל\"ן",
+      "description": "חקור את כל הנכסים הזמינים בבטומי, גאורגיה. דירות, בתים, שטחים מסחריים למכירה או להשכרה.",
+      "keywords": "נדל\"ן בטומי, דירות למכירה, דירות להשכרה, בתים בבטומי, נדל\"ן מסחרי גאורגיה"
+    }
   }
 }

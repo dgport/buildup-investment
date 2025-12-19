@@ -59,7 +59,6 @@ export default function ProjectPage() {
 
   const apartments = apartmentsResponse?.data || []
 
-  // Prepare document meta data
   const projectName = project?.translation?.projectName || project?.projectName
   const priceText = project?.priceFrom
     ? `Starting from $${project.priceFrom.toLocaleString()}`

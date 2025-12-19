@@ -57,6 +57,7 @@ export default function Projects() {
       'meta.projects.keywords',
       'real estate projects Batumi, developer projects Georgia, new construction Batumi, residential complexes, investment property'
     ),
+    ogImage: '/Logo.png',
     lang: i18n.language,
   })
 
