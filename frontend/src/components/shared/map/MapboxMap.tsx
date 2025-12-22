@@ -3,8 +3,7 @@ import mapboxgl from 'mapbox-gl'
 import { Layers } from 'lucide-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
-mapboxgl.accessToken =
-  'pk.eyJ1IjoibGFkbzAwMSIsImEiOiJjbWdqZHlueWMwZm96MnNzaG0yeXhwamJ4In0.sOu9ZtnorGqdZGqKitmSYg'
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
 
 interface MapboxMapProps {
   latitude: number
@@ -22,7 +21,6 @@ interface MapboxMapProps {
 export default function MapboxMap({
   latitude,
   longitude,
-
   zoom = 16,
   enable3D = true,
   defaultView = '3d',
@@ -110,7 +108,7 @@ export default function MapboxMap({
       {enable3D && (
         <button
           onClick={() => setIs3D(prev => !prev)}
-          className="absolute top-4 right-4 bg-white/95 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium"
+          className="absolute top-4 right-4 bg-white/95 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium hover:bg-white transition-colors z-10"
         >
           <Layers size={16} />
           {is3D ? '2D View' : '3D View'}

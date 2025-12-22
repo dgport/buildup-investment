@@ -35,7 +35,6 @@ export function PropertyImagesManager({
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([])
   const [message, setMessage] = useState<Message | null>(null)
 
-  // Cleanup previews on unmount
   useEffect(() => {
     return () => {
       selectedFiles.forEach(f => URL.revokeObjectURL(f.preview))
@@ -258,7 +257,6 @@ function EmptyState() {
   )
 }
 
-// Image Gallery Component
 function ImageGallery({
   images,
   onDelete,
@@ -282,7 +280,6 @@ function ImageGallery({
   )
 }
 
-// Image Card Component
 function ImageCard({
   image,
   onDelete,

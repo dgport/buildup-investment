@@ -3,8 +3,7 @@ import mapboxgl from 'mapbox-gl'
 import { MapPin, Layers, X, Check } from 'lucide-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
-mapboxgl.accessToken =
-  'pk.eyJ1IjoibGFkbzAwMSIsImEiOiJjbWdqZHlueWMwZm96MnNzaG0yeXhwamJ4In0.sOu9ZtnorGqdZGqKitmSYg'
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
 
 const DEFAULT_CENTER: [number, number] = [41.6168, 41.6401]
 const DEFAULT_ZOOM = 16

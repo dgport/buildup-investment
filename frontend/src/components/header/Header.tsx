@@ -92,7 +92,7 @@ export default function Header() {
           to={ROUTES.HOME}
           className="flex items-center gap-5 shrink-0 group"
         >
-          <img src="./Logo.png" className="w-20 h-20" alt="Logo" />
+          <img src="/Logo.png" className="w-20 h-20" alt="Logo" />
           <div className="flex flex-col">
             <span className="text-xl font-bold text-gray-900 leading-tight">
               United
