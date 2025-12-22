@@ -1,0 +1,24 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Redirect bots to serverless function
+[[redirects]]
+  from = "/projects/*"
+  to = "/.netlify/functions/og?path=/projects/:splat"
+  status = 200
+  force = false
+  conditions = {User-Agent = ["bot", "crawler", "spider", "facebookexternalhit", "Facebot", "twitterbot", "LinkedInBot", "Slackbot", "WhatsApp", "TelegramBot"]}
+
+[[redirects]]
+  from = "/apartments/*"
+  to = "/.netlify/functions/og?path=/apartments/:splat"
+  status = 200
+  force = false
+  conditions = {User-Agent = ["bot", "crawler", "spider", "facebookexternalhit", "Facebot", "twitterbot", "LinkedInBot", "Slackbot", "WhatsApp", "TelegramBot"]}
+
+# SPA fallback for regular users
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
