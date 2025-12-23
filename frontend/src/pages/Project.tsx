@@ -89,7 +89,6 @@ export default function ProjectPage() {
       ? getImageUrl(project.gallery[0])
       : undefined
 
-  // Call useDocumentMeta at top level
   useDocumentMeta({
     title: documentTitle,
     description: documentDescription,
@@ -97,8 +96,6 @@ export default function ProjectPage() {
     ogImage: documentOgImage,
     lang: i18n.language,
   })
-
-  /* -------------------- CAROUSEL -------------------- */
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [thumbsRef, thumbsApi] = useEmblaCarousel({
@@ -141,8 +138,6 @@ export default function ProjectPage() {
       emblaApi.off('reInit', onSelect)
     }
   }, [emblaApi, thumbsApi])
-
-  /* -------------------- HELPERS -------------------- */
 
   const images = project?.gallery?.length
     ? project.gallery.map((img: string) => getImageUrl(img))

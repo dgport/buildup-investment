@@ -1,6 +1,6 @@
 import type React from 'react'
 import { useState } from 'react'
-import { X, Upload, Save, Trash2, MapPin } from 'lucide-react'
+import { X, Upload, Save, Trash2, MapPin, GripVertical } from 'lucide-react'
 import { useCreateProperty } from '@/lib/hooks/useProperties'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -123,6 +123,7 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showMap, setShowMap] = useState(false)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
   const createProperty = useCreateProperty()
 
@@ -150,6 +151,37 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
   const removeImage = (index: number) => {
     setImageFiles(prev => prev.filter((_, i) => i !== index))
     setImagePreviews(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Drag and drop handlers
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === index) return
+
+    const newImageFiles = [...imageFiles]
+    const newImagePreviews = [...imagePreviews]
+
+    // Swap the dragged item with the item being dragged over
+    const draggedFile = newImageFiles[draggedIndex]
+    const draggedPreview = newImagePreviews[draggedIndex]
+
+    newImageFiles.splice(draggedIndex, 1)
+    newImagePreviews.splice(draggedIndex, 1)
+
+    newImageFiles.splice(index, 0, draggedFile)
+    newImagePreviews.splice(index, 0, draggedPreview)
+
+    setImageFiles(newImageFiles)
+    setImagePreviews(newImagePreviews)
+    setDraggedIndex(index)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
   }
 
   const validateForm = () => {
@@ -611,25 +643,50 @@ export function CreateProperty({ onBack, onSuccess }: CreatePropertyProps) {
             </div>
 
             {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={preview || '/placeholder.svg'}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-border"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeImage(index)}
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  💡 Drag images to reorder them. First image will be the main
+                  photo.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div
+                      key={index}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={e => handleDragOver(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`relative group cursor-move ${
+                        draggedIndex === index ? 'opacity-50' : ''
+                      }`}
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                      <div className="relative">
+                        <img
+                          src={preview || '/placeholder.svg'}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border border-border"
+                        />
+                        {index === 0 && (
+                          <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                            Main
+                          </div>
+                        )}
+                        <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                          <GripVertical className="w-3 h-3" />#{index + 1}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImage(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </Section>

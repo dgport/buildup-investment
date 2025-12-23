@@ -1,4 +1,11 @@
-import { Trash2, ImageIcon, Upload, CheckCircle, XCircle } from 'lucide-react'
+import {
+  Trash2,
+  ImageIcon,
+  Upload,
+  CheckCircle,
+  XCircle,
+  GripVertical,
+} from 'lucide-react'
 import {
   useProperty,
   useDeletePropertyImage,
@@ -11,6 +18,7 @@ import { useState, useRef, useEffect } from 'react'
 
 interface PropertyImagesManagerProps {
   propertyId: string
+  onSuccess?: () => void
 }
 
 type MessageType = 'success' | 'error'
@@ -27,6 +35,7 @@ interface FileWithPreview {
 
 export function PropertyImagesManager({
   propertyId,
+  onSuccess,
 }: PropertyImagesManagerProps) {
   const { data: property, isLoading, refetch } = useProperty(propertyId)
   const deleteImage = useDeletePropertyImage()
@@ -34,6 +43,7 @@ export function PropertyImagesManager({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([])
   const [message, setMessage] = useState<Message | null>(null)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
   useEffect(() => {
     return () => {
@@ -53,6 +63,7 @@ export function PropertyImagesManager({
       await deleteImage.mutateAsync({ propertyId, imageId })
       showMessage('success', 'Image deleted successfully')
       await refetch()
+      onSuccess?.()
     } catch (error) {
       console.error('Error deleting image:', error)
       showMessage('error', 'Failed to delete image. Please try again.')
@@ -67,13 +78,42 @@ export function PropertyImagesManager({
       file,
       preview: URL.createObjectURL(file),
     }))
-    setSelectedFiles(filesWithPreview)
+    setSelectedFiles(prev => [...prev, ...filesWithPreview])
   }
 
   const clearSelection = () => {
     selectedFiles.forEach(f => URL.revokeObjectURL(f.preview))
     setSelectedFiles([])
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeSelectedFile = (index: number) => {
+    const file = selectedFiles[index]
+    URL.revokeObjectURL(file.preview)
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Drag handlers for selected files
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === index) return
+
+    const newFiles = [...selectedFiles]
+    const draggedFile = newFiles[draggedIndex]
+
+    newFiles.splice(draggedIndex, 1)
+    newFiles.splice(index, 0, draggedFile)
+
+    setSelectedFiles(newFiles)
+    setDraggedIndex(index)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
   }
 
   const handleUpload = async () => {
@@ -94,6 +134,7 @@ export function PropertyImagesManager({
       )
       clearSelection()
       await refetch()
+      onSuccess?.()
     } catch (error) {
       console.error('Error uploading images:', error)
       const errorMsg =
@@ -137,7 +178,14 @@ export function PropertyImagesManager({
       />
 
       {selectedFiles.length > 0 && (
-        <SelectedFilesPreview files={selectedFiles} />
+        <SelectedFilesPreview
+          files={selectedFiles}
+          onRemove={removeSelectedFile}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          draggedIndex={draggedIndex}
+        />
       )}
 
       {images.length === 0 ? (
@@ -216,21 +264,68 @@ function Header({
 }
 
 // Selected Files Preview Component
-function SelectedFilesPreview({ files }: { files: FileWithPreview[] }) {
+function SelectedFilesPreview({
+  files,
+  onRemove,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  draggedIndex,
+}: {
+  files: FileWithPreview[]
+  onRemove: (index: number) => void
+  onDragStart: (index: number) => void
+  onDragOver: (e: React.DragEvent, index: number) => void
+  onDragEnd: () => void
+  draggedIndex: number | null
+}) {
   return (
     <Card className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
       <CardContent className="pt-4">
-        <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-          {files.length} file(s) selected
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+            {files.length} file(s) selected
+          </p>
+          <p className="text-xs text-blue-700 dark:text-blue-300">
+            💡 Drag to reorder
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {files.map((f, index) => (
-            <div key={index} className="relative">
-              <img
-                src={f.preview}
-                alt={f.file.name}
-                className="w-full h-24 object-cover rounded"
-              />
+            <div
+              key={index}
+              draggable
+              onDragStart={() => onDragStart(index)}
+              onDragOver={e => onDragOver(e, index)}
+              onDragEnd={onDragEnd}
+              className={`relative group cursor-move ${
+                draggedIndex === index ? 'opacity-50' : ''
+              }`}
+            >
+              <div className="relative">
+                <img
+                  src={f.preview}
+                  alt={f.file.name}
+                  className="w-full h-24 object-cover rounded border-2 border-blue-300 dark:border-blue-700"
+                />
+                {index === 0 && (
+                  <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
+                    Main
+                  </div>
+                )}
+                <div className="absolute bottom-1 left-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                  <GripVertical className="w-3 h-3" />#{index + 1}
+                </div>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => onRemove(index)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
               <p className="text-xs text-center mt-1 truncate text-blue-900 dark:text-blue-100">
                 {f.file.name}
               </p>
@@ -297,6 +392,11 @@ function ImageCard({
           alt={`Property image ${image.order + 1}`}
           className="w-full h-full object-cover"
         />
+        {image.order === 0 && (
+          <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+            Main Photo
+          </div>
+        )}
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <Button
             variant="destructive"
@@ -310,7 +410,7 @@ function ImageCard({
       </div>
       <CardContent className="p-2">
         <p className="text-xs text-muted-foreground text-center">
-          Order: {image.order + 1}
+          Position: {image.order + 1}
         </p>
       </CardContent>
     </Card>
