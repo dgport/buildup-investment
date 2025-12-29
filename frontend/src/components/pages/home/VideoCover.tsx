@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
 
 const switchingTexts = [
   'Premium Properties',
@@ -43,7 +42,6 @@ export default function VideoCover() {
 
   return (
     <div className="relative w-full h-[65vh] sm:h-screen overflow-hidden">
-      {/* Full screen video */}
       <video
         ref={videoRef}
         autoPlay
@@ -122,7 +120,6 @@ export default function VideoCover() {
         </svg>
       </div>
 
-      {/* Side decorative elements - amber accents */}
       <div className="absolute left-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4">
         <div className="w-px h-24 bg-gradient-to-b from-transparent via-amber-400/50 to-transparent" />
         <span className="text-amber-400/60 text-xs tracking-widest rotate-[-90deg] origin-center whitespace-nowrap">

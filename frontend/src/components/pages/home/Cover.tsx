@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 export default function Cover() {
   const { t } = useTranslation()
-  const { data: slidesResponse, isLoading, isError } = useSlides()
+  const { data: slidesResponse, isError } = useSlides()
   const slides = slidesResponse?.data || []
 
   const [currentSlide, setCurrentSlide] = useState(0)

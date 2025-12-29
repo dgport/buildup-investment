@@ -51,34 +51,13 @@ export default function PropertyDetail() {
 
   const { data: property, isLoading, error } = useProperty(id!, i18n.language)
 
-  const priceText = property?.price
-    ? `$${property.price.toLocaleString()}`
-    : 'Price on request'
-
-  const propertyType = formatEnumValue(property?.propertyType || null)
-  const roomsText = property?.rooms
-    ? `${property.rooms} room${property.rooms > 1 ? 's' : ''}`
-    : ''
-  const areaText = property?.totalArea ? `${property.totalArea}m²` : ''
-
   const documentTitle = property?.translation?.title
     ? `${property.translation.title} | Buildup Investment`
-    : t(
-        'meta.property.title',
-        `Property ${property?.externalId || property?.id || ''} | Buildup Investment`
-      )
+    : 'Property | Buildup Investment'
 
   const documentDescription = property?.translation?.description
     ? property.translation.description.substring(0, 160)
-    : t(
-        'meta.property.description',
-        `${propertyType} in ${property?.regionName || 'Batumi'}. ${roomsText}${roomsText && areaText ? ', ' : ''}${areaText}. ${priceText}. Contact us for more information.`
-      ).substring(0, 160)
-
-  const documentKeywords = t(
-    'meta.property.keywords',
-    `property ${property?.externalId || ''}, ${propertyType} ${property?.regionName || ''}, ${roomsText} apartment, real estate ${property?.regionName || ''}, ${property?.regionName || ''} property for sale`
-  )
+    : `Property in ${property?.regionName || 'Batumi'}`
 
   const documentOgImage = property?.galleryImages?.[0]?.imageUrl
     ? getImageUrl(property.galleryImages[0].imageUrl)
@@ -87,7 +66,7 @@ export default function PropertyDetail() {
   useDocumentMeta({
     title: documentTitle,
     description: documentDescription,
-    keywords: documentKeywords,
+    keywords: `property ${property?.externalId || ''}, ${property?.regionName || ''}`,
     ogImage: documentOgImage,
     lang: i18n.language,
   })
