@@ -41,7 +41,7 @@ export default function VideoCover() {
   }, [])
 
   return (
-    <div className="relative w-full h-[65vh] sm:h-screen overflow-hidden">
+    <div className="relative w-full h-[60vh] pt-20 sm:h-screen overflow-hidden">
       <video
         ref={videoRef}
         autoPlay
