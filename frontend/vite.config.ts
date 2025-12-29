@@ -29,8 +29,8 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     allowedHosts: [
-      'unitedcompany.ge',
-      'www.unitedcompany.ge',
+      'buildup.ge',
+      'www.buildup.ge',
       'localhost',
       '127.0.0.1',
       '167.172.102.45',

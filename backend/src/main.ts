@@ -31,8 +31,8 @@ async function bootstrap() {
     origin: [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://unitedcompany.ge',
-      'https://api.unitedcompany.ge',
+      'https://buildup.ge',
+      'https://api.buildup.ge',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
