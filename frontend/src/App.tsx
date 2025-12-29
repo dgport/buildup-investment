@@ -10,7 +10,6 @@ import { ErrorFallback } from './components/shared/errors/ErrorFallback'
 import Header from './components/header/Header'
 import { WhatsAppFloat } from './components/shared/whatsapp/WhatsappFloat'
 import { CurrencyProvider } from './lib/context/CurrencyContext'
-import { Tawk } from './components/shared/tawk/Tawk'
 
 export const App = () => {
   useEffect(() => {
@@ -37,7 +36,6 @@ export const App = () => {
             <Header />
             <AppRoutes />
             <WhatsAppFloat />
-            <Tawk />
             <Footer />
           </QueryProvider>
         </CurrencyProvider>

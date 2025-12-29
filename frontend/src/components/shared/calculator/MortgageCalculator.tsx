@@ -1,18 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useMortgageRates } from '@/lib/hooks/useCalculator'
-import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
-import { useCurrency } from '@/lib/context/CurrencyContext'
- 
+import { DollarSign, Home } from 'lucide-react'
 
 interface MortgageResult {
   loanAmount: number
   monthlyPayment: number
   totalPayment: number
-  totalInterest: number
-  interestRate: number
   months: number
   downPayment: number
   price: number
@@ -22,23 +16,21 @@ interface MortgageCalculatorProps {
   initialPrice?: number | null
 }
 
-const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
-  const { t } = useTranslation()
-  const { currency, setCurrency, exchangeRate } = useCurrency()
+const MortgageCalculator = ({
+  initialPrice = null,
+}: MortgageCalculatorProps) => {
+  const [currency, setCurrency] = useState<'GEL' | 'USD'>('GEL')
+  const exchangeRate = 2.7
 
-  // Price is always stored in GEL internally
   const defaultPriceGEL = initialPrice || 100000
   const [price, setPrice] = useState<number>(defaultPriceGEL)
   const [downPayment, setDownPayment] = useState<number>(defaultPriceGEL * 0.1)
   const [months, setMonths] = useState<number>(12)
   const [result, setResult] = useState<MortgageResult | null>(null)
 
-  const { data: rates, isLoading: ratesLoading } = useMortgageRates()
-
-  const minYear = rates?.[0]?.yearFrom || 1
-  const maxYear = rates?.[rates.length - 1]?.yearTo || 30
-  const minMonths = minYear * 12
-  const maxMonths = maxYear * 12
+  // Bounds for the calculator
+  const minMonths = 12
+  const maxMonths = 360 // 30 years
   const minDownPayment = price * 0.1
 
   const isFixedPrice = initialPrice !== null && initialPrice !== undefined
@@ -58,8 +50,6 @@ const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
         loanAmount: 0,
         monthlyPayment: 0,
         totalPayment: 0,
-        totalInterest: 0,
-        interestRate: 0,
         months,
         downPayment,
         price,
@@ -67,41 +57,21 @@ const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
       return
     }
 
-    const years = Math.floor(months / 12)
-    const rate = rates?.find(r => r.yearFrom <= years && r.yearTo >= years)
-
-    if (!rate) {
-      setResult(null)
-      return
-    }
-
-    const monthlyRate = rate.interestRate / 12 / 100
-    const denominator = Math.pow(1 + monthlyRate, months) - 1
-
-    let monthlyPayment: number
-    if (denominator === 0) {
-      monthlyPayment = loanAmount / months
-    } else {
-      monthlyPayment =
-        (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, months))) /
-        denominator
-    }
-
-    const totalPayment = monthlyPayment * months
-    const totalInterest = totalPayment - loanAmount
+    // Calculating without interest (Principal only)
+    const monthlyPayment = loanAmount / months
+    const totalPayment = loanAmount
 
     setResult({
       loanAmount: Math.round(loanAmount * 100) / 100,
       monthlyPayment: Math.round(monthlyPayment * 100) / 100,
       totalPayment: Math.round(totalPayment * 100) / 100,
-      totalInterest: Math.round(totalInterest * 100) / 100,
-      interestRate: rate.interestRate,
       months,
       downPayment,
       price,
     })
   }
 
+  // Ensure down payment doesn't fall below 10% when price changes
   useEffect(() => {
     if (downPayment < minDownPayment) {
       setDownPayment(minDownPayment)
@@ -109,16 +79,8 @@ const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
   }, [price, minDownPayment])
 
   useEffect(() => {
-    if (rates && rates.length > 0) {
-      calculateMortgage()
-    }
-  }, [price, downPayment, months, rates])
-
-  useEffect(() => {
-    if (rates && rates.length > 0 && !result) {
-      calculateMortgage()
-    }
-  }, [rates])
+    calculateMortgage()
+  }, [price, downPayment, months])
 
   const years = Math.floor(months / 12)
 
@@ -138,37 +100,99 @@ const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
     return `$${formatCurrency(valueInUSD)}`
   }
 
-  const downPaymentPercent = ((downPayment / price) * 100).toFixed(0)
-  const interestPercent = result
-    ? ((result.totalInterest / result.totalPayment) * 100).toFixed(0)
-    : 0
-  const principalPercent = result
-    ? ((result.loanAmount / result.totalPayment) * 100).toFixed(0)
-    : 0
-
-  if (ratesLoading) {
-    return (
-      <div className="min-h-[400px] flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <div className="text-gray-600">{t('calculator.loading')}</div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-auto px-3 md:px-4 py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-3 md:gap-4 items-start">
-          <div className="bg-white rounded-md p-4 md:p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg md:text-xl font-bold text-gray-900">
-                {t('calculator.title')}
+    <div className="  bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50 px-4 py-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-4 items-stretch">
+          {/* Input Section */}
+          <div className="bg-gradient-to-br from-teal-900/90 to-teal-950/90 backdrop-blur-sm rounded-2xl p-6 border border-amber-400/20 shadow-2xl flex flex-col">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-amber-400 flex items-center gap-2">
+                <Home className="w-5 h-5" />
+                Loan Details
               </h2>
-              <div className="flex items-center gap-2 bg-white rounded-full px-2.5 py-1.5 shadow-sm">
+            </div>
+
+            <div className="space-y-6">
+              {/* Property Price */}
+              <div>
+                <div className="flex justify-between items-baseline mb-3">
+                  <label className="text-sm font-semibold text-amber-100/80 uppercase tracking-wider">
+                    Property Price
+                    {isFixedPrice && (
+                      <span className="ml-2 text-xs text-amber-400 bg-amber-400/10 px-2 py-1 rounded-full border border-amber-400/30">
+                        Fixed
+                      </span>
+                    )}
+                  </label>
+                  <div className="text-xl font-bold text-amber-400">
+                    {getDisplayPrice(price)}
+                  </div>
+                </div>
+                {!isFixedPrice && (
+                  <Slider
+                    min={10000}
+                    max={1000000}
+                    step={1000}
+                    value={[price]}
+                    onValueChange={value => setPrice(value[0])}
+                  />
+                )}
+              </div>
+
+              {/* Down Payment */}
+              <div>
+                <div className="flex justify-between items-baseline mb-3">
+                  <label className="text-sm font-semibold text-amber-100/80 uppercase tracking-wider">
+                    Down Payment
+                  </label>
+                  <div className="text-xl font-bold text-amber-400">
+                    {getDisplayPrice(downPayment)}
+                  </div>
+                </div>
+                <Slider
+                  min={minDownPayment}
+                  max={price}
+                  step={1000}
+                  value={[downPayment]}
+                  onValueChange={value => setDownPayment(value[0])}
+                  className="[&_[role=slider]]:bg-amber-400 [&_[role=slider]]:border-amber-400 [&_.bg-primary]:bg-amber-400"
+                />
+                <div className="mt-1 text-xs text-amber-100/60">
+                  Minimum: {getDisplayPrice(minDownPayment)} (10%)
+                </div>
+              </div>
+
+              {/* Loan Term */}
+              <div>
+                <div className="flex justify-between items-baseline mb-3">
+                  <label className="text-sm font-semibold text-amber-100/80 uppercase tracking-wider">
+                    Loan Term
+                  </label>
+                  <div className="text-xl font-bold text-amber-400">
+                    {years}{' '}
+                    <span className="text-base text-amber-100/60">years</span>
+                  </div>
+                </div>
+                <Slider
+                  min={minMonths}
+                  max={maxMonths}
+                  step={12}
+                  value={[months]}
+                  onValueChange={value => setMonths(value[0])}
+                  className="[&_[role=slider]]:bg-amber-400 [&_[role=slider]]:border-amber-400 [&_.bg-primary]:bg-amber-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Results Section */}
+          <div className="bg-gradient-to-br from-teal-900/90 to-teal-950/90 backdrop-blur-sm rounded-2xl p-6 border border-amber-400/20 shadow-2xl flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-amber-400">Results</h2>
+              <div className="flex items-center gap-3 bg-teal-950/50 rounded-full px-4 py-2 border border-amber-400/30">
                 <span
-                  className={`text-xs font-medium ${currency === 'USD' ? 'text-blue-900' : 'text-gray-400'}`}
+                  className={`text-xs font-semibold transition-colors ${currency === 'USD' ? 'text-amber-400' : 'text-amber-100/40'}`}
                 >
                   USD
                 </span>
@@ -177,160 +201,82 @@ const MortgageCalculator = ({ initialPrice }: MortgageCalculatorProps) => {
                   onCheckedChange={checked =>
                     setCurrency(checked ? 'GEL' : 'USD')
                   }
+                  className="data-[state=checked]:bg-amber-400"
                 />
                 <span
-                  className={`text-xs font-medium ${currency === 'GEL' ? 'text-blue-900' : 'text-gray-400'}`}
+                  className={`text-xs font-semibold transition-colors ${currency === 'GEL' ? 'text-amber-400' : 'text-amber-100/40'}`}
                 >
                   GEL
                 </span>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-baseline mb-2">
-                  <label className="text-xs md:text-sm font-medium text-gray-600">
-                    {t('calculator.propertyPrice')}
-                    {isFixedPrice && (
-                      <span className="ml-2 text-xs text-blue-600">
-                        (Fixed)
-                      </span>
-                    )}
-                  </label>
-                  <div className="text-base md:text-lg font-bold text-gray-900">
-                    {getDisplayPrice(price)}
-                  </div>
-                </div>
-                {!isFixedPrice && (
-                  <div className="py-1">
-                    <Slider
-                      min={10000}
-                      max={1000000}
-                      step={1000}
-                      value={[price]}
-                      onValueChange={value => setPrice(value[0])}
-                      className="w-full"
-                    />
-                  </div>
-                )}
+            {/* Visual Breakdown Bar */}
+            <div className="mb-4">
+              <div className="flex items-center h-4 rounded-full overflow-hidden shadow-inner bg-teal-950/50 border border-amber-400/20">
+                <div
+                  className="bg-gradient-to-r from-amber-400 to-amber-500 h-full transition-all duration-500"
+                  style={{
+                    width: `${((downPayment / price) * 100).toFixed(0)}%`,
+                  }}
+                />
+                <div
+                  className="bg-gradient-to-r from-teal-400 to-teal-500 h-full transition-all duration-500"
+                  style={{
+                    width: `${(((price - downPayment) / price) * 100).toFixed(0)}%`,
+                  }}
+                />
               </div>
-              <div>
-                <div className="flex justify-between items-baseline mb-2">
-                  <label className="text-xs md:text-sm font-medium text-gray-600">
-                    {t('calculator.downPayment')} ({downPaymentPercent}%)
-                  </label>
-                  <div className="text-base md:text-lg font-bold text-gray-900">
-                    {getDisplayPrice(downPayment)}
-                  </div>
+              <div className="flex items-center gap-4 mt-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg"></span>
+                  <span className="text-amber-100/70">Down Payment</span>
                 </div>
-                <div className="py-1">
-                  <Slider
-                    min={minDownPayment}
-                    max={price}
-                    step={1000}
-                    value={[downPayment]}
-                    onValueChange={value => setDownPayment(value[0])}
-                    className="w-full"
-                  />
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-gradient-to-r from-teal-400 to-teal-500 shadow-lg"></span>
+                  <span className="text-amber-100/70">Loan Amount</span>
                 </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-baseline mb-2">
-                  <label className="text-xs md:text-sm font-medium text-gray-600">
-                    {t('calculator.loanTerm')}
-                  </label>
-                  <div className="text-base md:text-lg font-bold text-gray-900">
-                    {years}{' '}
-                    <span className="text-sm text-gray-400">
-                      {t('calculator.year')}
-                    </span>
-                  </div>
-                </div>
-                <div className="py-1">
-                  <Slider
-                    min={minMonths}
-                    max={maxMonths}
-                    step={12}
-                    value={[months]}
-                    onValueChange={value => setMonths(value[0])}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-md p-4 md:p-5">
-            <div className="flex items-center h-2 md:h-3 rounded-full overflow-hidden mb-3">
-              <div
-                className="bg-red-400 h-full"
-                style={{ width: `${interestPercent}%` }}
-              />
-              <div
-                className="bg-yellow-300 h-full"
-                style={{ width: `${downPaymentPercent}%` }}
-              />
-              <div
-                className="bg-blue-400 h-full"
-                style={{ width: `${principalPercent}%` }}
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs mb-4">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-                <span className="text-gray-600">
-                  {t('calculator.interest')}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-300"></span>
-                <span className="text-gray-600">
-                  {t('calculator.downPaymentLabel')}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                <span className="text-gray-600">
-                  {t('calculator.principal')}
-                </span>
               </div>
             </div>
 
             {result && (
               <>
-                <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg p-3 md:p-4 mb-3 border border-cyan-100">
-                  <div className="text-xs md:text-sm text-gray-600 mb-1">
-                    {t('calculator.monthlyPayment')}
+                <div className="bg-gradient-to-br from-amber-400/20 to-amber-500/10 rounded-2xl p-3 mb-4 border border-amber-400/30 shadow-lg">
+                  <div className="flex items-center gap-2 text-sm text-amber-100/70 mb-1">
+                    <DollarSign className="w-4 h-4" />
+                    Monthly Payment
                   </div>
-                  <div className="text-xl md:text-2xl font-bold text-gray-900">
+                  <div className="text-xl font-bold text-amber-400">
                     {getDisplayPrice(result.monthlyPayment)}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {t('calculator.interestRate')}: {result.interestRate}%
-                  </div>
                 </div>
-                <div className="space-y-2.5 mb-4">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                    <div className="text-xs md:text-sm text-gray-600">
-                      {t('calculator.loanAmountAfterDown')}
-                    </div>
-                    <div className="text-sm md:text-base font-bold text-gray-900">
+
+                <div className="space-y-3 mb-4 flex-grow">
+                  <div className="flex justify-between items-center p-3 bg-teal-950/50 rounded-xl border border-amber-400/10">
+                    <div className="text-sm text-amber-100/70">Loan Amount</div>
+                    <div className="text-base font-bold text-amber-100">
                       {getDisplayPrice(result.loanAmount)}
                     </div>
                   </div>
-                  <div className="flex justify-between items-center py-2">
-                    <div className="text-xs md:text-sm text-gray-600">
-                      {t('calculator.totalPayment')}
+
+                  <div className="flex justify-between items-center p-3 bg-teal-950/50 rounded-xl border border-amber-400/10">
+                    <div className="text-sm text-amber-100/70">
+                      Down Payment
                     </div>
-                    <div className="text-sm md:text-base font-bold text-gray-900">
-                      {getDisplayPrice(
-                        result.totalPayment + result.downPayment
-                      )}
+                    <div className="text-base font-bold text-amber-100">
+                      {getDisplayPrice(result.downPayment)}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center p-3 bg-teal-950/50 rounded-xl border border-amber-400/10">
+                    <div className="text-sm text-amber-100/70">
+                      Total to Repay
+                    </div>
+                    <div className="text-base font-bold text-amber-100">
+                      {getDisplayPrice(result.totalPayment)}
                     </div>
                   </div>
                 </div>
-                <Button className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-medium py-2.5 md:py-3 rounded-md transition-colors text-sm md:text-base">
-                  {t('calculator.requestLoan')}
-                </Button>
               </>
             )}
           </div>

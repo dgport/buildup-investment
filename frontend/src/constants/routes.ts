@@ -8,10 +8,4 @@ export const ROUTES = {
   PROPERTIES: '/properties',
   PROPERTY: '/properties/:id',
   PARTNERS: '/partners',
-  PROJECT: '/projects/:id',
-  PROJECTS: '/projects',
 } as const
-
-
-
- 

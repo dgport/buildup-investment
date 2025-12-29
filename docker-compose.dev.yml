@@ -1,12 +1,16 @@
+version: "3.8"
+
+name: buildup-dev
+
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: real_estate_postgres_dev
+    container_name: buildup_postgres_dev
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: realestate
+      POSTGRES_DB: buildup
     ports:
       - "5432:5432"
     volumes:
@@ -19,20 +23,33 @@ services:
 
   backend:
     build: ./backend
-    container_name: real_estate_backend_dev
+    container_name: buildup_backend_dev
     restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
       - ./backend/.env
     volumes:
-      - ./backend:/app # 🔥 live code
+      - ./backend:/app
       - /app/node_modules
       - uploads_data:/app/public/uploads
     depends_on:
       postgres:
         condition: service_healthy
-    command: npm run start:dev # watch mode only
+    command: sh -c "npx prisma migrate deploy && npm run start:dev"
+
+  frontend:
+    build: ./frontend
+    container_name: buildup_frontend_dev
+    restart: unless-stopped
+    ports:
+      - "5173:5173" # Vite default port, adjust if needed
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev
 
 volumes:
   postgres_data:

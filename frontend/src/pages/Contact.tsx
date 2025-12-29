@@ -1,32 +1,10 @@
-import type React from 'react'
 import { useState } from 'react'
-import { Facebook, Mail, Phone, MapPin, Send } from 'lucide-react'
+import { Facebook, Mail, Phone, MapPin, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useTranslation } from 'react-i18next'
-import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 
 const Contact = () => {
-  const { t, i18n } = useTranslation()
-
-  useDocumentMeta({
-    title: t(
-      'meta.contact.title',
-      'Contact Us | United Construction and Real Estate'
-    ),
-    description: t(
-      'meta.contact.description',
-      'Get in touch with United Construction and Real Estate. Contact us in Georgia or Israel for property inquiries, consultations, and real estate services.'
-    ),
-    keywords: t(
-      'meta.contact.keywords',
-      'contact United Construction, real estate Georgia contact, property inquiry Batumi, real estate consultation'
-    ),
-    ogImage: '/Logo.png',
-    lang: i18n.language,
-  })
-
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -45,233 +23,175 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setResult('Sending...')
-
-    const formDataToSend = new FormData()
-    formDataToSend.append(
-      'access_key',
-      import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || ''
-    )
-    formDataToSend.append('name', formData.fullName)
-    formDataToSend.append('email', formData.email)
-    formDataToSend.append('phone', formData.phone)
-    formDataToSend.append('message', formData.message)
-
-    try {
-      const response = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        body: formDataToSend,
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setResult('Message sent successfully!')
-        setFormData({
-          fullName: '',
-          email: '',
-          phone: '',
-          message: '',
-        })
-        setTimeout(() => setResult(''), 5000)
-      } else {
-        setResult('Failed to send message. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      setResult('An error occurred. Please try again.')
-    }
+    setTimeout(() => {
+      setResult('Message sent successfully!')
+      setFormData({ fullName: '', email: '', phone: '', message: '' })
+      setTimeout(() => setResult(''), 5000)
+    }, 1500)
   }
 
   return (
-    <div className="min-h-screen relative flex justify-center items-center w-full">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070)',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/55 via-gray-900/60 to-slate-800/65"></div>
-      </div>
+    <section className="min-h-screen bg-stone-50 py-24 px-6 md:px-12 lg:px-20">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-16 max-w-2xl">
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-teal-950 mb-6">
+            Let's Discuss Your Investment Goals
+          </h1>
+        </div>
+        <div className="grid lg:grid-cols-5 gap-12 lg:gap-16">
+          <div className="lg:col-span-3 order-2 lg:order-1">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-teal-900 mb-2">
+                  Full Name
+                </label>
+                <Input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  required
+                  placeholder="Your name"
+                />
+              </div>
 
-      <div className="relative z-10 px-8 md:px-12 lg:px-16 py-10 w-full xl:max-w-7xl">
-        <div className="grid md:grid-cols-5 gap-8 lg:gap-12 md:items-start">
-          <div className="md:col-span-2 space-y-6 flex flex-col">
-            <div className="flex flex-col gap-6 flex-1">
-              {[
-                {
-                  location: t('contact.locationGeorgia'),
-                  phone: '+995 595 80 47 95',
-                  email: 'unitedcompany2026@gmail.com',
-                },
-                {
-                  location: t('contact.locationIsrael'),
-                  phone: '+972 52-866-2380',
-                  email: 'unitedcompany2026@gmail.com',
-                },
-              ].map((info, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white/15 backdrop-blur-lg border border-white/25 rounded-2xl p-6 space-y-6 flex-1 shadow-xl"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-amber-500/20 backdrop-blur-sm rounded-lg flex items-center justify-center shrink-0 border border-amber-400/30">
-                      <MapPin className="w-6 h-6 text-amber-300" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white mb-1">
-                        {t('contact.address')}
-                      </h3>
-                      <a
-                        href="https://maps.app.goo.gl/hWmyEjYsR3uDBTRi7"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-gray-300 leading-relaxed hover:text-amber-300 transition-colors cursor-pointer block"
-                      >
-                        {info.location}
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-emerald-500/20 backdrop-blur-sm rounded-lg flex items-center justify-center shrink-0 border border-emerald-400/30">
-                      <Phone className="w-6 h-6 text-emerald-300" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white mb-1">
-                        {t('contact.phone')}
-                      </h3>
-                      <a
-                        href={`tel:${info.phone}`}
-                        className="text-sm text-gray-300 hover:text-emerald-300 transition-colors cursor-pointer block"
-                      >
-                        {info.phone}
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-purple-500/20 backdrop-blur-sm rounded-lg flex items-center justify-center shrink-0 border border-purple-400/30">
-                      <Mail className="w-6 h-6 text-purple-300" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white mb-1">
-                        {t('contact.email')}
-                      </h3>
-                      <a
-                        href={`mailto:${info.email}`}
-                        className="text-sm text-gray-300 hover:text-purple-300 transition-colors cursor-pointer block"
-                      >
-                        {info.email}
-                      </a>
-                    </div>
-                  </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-teal-900 mb-2">
+                    Email Address
+                  </label>
+                  <Input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="you@example.com"
+                  />
                 </div>
-              ))}
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-teal-900 mb-2">
+                    Phone Number
+                  </label>
+                  <Input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-white border border-stone-200 rounded-lg focus:border-teal-600 focus:ring-1 focus:ring-teal-600 transition-colors text-stone-800 placeholder:text-stone-400"
+                    placeholder="+995 (000) 00-00-00"
+                  />
+                </div>
+              </div>
 
-            <div className="pt-2">
-              <h3 className="font-semibold text-white mb-4">
-                {t('contact.followUs')}
+              <div>
+                <label className="block text-sm font-medium text-teal-900 mb-2">
+                  Message
+                </label>
+                <Textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows={6}
+                  required
+                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-lg focus:border-teal-600 focus:ring-1 focus:ring-teal-600 transition-colors text-stone-800 placeholder:text-stone-400 resize-none"
+                  placeholder="Tell us about your investment interests..."
+                />
+              </div>
+
+              <Button type="submit">
+                Send Message
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+
+              {result && (
+                <p
+                  className={`text-sm font-medium ${
+                    result.includes('success')
+                      ? 'text-teal-700'
+                      : result.includes('Sending')
+                        ? 'text-stone-500'
+                        : 'text-red-600'
+                  }`}
+                >
+                  {result}
+                </p>
+              )}
+            </form>
+          </div>
+          <div className="lg:col-span-2 order-1 lg:order-2 space-y-8">
+            <div className="bg-white border border-amber-200/50 rounded-2xl p-8 space-y-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center shrink-0">
+                  <MapPin className="w-5 h-5 text-amber-700" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-teal-950 mb-1">Location</h3>
+                  <a
+                    href="https://maps.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-stone-600 hover:text-teal-700 transition-colors"
+                  >
+                    Batumi, Georgia
+                    <br />
+                    Investment & Development Hub
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-teal-200 rounded-full flex items-center justify-center shrink-0">
+                  <Phone className="w-5 h-5 text-teal-700" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-teal-950 mb-1">Phone</h3>
+                  <a
+                    href="tel:+995000000000"
+                    className="text-sm text-stone-600 hover:text-teal-700 transition-colors"
+                  >
+                    +995 000 00 00 00
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center shrink-0">
+                  <Mail className="w-5 h-5 text-amber-700" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-teal-950 mb-1">Email</h3>
+                  <a
+                    href="mailto:digitalport@gmail.com"
+                    className="text-sm text-stone-600 hover:text-teal-700 transition-colors break-all"
+                  >
+                    digitalport@gmail.com
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xs font-medium tracking-[0.2em] uppercase text-teal-600 mb-4">
+                Connect With Us
               </h3>
               <div className="flex gap-3">
                 <a
-                  href="https://www.facebook.com/profile.php?id=61581642350013"
-                  className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-lg border border-white/25 hover:bg-white/25 flex items-center justify-center text-amber-300 hover:text-amber-200 transition-all duration-300 shadow-lg"
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-11 h-11 bg-white border border-amber-200 rounded-full flex items-center justify-center text-teal-700 hover:text-amber-600 hover:border-amber-400 hover:bg-amber-50 transition-all duration-300"
                 >
                   <Facebook className="w-5 h-5" />
                 </a>
               </div>
             </div>
-          </div>
-
-          <div className="md:col-span-3 flex flex-col">
-            <div className="bg-white/15 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/25 flex flex-col h-full">
-              <form
-                onSubmit={handleSubmit}
-                className="p-6 md:p-8 h-full flex flex-col"
-              >
-                <h2 className="text-2xl font-bold text-white mb-6">
-                  {t('contact.sendMessage')}
-                </h2>
-                <div className="space-y-5 flex-1">
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">
-                      {t('contact.fullName')}
-                    </label>
-                    <Input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-medium text-white mb-2">
-                        {t('contact.emailAddress')}
-                      </label>
-                      <Input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-white mb-2">
-                        {t('contact.phoneNumber')}
-                      </label>
-                      <Input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex flex-col">
-                    <label className="block text-sm font-medium text-white mb-2">
-                      {t('contact.message')}
-                    </label>
-                    <Textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      rows={6}
-                      required
-                    />
-                  </div>
-
-                  <Button type="submit" className="w-full">
-                    <Send className="w-5 h-5" />
-                    {t('contact.send')}
-                  </Button>
-
-                  {result && (
-                    <p
-                      className={`text-center font-medium ${
-                        result.includes('success')
-                          ? 'text-emerald-300'
-                          : result.includes('Sending')
-                            ? 'text-blue-300'
-                            : 'text-red-300'
-                      }`}
-                    >
-                      {result}
-                    </p>
-                  )}
-                </div>
-              </form>
+            <div className="hidden lg:block pt-8">
+              <div className="w-24 h-1 bg-gradient-to-r from-teal-400 to-amber-400 rounded-full" />
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 

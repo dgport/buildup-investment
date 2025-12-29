@@ -1,4 +1,3 @@
-import type React from 'react'
 import {
   Calendar,
   MapPin,
@@ -26,10 +25,10 @@ interface PropertyCardProps {
     galleryImages?: Array<{ imageUrl: string; order?: number }>
     priceUSD: number | null
     priceGEL: number
-    regionName: string | null
-    rooms: number
+    regionName?: string | null
+    rooms?: number
     title: string
-    totalArea: number | null
+    totalArea?: number | null
     propertyType: PropertyType
     hotSale?: boolean
     dateAdded: string
@@ -46,17 +45,13 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   const allImages =
     property.galleryImages && property.galleryImages.length > 0
       ? property.galleryImages.map(img => img.imageUrl)
-      : property.galleryImages && property.galleryImages.length > 0
-        ? property.galleryImages
-        : property.image
-          ? [property.image]
-          : []
+      : property.image
+        ? [property.image]
+        : []
 
   const hasMultipleImages = allImages.length > 1
 
-  const handleCardClick = () => {
-    navigate(`/properties/${property.id}`)
-  }
+  const handleCardClick = () => navigate(`/properties/${property.id}`)
 
   const handleCopyId = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -86,29 +81,22 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const year = String(date.getFullYear()).slice(-2)
-    return `${month}/${day}/${year}`
+    return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`
   }
 
-  const formatPrice = (priceUSD: number | null): string => {
+  const formatPrice = (priceUSD: number | null) => {
     if (!priceUSD) return t('home.priceOnRequest')
-
-    if (currency === 'USD') {
-      return priceUSD.toLocaleString()
-    }
-
-    const priceGEL = Math.round(priceUSD * exchangeRate)
-    return priceGEL.toLocaleString()
+    return currency === 'USD'
+      ? priceUSD.toLocaleString()
+      : Math.round(priceUSD * exchangeRate).toLocaleString()
   }
 
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-xl border border-gray-300 border-b-[3px] border-b-blue-500 transition-all duration-300 h-full cursor-pointer shadow-md hover:shadow-lg"
+      className="bg-white rounded-xl border-2 border-teal-900/30 hover:border-amber-400/60 transition-all duration-300 h-ful  w-full cursor-pointer shadow-lg hover:shadow-2xl overflow-hidden"
     >
-      <div className="relative h-52 overflow-hidden rounded-t-xl bg-gray-100">
+      <div className="relative h-68 overflow-hidden  bg-gray-100 border-b-2 border-teal-900/20">
         {allImages.length > 0 ? (
           <div className="relative h-full bg-gray-900">
             {allImages.map((img, index) => (
@@ -128,43 +116,22 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                   onClick={goToPrevious}
                   onPointerDown={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-amber-400/90 hover:bg-amber-400 rounded-full p-2 shadow-lg transition-all z-10 border border-amber-500"
                   aria-label="Previous image"
                 >
-                  <ChevronLeft className="w-4 h-4 text-gray-800" />
+                  <ChevronLeft className="w-4 h-4 text-teal-950" />
                 </button>
-
                 <button
                   onClick={goToNext}
                   onPointerDown={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-amber-400/90 hover:bg-amber-400 rounded-full p-2 shadow-lg transition-all z-10 border border-amber-500"
                   aria-label="Next image"
                 >
-                  <ChevronRight className="w-4 h-4 text-gray-800" />
+                  <ChevronRight className="w-4 h-4 text-teal-950" />
                 </button>
-                <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full z-10">
+                <div className="absolute top-2 left-2 bg-teal-950/80 backdrop-blur-sm text-amber-400 text-xs font-semibold px-2.5 py-1 rounded-full z-10 border border-amber-400/30">
                   {currentImageIndex + 1} / {allImages.length}
-                </div>
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 backdrop-blur-sm rounded-full px-2.5 py-1.5">
-                  {allImages.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={e => {
-                        e.stopPropagation()
-                        e.preventDefault()
-                        setCurrentImageIndex(index)
-                      }}
-                      onPointerDown={e => e.stopPropagation()}
-                      onMouseDown={e => e.stopPropagation()}
-                      className={`h-2 rounded-full transition-all ${
-                        index === currentImageIndex
-                          ? 'bg-white w-6'
-                          : 'bg-white/50 w-2 hover:bg-white/75'
-                      }`}
-                      aria-label={`Go to image ${index + 1}`}
-                    />
-                  ))}
                 </div>
               </>
             )}
@@ -174,100 +141,84 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             <p className="text-gray-400">No image available</p>
           </div>
         )}
+
         {property.hotSale && (
-          <div className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-orange-500 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-20 animate-pulse">
+          <div className="absolute top-2 right-2 bg-gradient-to-r from-red-500 to-orange-500 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-20 animate-pulse border border-red-600">
             <Flame className="w-4 h-4 text-white" />
             <span className="text-xs font-bold text-white uppercase tracking-wide">
               {t('properties.hotSale', { defaultValue: 'Hot Sale' })}
             </span>
           </div>
         )}
+
         <div
-          className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-md flex items-center gap-1.5 z-20"
+          className="absolute bottom-2 right-2 bg-teal-950/90 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-md flex items-center gap-1.5 z-20 border border-amber-400/30"
           onClick={e => e.stopPropagation()}
-          onPointerDown={e => e.stopPropagation()}
-          onMouseDown={e => e.stopPropagation()}
         >
-          <div className="text-xs text-gray-700 font-medium">
+          <div className="text-xs text-amber-400 font-semibold">
             ID: {property.externalId}
           </div>
           <button
             onClick={handleCopyId}
-            onPointerDown={e => e.stopPropagation()}
-            onMouseDown={e => e.stopPropagation()}
-            className="text-gray-600 hover:text-gray-900 transition-colors p-0.5"
+            className="text-amber-400 hover:text-amber-300 transition-colors p-0.5"
             title="Copy ID"
           >
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-green-600" />
+              <Check className="w-3.5 h-3.5 text-green-400" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
           </button>
         </div>
       </div>
+
       <div className="p-3 sm:p-4">
         <div className="space-y-3">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 pb-3 border-b-2 border-amber-400/20">
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-gray-900">
+              <h3 className="text-base font-bold text-teal-950">
                 {formatPrice(property.priceUSD)}
               </h3>
-              <div
-                onClick={e => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                }}
-                onPointerDown={e => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                }}
-                onMouseDown={e => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-xs font-medium text-gray-600">$</span>
-
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-teal-800">$</span>
                 <Switch
                   checked={currency === 'GEL'}
                   onCheckedChange={checked =>
                     setCurrency(checked ? 'GEL' : 'USD')
                   }
                 />
-
-                <span className="text-xs font-medium text-gray-600">₾</span>
+                <span className="text-xs font-medium text-teal-800">₾</span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-gray-800 text-sm whitespace-nowrap pt-1">
+            <div className="flex items-center gap-1 text-teal-800 text-sm whitespace-nowrap pt-1">
               <Calendar className="w-3.5 h-3.5 shrink-0" />
               <span>{formatDate(property.dateAdded)}</span>
             </div>
           </div>
 
-          <h4 className="text-sm sm:text-base text-gray-800 hover:text-blue-900 transition-colors line-clamp-1">
+          <h4 className="text-sm sm:text-base text-teal-900 hover:text-amber-600 transition-colors line-clamp-1 font-semibold">
             {property.title}
           </h4>
 
-          <div className="flex items-start gap-2 text-gray-600 text-sm">
-            <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
-            <span className="line-clamp-1">{property.regionName}</span>
-          </div>
+          {property.regionName && (
+            <div className="flex items-start gap-2 text-teal-800 text-sm pb-3 border-b border-teal-900/10">
+              <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
+              <span className="line-clamp-1">{property.regionName}</span>
+            </div>
+          )}
 
-          <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
-            {property.rooms > 0 && (
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <Sofa className="w-4 h-4" />
+          <div className="flex items-center gap-4 pt-2">
+            {property.rooms && property.rooms > 0 && (
+              <div className="flex items-center gap-1.5 text-teal-800">
+                <Sofa className="w-4 h-4 text-amber-500" />
                 <span className="text-sm font-medium">
                   {t('home.rooms')}: {property.rooms}
                 </span>
               </div>
             )}
-
             {property.totalArea && (
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <Square className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 text-teal-800">
+                <Square className="w-4 h-4 text-amber-500" />
                 <span className="text-sm font-medium">
                   {t('home.area')}: {property.totalArea} m²
                 </span>

@@ -1,5 +1,3 @@
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import {
   Carousel,
   CarouselContent,
@@ -7,50 +5,64 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
+import PartnerCard from '../partners/PartnerCard'
+import { Link } from 'react-router-dom'
 import type { Partner } from '@/lib/types/partners'
-import PartnerCard from '@/components/pages/partners/PartnerCard'
 
 interface PartnersCarouselProps {
   partners: Partner[]
+  title?: string
+  seeAllText?: string
 }
 
-const PartnersCarousel = ({ partners }: PartnersCarouselProps) => {
-  const { t } = useTranslation()
-
+const PartnersCarousel = ({
+  partners,
+  title = 'Our Partners',
+  seeAllText = 'View All',
+}: PartnersCarouselProps) => {
   if (!partners || partners.length === 0) return null
 
   return (
-    <div className="py-16">
-      <div className="w-full">
-        <div className="flex justify-between items-center px-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-            {t('home.partnersTitle')}
-          </h1>
+    <section>
+      <div className="w-full max-w-7xl mx-auto">
+        {/* Header with elegant typography */}
+        <div className="flex justify-between items-end px-6 mb-10">
+          <div>
+            <span className="text-xs font-semibold text-primary uppercase tracking-widest mb-2 block">
+              Trusted Network
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-foreground text-balance">
+              {title}
+            </h2>
+          </div>
 
           <Link
             to="/partners"
-            className="text-sm sm:text-base font-semibold text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
+            className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors whitespace-nowrap flex items-center gap-2 group"
           >
-            {t('home.seeAll')} →
+            {seeAllText}
+            <span className="group-hover:translate-x-1 transition-transform">
+              →
+            </span>
           </Link>
         </div>
 
-        <Carousel opts={{ align: 'start', loop: true }} className="w-full">
-          <CarouselContent className="my-7">
+        <Carousel opts={{ align: 'start', loop: true }} className="w-full px-6">
+          <CarouselContent className="-ml-4">
             {partners.map(partner => (
               <CarouselItem
                 key={partner.id}
-                className="cursor-pointer basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+                className="pl-4 cursor-pointer basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
               >
                 <PartnerCard partner={partner} />
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="md:flex bg-gray-100" />
-          <CarouselNext className="md:flex bg-gray-100" />
+          <CarouselPrevious className="hidden md:flex -left-4 bg-card border-border hover:bg-secondary hover:text-primary" />
+          <CarouselNext className="hidden md:flex -right-4 bg-card border-border hover:bg-secondary hover:text-primary" />
         </Carousel>
       </div>
-    </div>
+    </section>
   )
 }
 

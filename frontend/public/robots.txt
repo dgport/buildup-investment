@@ -11,10 +11,9 @@ Disallow: /unauthorized
 
 Allow: /
 Allow: /properties
-Allow: /projects
 Allow: /partners
 Allow: /contact
 
 
-Sitemap: https://unitedcompany.ge/sitemap.xml
+Sitemap: https://buildup.ge/sitemap.xml
 Crawl-delay: 1

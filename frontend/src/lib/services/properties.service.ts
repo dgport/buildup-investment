@@ -10,12 +10,7 @@ import type {
 } from '../types/properties'
 
 export const propertiesService = {
-  /**
-   * Get all PUBLIC properties only (for public-facing pages)
-   * This ALWAYS returns only public properties, even for admins
-   */
   getAll: (filters?: PropertyFilters) => {
-    // Clean up filters - remove undefined/null values
     const cleanFilters = filters
       ? Object.fromEntries(
           Object.entries(filters).filter(
@@ -30,12 +25,7 @@ export const propertiesService = {
     })
   },
 
-  /**
-   * Get ALL properties including private ones (for admin area only)
-   * Requires admin authentication
-   */
   getAllAdmin: (filters?: PropertyFilters) => {
-    // Clean up filters - remove undefined/null values
     const cleanFilters = filters
       ? Object.fromEntries(
           Object.entries(filters).filter(
@@ -50,34 +40,21 @@ export const propertiesService = {
     })
   },
 
-  /**
-   * Get PUBLIC property by ID (for public-facing pages)
-   * This ALWAYS returns only public properties, even for admins
-   */
   getById: (id: string, lang?: string) =>
     api.get<Property>(API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id), {
       params: lang ? { lang } : {},
     }),
 
-  /**
-   * Get property by ID including private ones (for admin area only)
-   * Requires admin authentication
-   */
   getByIdAdmin: (id: string, lang?: string) =>
     api.get<Property>(`/properties/admin/${id}`, {
       params: lang ? { lang } : {},
     }),
 
-  /**
-   * Create a new property with images (Admin only - requires authentication)
-   */
   createProperty: (data: CreatePropertyDto, images?: File[]) => {
     const formData = new FormData()
 
-    // Append all property fields
     Object.entries(data).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        // Convert boolean to string for FormData
         if (typeof value === 'boolean') {
           formData.append(key, value.toString())
         } else {
@@ -86,7 +63,6 @@ export const propertiesService = {
       }
     })
 
-    // Append images if provided
     if (images && images.length > 0) {
       images.forEach(image => {
         formData.append('images', image)
@@ -100,10 +76,6 @@ export const propertiesService = {
     })
   },
 
-  /**
-   * Update property (Admin only - requires authentication)
-   * Can update property fields and/or add new images
-   */
   updateProperty: (
     id: string,
     data: Partial<CreatePropertyDto>,
@@ -111,10 +83,8 @@ export const propertiesService = {
   ) => {
     const formData = new FormData()
 
-    // Append updated fields only
     Object.entries(data).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        // Convert boolean to string for FormData
         if (typeof value === 'boolean') {
           formData.append(key, value.toString())
         } else {
@@ -123,7 +93,6 @@ export const propertiesService = {
       }
     })
 
-    // Append new images if provided
     if (images && images.length > 0) {
       images.forEach(image => {
         formData.append('images', image)
@@ -141,40 +110,25 @@ export const propertiesService = {
     )
   },
 
-  /**
-   * Delete property (Admin only - requires authentication)
-   */
   deleteProperty: (id: string) =>
     api.delete<{ message: string }>(
       API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id)
     ),
 
-  /**
-   * Get all translations for a property (Admin only - requires authentication)
-   */
   getTranslations: (id: string) =>
     api.get<PropertyTranslation[]>(API_ENDPOINTS.PROPERTIES.TRANSLATIONS(id)),
 
-  /**
-   * Create or update a translation (Admin only - requires authentication)
-   */
   upsertTranslation: (id: string, data: UpsertPropertyTranslationDto) =>
     api.patch<PropertyTranslation>(
       API_ENDPOINTS.PROPERTIES.TRANSLATIONS(id),
       data
     ),
 
-  /**
-   * Delete a translation (Admin only - requires authentication)
-   */
   deleteTranslation: (id: string, language: string) =>
     api.delete<{ message: string }>(
       API_ENDPOINTS.PROPERTIES.TRANSLATION_BY_LANGUAGE(id, language)
     ),
 
-  /**
-   * Delete a gallery image (Admin only - requires authentication)
-   */
   deleteGalleryImage: (propertyId: string, imageId: number) =>
     api.delete<{ message: string }>(
       API_ENDPOINTS.PROPERTIES.GALLERY_IMAGE(propertyId, imageId)

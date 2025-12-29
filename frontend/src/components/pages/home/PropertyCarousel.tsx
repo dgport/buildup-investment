@@ -53,35 +53,40 @@ const PropertyCarousel = () => {
   if (properties.length === 0) return null
 
   return (
-    <div className="py-8">
+    <div className="py-12 px-6 md:px-12 lg:px-16 xl:px-28 bg-[#FAFAF8]">
       <div className="w-full">
-        <div className="flex justify-between items-center px-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+        <div className="flex justify-between items-center px-4 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-teal-900">
             {t('home.featuredProperties')}
           </h1>
           <Link
             to="/properties"
-            className="text-sm sm:text-base font-semibold text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
+            className="text-sm sm:text-base font-semibold text-teal-700 hover:text-amber-600 transition-colors whitespace-nowrap hover:underline decoration-amber-400 decoration-2 underline-offset-4"
           >
-            {t('home.seeAll')}
+            {t('home.seeAll')} →
           </Link>
         </div>
 
-        <Carousel opts={{ align: 'start', loop: true }} className="w-full">
+        <Carousel opts={{ align: 'start', loop: true }} className="w-full mt-8">
           <CarouselContent className="my-7">
             {properties.map(property => (
               <CarouselItem
                 key={property.id}
                 className="cursor-default basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
               >
-                <Link to={`/properties/${property.id}`}>
-                  <PropertyCard property={property} />
+                <Link
+                  to={`/properties/${property.id}`}
+                  className="block h-full"
+                >
+                  <div className="h-full rounded-xl overflow-hidden border-2 border-teal-200 hover:border-amber-400 shadow-lg hover:shadow-2xl hover:shadow-teal-200/50 transition-all duration-300 bg-white transform hover:-translate-y-1">
+                    <PropertyCard property={property} />
+                  </div>
                 </Link>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="md:flex bg-gray-100" />
-          <CarouselNext className="md:flex bg-gray-100" />
+          <CarouselPrevious className="md:flex cursor-pointer" />
+          <CarouselNext className="md:flex cursor-pointer" />
         </Carousel>
       </div>
     </div>

@@ -5,15 +5,11 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import enTranslations from './locales/en.json'
 import kaTranslations from './locales/ka.json'
 import ruTranslations from './locales/ru.json'
-import isTranslations from './locales/he.json'
-import arTranslations from './locales/ar.json'
 
 const resources = {
   en: { translation: enTranslations },
   ka: { translation: kaTranslations },
   ru: { translation: ruTranslations },
-  he: { translation: isTranslations },
-  ar: { translation: arTranslations },
 }
 
 i18n

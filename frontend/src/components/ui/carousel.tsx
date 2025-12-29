@@ -203,9 +203,9 @@ const CarouselPrevious = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        'absolute  h-9 w-9 md:w-10 md:h-10 z-50 rounded-full',
+        'absolute cursor-pointer h-12 w-12 md:w-14 md:h-14 z-50 rounded-full bg-white hover:bg-teal-50 border-3 border-teal-700 hover:border-amber-500 shadow-2xl hover:shadow-amber-500/50 transition-all hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100',
         orientation === 'horizontal'
-          ? '-left-3 md:-left-10 top-1/2 -translate-y-1/2'
+          ? '-left-4 md:-left-14 top-1/2 -translate-y-1/2'
           : '-top-12 left-1/2 -translate-x-1/2 rotate-90',
         className
       )}
@@ -213,7 +213,7 @@ const CarouselPrevious = React.forwardRef<
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className="h-6 w-6 md:h-7 md:w-7 text-teal-700 hover:text-amber-600 drop-shadow-lg" />
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -232,9 +232,9 @@ const CarouselNext = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        'absolute w-9 h-9 md:h-10 md:w-10 rounded-full bg-white z-50',
+        'absolute cursor-pointer w-12 h-12 md:h-14 md:w-14 rounded-full bg-white hover:bg-teal-50 border-3 border-teal-700 hover:border-amber-500 shadow-2xl hover:shadow-amber-500/50 transition-all hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 z-50',
         orientation === 'horizontal'
-          ? '-right-3 md:-right-10 top-1/2 -translate-y-1/2'
+          ? '-right-4 md:-right-14 top-1/2 -translate-y-1/2'
           : '-bottom-12 left-1/2 -translate-x-1/2 rotate-90',
         className
       )}
@@ -242,7 +242,7 @@ const CarouselNext = React.forwardRef<
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight className="h-4 w-4" />
+      <ArrowRight className="h-6 w-6 md:h-7 md:w-7 text-teal-700 hover:text-amber-600 drop-shadow-lg" />
       <span className="sr-only">Next slide</span>
     </Button>
   )
