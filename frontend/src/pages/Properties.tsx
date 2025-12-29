@@ -90,7 +90,7 @@ export default function Properties() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen ">
       <div className="w-full mx-auto px-8 md:px-12 lg:px-16 xl:px-28 py-10">
         <div className="mb-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">

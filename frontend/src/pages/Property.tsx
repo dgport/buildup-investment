@@ -28,8 +28,8 @@ import { AmenitiesFeaturesSection } from '@/components/pages/properties/Amenitie
 import { useCurrency } from '@/lib/context/CurrencyContext'
 import { useDocumentMeta } from '@/lib/hooks/useDocumentMeta'
 
-const PHONE_NUMBER = '+995 595 80 47 95'
-const PHONE_NUMBER_CLEAN = '995595804795'
+const PHONE_NUMBER = '+995 000 00 00 00'
+const PHONE_NUMBER_CLEAN = '995000000000'
 
 const formatEnumValue = (value: string | null): string => {
   if (!value) return 'Property'
@@ -196,7 +196,7 @@ export default function PropertyDetail() {
   const hasLocation = !!coordinates
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 ">
       <div className="max-w-7xl mx-auto px-8 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 h-[350px] lg:h-[500px]">

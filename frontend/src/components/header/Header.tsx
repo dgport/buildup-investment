@@ -38,16 +38,7 @@ export default function Header() {
   const isHomePage = pathname === ROUTES.HOME
 
   return (
-    <header
-      className={cn(
-        'fixed top-0 z-50 w-full transition-all duration-300',
-        isHomePage
-          ? scrolled
-            ? 'bg-gradient-to-r from-teal-950/95 via-teal-900/95 to-teal-950/95 backdrop-blur-md border-b border-amber-400/20 shadow-xl'
-            : 'bg-transparent'
-          : 'bg-gradient-to-r from-teal-950/95 via-teal-900/95 to-teal-950/95 backdrop-blur-md border-b border-amber-400/20 shadow-xl'
-      )}
-    >
+    <header className="  top-0 z-50 w-full bg-gradient-to-r from-teal-950/95 via-teal-900/95 to-teal-950/95 backdrop-blur-md border-b border-amber-400/20 shadow-xl">
       <div className="px-6 md:px-12 lg:px-16 xl:px-24">
         <div className="flex h-20 items-center justify-between">
           <Link
@@ -55,7 +46,7 @@ export default function Header() {
             className="flex items-center gap-3 shrink-0 group"
           >
             <img
-              src="/logo.png"
+              src="/Logo.png"
               className="h-14 w-auto transition-transform duration-300 group-hover:scale-105"
               alt="Build Up Investment"
             />

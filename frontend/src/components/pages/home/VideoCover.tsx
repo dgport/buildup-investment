@@ -17,15 +17,14 @@ export default function VideoCover() {
     const video = videoRef.current
     if (!video) return
 
-    const handleTimeUpdate = () => {
-      if (video.currentTime >= 15) {
+    const checkTime = setInterval(() => {
+      if (video.currentTime >= 10) {
         video.currentTime = 0
         video.play()
       }
-    }
+    }, 100) // Check every 100ms
 
-    video.addEventListener('timeupdate', handleTimeUpdate)
-    return () => video.removeEventListener('timeupdate', handleTimeUpdate)
+    return () => clearInterval(checkTime)
   }, [])
 
   useEffect(() => {
@@ -41,13 +40,14 @@ export default function VideoCover() {
   }, [])
 
   return (
-    <div className="relative w-full h-[60vh] pt-20 sm:h-screen overflow-hidden">
+    <div className="relative w-full h-[60vh] sm:h-[90vh] overflow-hidden">
+      {/* Full screen video */}
       <video
         ref={videoRef}
         autoPlay
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute -mt-10 md:mt-0 inset-0 w-full h-full object-cover"
       >
         <source src="/Video.mp4" type="video/mp4" />
       </video>

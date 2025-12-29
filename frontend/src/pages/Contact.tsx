@@ -31,7 +31,7 @@ const Contact = () => {
   }
 
   return (
-    <section className="min-h-screen bg-stone-50 py-24 px-6 md:px-12 lg:px-20">
+    <section className="min-h-screen bg-stone-50   px-6 md:px-12 lg:px-20">
       <div className="max-w-6xl mx-auto">
         <div className="mb-16 max-w-2xl">
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-teal-950 mb-6">
