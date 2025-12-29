@@ -18,24 +18,15 @@ const navItems = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+
   const location = useLocation()
   const pathname = location.pathname
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
 
   const isActive = (path: string) => pathname === path
-  const isHomePage = pathname === ROUTES.HOME
 
   return (
     <header className="  top-0 z-50 w-full bg-gradient-to-r from-teal-950/95 via-teal-900/95 to-teal-950/95 backdrop-blur-md border-b border-amber-400/20 shadow-xl">
