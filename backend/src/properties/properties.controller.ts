@@ -78,7 +78,7 @@ export class PropertiesController {
       ).substring(0, 160);
 
       // FIXED: Handle image URL correctly to avoid duplicate /uploads
-      let imageUrl = 'https://buildup.ge/Logo.png';
+      let imageUrl = 'https://api.buildup.ge/uploads/logo.png';
 
       if (property.galleryImages && property.galleryImages.length > 0) {
         const imgPath = property.galleryImages[0].imageUrl;
@@ -91,19 +91,19 @@ export class PropertiesController {
           }
           // If path already contains 'uploads/' anywhere
           else if (imgPath.includes('uploads/')) {
-            imageUrl = `https://buildup.ge/${imgPath.replace(/^\/+/, '')}`; // Remove leading slashes
+            imageUrl = `https://api.buildup.ge/${imgPath.replace(/^\/+/, '')}`; // Remove leading slashes
           }
           // If path starts with /uploads/
           else if (imgPath.startsWith('/uploads/')) {
-            imageUrl = `https://buildup.ge${imgPath}`;
+            imageUrl = `https://api.buildup.ge${imgPath}`;
           }
           // If path starts with /
           else if (imgPath.startsWith('/')) {
-            imageUrl = `https://buildup.ge${imgPath}`;
+            imageUrl = `https://api.buildup.ge${imgPath}`;
           }
           // Plain filename without path
           else {
-            imageUrl = `https://buildup.ge/uploads/${imgPath}`;
+            imageUrl = `https://api.buildup.ge/uploads/${imgPath}`;
           }
         }
       }
