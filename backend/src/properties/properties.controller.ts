@@ -108,7 +108,6 @@ export class PropertiesController {
     summary: 'Get all PUBLIC properties with pagination and filters',
   })
   @ApiQuery({
-    name: 'lang',
     required: false,
     description: 'Language code (e.g., en, ka, ru)',
     example: 'en',
