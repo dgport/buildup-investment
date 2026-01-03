@@ -3,16 +3,19 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
   Patch,
   Post,
   Query,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { Response } from 'express'; // ADD THIS IMPORT
 import { PropertiesService } from './properties.service';
 import {
   ApiBearerAuth,
@@ -36,6 +39,69 @@ import { Region } from '@prisma/client';
 @Controller('properties')
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
+
+  @Get('seo-preview/:id')
+  @ApiOperation({
+    summary: 'Internal: Get HTML with meta tags for social media bots',
+  })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @Header('Content-Type', 'text/html')
+  async getSeoPreview(@Param('id') id: string, @Res() res: Response) {
+    try {
+      // Fetch property in English by default for the bot
+      const property = await this.propertiesService.findOne(id, 'en', false);
+
+      if (!property) {
+        return res.status(404).send('Property not found');
+      }
+
+      const title =
+        property.translation?.title || 'Apartment for sale in Batumi';
+      const description =
+        property.translation?.description?.substring(0, 160) ||
+        'Premium real estate investment in Georgia';
+
+      // Get the first image or a default fallback
+      const imageUrl = property.galleryImages?.[0]?.imageUrl
+        ? `https://buildup.ge${property.galleryImages[0].imageUrl}`
+        : 'https://buildup.ge/logo.png';
+
+      const canonicalUrl = `https://buildup.ge/properties/${id}`;
+
+      // Construct the HTML specifically for Facebook/WhatsApp/LinkedIn
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>${title}</title>
+            <meta name="description" content="${description}" />
+            
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="${canonicalUrl}" />
+            <meta property="og:title" content="${title}" />
+            <meta property="og:description" content="${description}" />
+            <meta property="og:image" content="${imageUrl}" />
+
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="${title}" />
+            <meta name="twitter:description" content="${description}" />
+            <meta name="twitter:image" content="${imageUrl}" />
+
+            <script>window.location.href = "${canonicalUrl}";</script>
+          </head>
+          <body>
+            <h1>${title}</h1>
+            <p>Redirecting to buildup.ge...</p>
+          </body>
+        </html>
+      `;
+
+      return res.send(html);
+    } catch (error) {
+      return res.status(500).send('Internal Server Error');
+    }
+  }
 
   @Get()
   @ApiOperation({

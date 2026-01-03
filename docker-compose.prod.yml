@@ -15,6 +15,8 @@ services:
       - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - buildup_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -27,12 +29,14 @@ services:
       dockerfile: Dockerfile.prod
     container_name: buildup_backend_prod
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000" # Changed from ports to expose - only internal access needed
     env_file:
       - ./backend/.env
     volumes:
       - uploads_data:/app/public/uploads
+    networks:
+      - buildup_network
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,9 +49,18 @@ services:
     container_name: buildup_frontend_prod
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80" # Changed from 8080:80 to serve directly on port 80
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - uploads_data:/usr/share/nginx/html/uploads:ro # Mount uploads so nginx can serve them
+    networks:
+      - buildup_network
     depends_on:
       - backend
+
+networks:
+  buildup_network:
+    driver: bridge
 
 volumes:
   postgres_data:
