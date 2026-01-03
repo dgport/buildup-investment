@@ -15,7 +15,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Response } from 'express'; // ADD THIS IMPORT
+import { Response } from 'express';
 import { PropertiesService } from './properties.service';
 import {
   ApiBearerAuth,
@@ -45,71 +45,148 @@ export class PropertiesController {
     summary: 'Internal: Get HTML with meta tags for social media bots',
   })
   @ApiParam({ name: 'id', description: 'Property ID' })
-  @Header('Content-Type', 'text/html')
+  @Header('Content-Type', 'text/html; charset=utf-8')
   async getSeoPreview(@Param('id') id: string, @Res() res: Response) {
+    console.log('🤖 SEO Preview requested for:', id);
+
     try {
-      // Fetch property in English by default for the bot
       const property = await this.propertiesService.findOne(id, 'en', false);
 
       if (!property) {
-        return res.status(404).send('Property not found');
+        console.log('❌ Property not found');
+        return res.status(404).send(`
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Property Not Found</title>
+            </head>
+            <body>
+              <h1>Property Not Found</h1>
+            </body>
+          </html>
+        `);
       }
+
+      console.log('✅ Property found:', property.id);
 
       const title =
         property.translation?.title || 'Apartment for sale in Batumi';
-      const description =
-        property.translation?.description?.substring(0, 160) ||
-        'Premium real estate investment in Georgia';
+      const description = (
+        property.translation?.description ||
+        'Premium real estate investment in Georgia'
+      ).substring(0, 160);
 
-      // Get the first image or a default fallback
-      const imageUrl = property.galleryImages?.[0]?.imageUrl
-        ? `https://buildup.ge/uploads/${property.galleryImages[0].imageUrl}` // Adjust path as needed
-        : 'https://buildup.ge/Logo.png';
+      // FIXED: Handle image URL correctly to avoid duplicate /uploads
+      let imageUrl = 'https://buildup.ge/Logo.png';
+
+      if (property.galleryImages && property.galleryImages.length > 0) {
+        const imgPath = property.galleryImages[0].imageUrl;
+        console.log('🖼️ Raw image path from DB:', imgPath);
+
+        if (imgPath) {
+          // If it's already a full URL
+          if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
+            imageUrl = imgPath;
+          }
+          // If path already contains 'uploads/' anywhere
+          else if (imgPath.includes('uploads/')) {
+            imageUrl = `https://buildup.ge/${imgPath.replace(/^\/+/, '')}`; // Remove leading slashes
+          }
+          // If path starts with /uploads/
+          else if (imgPath.startsWith('/uploads/')) {
+            imageUrl = `https://buildup.ge${imgPath}`;
+          }
+          // If path starts with /
+          else if (imgPath.startsWith('/')) {
+            imageUrl = `https://buildup.ge${imgPath}`;
+          }
+          // Plain filename without path
+          else {
+            imageUrl = `https://buildup.ge/uploads/${imgPath}`;
+          }
+        }
+      }
+
+      console.log('🔗 Final image URL:', imageUrl);
 
       const canonicalUrl = `https://buildup.ge/properties/${id}`;
 
-      // Construct the HTML specifically for Facebook/WhatsApp/LinkedIn
-      const html = `
+      // Escape HTML special characters
+      const escapeHtml = (text: string): string => {
+        const map: { [key: string]: string } = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;',
+        };
+        return text.replace(/[&<>"']/g, (m) => map[m]);
+      };
+
+      const safeTitle = escapeHtml(title);
+      const safeDescription = escapeHtml(description);
+
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${safeTitle}</title>
+  <meta name="description" content="${safeDescription}" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="${canonicalUrl}" />
+  <meta property="og:title" content="${safeTitle}" />
+  <meta property="og:description" content="${safeDescription}" />
+  <meta property="og:image" content="${imageUrl}" />
+  <meta property="og:image:secure_url" content="${imageUrl}" />
+  <meta property="og:image:type" content="image/avif" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="Buildup Investment" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${safeTitle}" />
+  <meta name="twitter:description" content="${safeDescription}" />
+  <meta name="twitter:image" content="${imageUrl}" />
+  <meta name="twitter:site" content="@buildup" />
+
+  <!-- Redirect non-bots to React app -->
+  <script>
+    if (!/bot|crawler|spider|crawling|facebookexternalhit|whatsapp|twitter|telegram|linkedin|discord|slack/i.test(navigator.userAgent)) {
+      window.location.href = "${canonicalUrl}";
+    }
+  </script>
+</head>
+<body>
+  <h1>${safeTitle}</h1>
+  <img src="${imageUrl}" alt="${safeTitle}" style="max-width:100%; height:auto;" />
+  <p>${safeDescription}</p>
+  <p>If you're not redirected, <a href="${canonicalUrl}">click here</a>.</p>
+</body>
+</html>`;
+
+      console.log('✅ Sending HTML response');
+      return res.send(html);
+    } catch (error) {
+      console.error('❌ Error in getSeoPreview:', error);
+      return res.status(500).send(`
         <!DOCTYPE html>
         <html lang="en">
           <head>
             <meta charset="utf-8">
-            <title>${title}</title>
-            <meta name="description" content="${description}" />
-            
-            <meta property="og:type" content="website" />
-            <meta property="og:url" content="${canonicalUrl}" />
-            <meta property="og:title" content="${title}" />
-            <meta property="og:description" content="${description}" />
-            <meta property="og:image" content="${imageUrl}" />
-            <meta property="og:image:width" content="1200" />
-            <meta property="og:image:height" content="630" />
-
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" content="${title}" />
-            <meta name="twitter:description" content="${description}" />
-            <meta name="twitter:image" content="${imageUrl}" />
-
-            <!-- Load your React app for regular users -->
-            <script>
-              // Redirect only if NOT a bot
-              if (!/bot|crawler|spider|crawling/i.test(navigator.userAgent)) {
-                window.location.href = "${canonicalUrl}";
-              }
-            </script>
+            <title>Error</title>
           </head>
           <body>
-            <h1>${title}</h1>
-            <img src="${imageUrl}" alt="${title}" style="max-width:100%;" />
-            <p>${description}</p>
-            <p>Loading property details...</p>
+            <h1>Internal Server Error</h1>
+            <p>${error instanceof Error ? error.message : 'Unknown error'}</p>
           </body>
         </html>
-      `;
-
-      return res.send(html);
-    } catch (error) {
-      return res.status(500).send('Internal Server Error');
+      `);
     }
   }
 
@@ -118,6 +195,7 @@ export class PropertiesController {
     summary: 'Get all PUBLIC properties with pagination and filters',
   })
   @ApiQuery({
+    name: 'lang',
     required: false,
     description: 'Language code (e.g., en, ka, ru)',
     example: 'en',
@@ -527,7 +605,7 @@ export class PropertiesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a gallery image (Admin only)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
-  @ApiParam({ name: 'imageId', description: 'Image ID', type: 'number' })
+  @ApiParam({ name: 'imageId', description: 'Image ID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Image deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Image not found' })
@@ -535,6 +613,6 @@ export class PropertiesController {
     @Param('id') id: string,
     @Param('imageId') imageId: number,
   ) {
-    return this.propertiesService.deleteGalleryImage(id, +imageId);
+    return this.propertiesService.deleteGalleryImage(id, imageId);
   }
 }
