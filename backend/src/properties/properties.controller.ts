@@ -47,13 +47,10 @@ export class PropertiesController {
   @ApiParam({ name: 'id', description: 'Property ID' })
   @Header('Content-Type', 'text/html; charset=utf-8')
   async getSeoPreview(@Param('id') id: string, @Res() res: Response) {
-    console.log('🤖 SEO Preview requested for:', id);
-
     try {
       const property = await this.propertiesService.findOne(id, 'en', false);
 
       if (!property) {
-        console.log('❌ Property not found');
         return res.status(404).send(`
           <!DOCTYPE html>
           <html lang="en">
@@ -68,8 +65,6 @@ export class PropertiesController {
         `);
       }
 
-      console.log('✅ Property found:', property.id);
-
       const title =
         property.translation?.title || 'Apartment for sale in Batumi';
       const description = (
@@ -82,7 +77,6 @@ export class PropertiesController {
 
       if (property.galleryImages && property.galleryImages.length > 0) {
         const imgPath = property.galleryImages[0].imageUrl;
-        console.log('🖼️ Raw image path from DB:', imgPath);
 
         if (imgPath) {
           // If it's already a full URL
@@ -107,8 +101,6 @@ export class PropertiesController {
           }
         }
       }
-
-      console.log('🔗 Final image URL:', imageUrl);
 
       const canonicalUrl = `https://buildup.ge/properties/${id}`;
 
@@ -170,7 +162,6 @@ export class PropertiesController {
 </body>
 </html>`;
 
-      console.log('✅ Sending HTML response');
       return res.send(html);
     } catch (error) {
       console.error('❌ Error in getSeoPreview:', error);
