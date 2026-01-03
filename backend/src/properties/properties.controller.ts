@@ -63,8 +63,8 @@ export class PropertiesController {
 
       // Get the first image or a default fallback
       const imageUrl = property.galleryImages?.[0]?.imageUrl
-        ? `https://buildup.ge${property.galleryImages[0].imageUrl}`
-        : 'https://buildup.ge/logo.png';
+        ? `https://buildup.ge/uploads/${property.galleryImages[0].imageUrl}` // Adjust path as needed
+        : 'https://buildup.ge/Logo.png';
 
       const canonicalUrl = `https://buildup.ge/properties/${id}`;
 
@@ -82,17 +82,27 @@ export class PropertiesController {
             <meta property="og:title" content="${title}" />
             <meta property="og:description" content="${description}" />
             <meta property="og:image" content="${imageUrl}" />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
 
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content="${title}" />
             <meta name="twitter:description" content="${description}" />
             <meta name="twitter:image" content="${imageUrl}" />
 
-            <script>window.location.href = "${canonicalUrl}";</script>
+            <!-- Load your React app for regular users -->
+            <script>
+              // Redirect only if NOT a bot
+              if (!/bot|crawler|spider|crawling/i.test(navigator.userAgent)) {
+                window.location.href = "${canonicalUrl}";
+              }
+            </script>
           </head>
           <body>
             <h1>${title}</h1>
-            <p>Redirecting to buildup.ge...</p>
+            <img src="${imageUrl}" alt="${title}" style="max-width:100%;" />
+            <p>${description}</p>
+            <p>Loading property details...</p>
           </body>
         </html>
       `;
