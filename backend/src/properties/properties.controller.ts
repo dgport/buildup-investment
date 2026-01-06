@@ -34,6 +34,7 @@ import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
 import { AuthGuard } from '@/auth/guards/basic-auth.guard';
 import { Region } from '@prisma/client';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
 @ApiTags('Properties')
 @Controller('properties')
@@ -329,7 +330,7 @@ export class PropertiesController {
   }
 
   @Get('admin/all')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get ALL properties including private ones (Admin only)',
@@ -461,7 +462,7 @@ export class PropertiesController {
   }
 
   @Get('admin/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get property by ID including private ones (Admin only)',
@@ -484,7 +485,7 @@ export class PropertiesController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
@@ -501,7 +502,7 @@ export class PropertiesController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a property (Admin only)' })
@@ -520,7 +521,7 @@ export class PropertiesController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a property (Admin only)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
@@ -532,7 +533,7 @@ export class PropertiesController {
   }
 
   @Get(':id/translations')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all translations for a property (Admin only)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
@@ -547,7 +548,7 @@ export class PropertiesController {
   }
 
   @Patch(':id/translations')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation (Admin only)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
@@ -572,7 +573,7 @@ export class PropertiesController {
   }
 
   @Delete(':id/translations/:language')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation (Admin only)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
@@ -592,7 +593,7 @@ export class PropertiesController {
   }
 
   @Delete(':id/images/:imageId')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a gallery image (Admin only)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })

@@ -31,6 +31,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertTranslationDto } from './dto/UpsertTranslations.dto';
 import { AuthGuard } from '@/auth/guards/basic-auth.guard';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
 @ApiTags('Partners')
 @Controller('partners')
@@ -73,7 +74,7 @@ export class PartnersController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
@@ -91,7 +92,7 @@ export class PartnersController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a partner' })
@@ -114,7 +115,7 @@ export class PartnersController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a partner' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
@@ -138,7 +139,7 @@ export class PartnersController {
   }
 
   @Patch(':id/translations')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })
@@ -161,7 +162,7 @@ export class PartnersController {
   }
 
   @Delete(':id/translations/:language')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Partner ID', type: 'number' })

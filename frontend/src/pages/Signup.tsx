@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -11,19 +11,21 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
 
-const SigninPage = () => {
+const SignupPage = () => {
   const [formData, setFormData] = useState({
+    firstname: '',
+    lastname: '',
     email: '',
     password: '',
+    phone: '',
   })
 
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
 
   const handleChange = e => {
@@ -44,6 +46,18 @@ const SigninPage = () => {
   const validateForm = () => {
     const errors = {}
 
+    if (!formData.firstname.trim()) {
+      errors.firstname = 'First name is required'
+    } else if (formData.firstname.length < 2) {
+      errors.firstname = 'First name must be at least 2 characters'
+    }
+
+    if (!formData.lastname.trim()) {
+      errors.lastname = 'Last name is required'
+    } else if (formData.lastname.length < 2) {
+      errors.lastname = 'Last name must be at least 2 characters'
+    }
+
     if (!formData.email.trim()) {
       errors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -52,8 +66,13 @@ const SigninPage = () => {
 
     if (!formData.password) {
       errors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters'
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters'
+    } else if (
+      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(formData.password)
+    ) {
+      errors.password =
+        'Password must contain uppercase, lowercase, number, and special character'
     }
 
     setFieldErrors(errors)
@@ -62,6 +81,7 @@ const SigninPage = () => {
 
   const handleSubmit = async () => {
     setError('')
+    setSuccess(false)
 
     if (!validateForm()) {
       return
@@ -70,46 +90,38 @@ const SigninPage = () => {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/signin', {
+      const response = await fetch('http://localhost:3000/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important for cookies
         body: JSON.stringify(formData),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Sign in failed')
+        throw new Error(data.message || 'Signup failed')
       }
 
-      // Store access token
-      if (rememberMe) {
-        localStorage.setItem('accessToken', data.accessToken)
-      } else {
-        sessionStorage.setItem('accessToken', data.accessToken)
-      }
-
-      // Redirect to dashboard or home page
-      window.location.href = '/dashboard'
+      setSuccess(true)
+      setFormData({
+        firstname: '',
+        lastname: '',
+        email: '',
+        password: '',
+        phone: '',
+      })
     } catch (err) {
-      setError(err.message || 'Invalid email or password. Please try again.')
+      setError(err.message || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleGoogleSignin = () => {
+  const handleGoogleSignup = () => {
     // Redirect to Google OAuth endpoint
     window.location.href = 'http://localhost:3000/api/auth/google'
-  }
-
-  const handleKeyPress = e => {
-    if (e.key === 'Enter' && !loading) {
-      handleSubmit()
-    }
   }
 
   return (
@@ -117,22 +129,69 @@ const SigninPage = () => {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Welcome back
+            Create an account
           </CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access your account
+            Enter your information to get started
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {error && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
+          {success && (
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Account created successfully! Please check your email to verify
+                your account.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstname">First Name</Label>
+                <Input
+                  id="firstname"
+                  name="firstname"
+                  type="text"
+                  placeholder="John"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  className={fieldErrors.firstname ? 'border-red-500' : ''}
+                  disabled={loading}
+                />
+                {fieldErrors.firstname && (
+                  <p className="text-xs text-red-500">
+                    {fieldErrors.firstname}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastname">Last Name</Label>
+                <Input
+                  id="lastname"
+                  name="lastname"
+                  type="text"
+                  placeholder="Doe"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  className={fieldErrors.lastname ? 'border-red-500' : ''}
+                  disabled={loading}
+                />
+                {fieldErrors.lastname && (
+                  <p className="text-xs text-red-500">{fieldErrors.lastname}</p>
+                )}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -142,10 +201,8 @@ const SigninPage = () => {
                 placeholder="john.doe@example.com"
                 value={formData.email}
                 onChange={handleChange}
-                onKeyPress={handleKeyPress}
                 className={fieldErrors.email ? 'border-red-500' : ''}
                 disabled={loading}
-                autoComplete="email"
               />
               {fieldErrors.email && (
                 <p className="text-xs text-red-500">{fieldErrors.email}</p>
@@ -153,15 +210,7 @@ const SigninPage = () => {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <a
-                  href="/forgot-password"
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  Forgot password?
-                </a>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -170,12 +219,10 @@ const SigninPage = () => {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  onKeyPress={handleKeyPress}
                   className={
                     fieldErrors.password ? 'border-red-500 pr-10' : 'pr-10'
                   }
                   disabled={loading}
-                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -189,21 +236,23 @@ const SigninPage = () => {
               {fieldErrors.password && (
                 <p className="text-xs text-red-500">{fieldErrors.password}</p>
               )}
+              <p className="text-xs text-gray-500">
+                Must be at least 8 characters with uppercase, lowercase, number
+                & symbol
+              </p>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                checked={rememberMe}
-                onCheckedChange={setRememberMe}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone (Optional)</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="+1 (555) 000-0000"
+                value={formData.phone}
+                onChange={handleChange}
                 disabled={loading}
               />
-              <label
-                htmlFor="remember"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Remember me
-              </label>
             </div>
 
             <Button
@@ -214,10 +263,10 @@ const SigninPage = () => {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  Creating account...
                 </>
               ) : (
-                'Sign in'
+                'Sign up'
               )}
             </Button>
           </div>
@@ -237,7 +286,7 @@ const SigninPage = () => {
             type="button"
             variant="outline"
             className="w-full"
-            onClick={handleGoogleSignin}
+            onClick={handleGoogleSignup}
             disabled={loading}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -258,35 +307,24 @@ const SigninPage = () => {
                 fill="#EA4335"
               />
             </svg>
-            Sign in with Google
+            Sign up with Google
           </Button>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-gray-600 text-center">
-            Don't have an account?{' '}
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-gray-600">
+            Already have an account?{' '}
             <a
-              href="/signup"
+              href="/signin"
               className="text-blue-600 hover:underline font-medium"
             >
-              Sign up
+              Sign in
             </a>
-          </div>
-
-          <div className="text-xs text-gray-500 text-center">
-            By signing in, you agree to our{' '}
-            <a href="/terms" className="text-blue-600 hover:underline">
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a href="/privacy" className="text-blue-600 hover:underline">
-              Privacy Policy
-            </a>
-          </div>
+          </p>
         </CardFooter>
       </Card>
     </div>
   )
 }
 
-export default SigninPage
+export default SignupPage

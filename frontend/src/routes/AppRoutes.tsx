@@ -3,6 +3,9 @@ import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoutes } from './ProtectedRoutes'
 import { ROUTES } from '@/constants/routes'
 import { LoadingScreen } from '@/components/shared/loaders/LoadingScreen'
+import SignupPage from '@/pages/Signup'
+import SigninPage from '@/pages/Signin'
+import VerifyEmailPage from '@/pages/VerifyEmail'
 const Home = lazy(() => import('@/pages/Home'))
 const Signin = lazy(() => import('@/pages/Signin'))
 const Admin = lazy(() => import('@/pages/Admin'))
@@ -23,6 +26,10 @@ export const AppRoutes = () => {
         <Route path={ROUTES.PARTNERS} element={<Partners />} />
         <Route path={ROUTES.PROPERTIES} element={<Properties />} />
         <Route path={ROUTES.PROPERTY} element={<Property />} />
+        <Route path={ROUTES.SIGNUP} element={<SignupPage />} />
+        <Route path={ROUTES.SIGNIN} element={<SigninPage />} />
+        <Route path={ROUTES.VERIFY_EMAIL} element={<VerifyEmailPage />} />
+
         <Route element={<ProtectedRoutes redirectTo={ROUTES.SIGNIN} />}>
           <Route path={ROUTES.ADMIN} element={<Admin />} />
         </Route>

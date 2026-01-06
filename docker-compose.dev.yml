@@ -27,6 +27,7 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+      - "5555:5555" # Prisma Studio
     env_file:
       - ./backend/.env
     volumes:

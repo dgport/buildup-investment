@@ -32,6 +32,7 @@ import { multerConfig } from '../common/config/multer.config';
 import { UpsertProjectTranslationDto } from './dto/UpsertProjectTranslations.dto';
 import { AuthGuard } from '@/auth/guards/basic-auth.guard';
 import { Region } from '@prisma/client';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -147,7 +148,7 @@ export class ProjectsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new project' })
@@ -179,7 +180,7 @@ export class ProjectsController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a project' })
@@ -217,7 +218,7 @@ export class ProjectsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a project' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
@@ -228,7 +229,7 @@ export class ProjectsController {
   }
 
   @Delete(':id/gallery/:imageIndex')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific gallery image from project' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
@@ -258,7 +259,7 @@ export class ProjectsController {
   }
 
   @Patch(':id/translations')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })
@@ -281,7 +282,7 @@ export class ProjectsController {
   }
 
   @Delete(':id/translations/:language')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Project ID', type: 'number' })

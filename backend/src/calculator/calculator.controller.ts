@@ -25,6 +25,7 @@ import { AuthGuard } from '@/auth/guards/basic-auth.guard';
 import { CreateMortgageRateDto } from './dto/CreateMortageRate.dto';
 import { UpdateMortgageRateDto } from './dto/UpdateMortageRate.dto';
 import { CalculateMortgageDto } from './dto/CalculatorMortage.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
 @ApiTags('Calculator')
 @Controller('calculator')
@@ -39,7 +40,7 @@ export class CalculatorController {
   }
 
   @Post('rates')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new mortgage rate (Admin only)' })
@@ -52,7 +53,7 @@ export class CalculatorController {
   }
 
   @Patch('rates/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a mortgage rate (Admin only)' })
   @ApiParam({ name: 'id', description: 'Rate ID', type: 'number' })
@@ -68,7 +69,7 @@ export class CalculatorController {
   }
 
   @Delete('rates/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a mortgage rate (Admin only)' })
   @ApiParam({ name: 'id', description: 'Rate ID', type: 'number' })

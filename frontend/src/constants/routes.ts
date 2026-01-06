@@ -8,4 +8,6 @@ export const ROUTES = {
   PROPERTIES: '/properties',
   PROPERTY: '/properties/:id',
   PARTNERS: '/partners',
+  VERIFY_EMAIL: '/verify-email'
+  
 } as const

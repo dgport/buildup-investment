@@ -31,6 +31,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../common/config/multer.config';
 import { UpsertApartmentTranslationDto } from './dto/UpsertApartmentTranslation.dto';
 import { AuthGuard } from '@/auth/guards/basic-auth.guard';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
 @ApiTags('Apartments')
 @Controller('apartments')
@@ -106,7 +107,7 @@ export class ApartmentsController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
@@ -123,7 +124,7 @@ export class ApartmentsController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update an apartment' })
@@ -144,7 +145,7 @@ export class ApartmentsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete an apartment' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
@@ -155,7 +156,7 @@ export class ApartmentsController {
   }
 
   @Delete(':id/images/:imageIndex')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific image from apartment' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
@@ -182,7 +183,7 @@ export class ApartmentsController {
   }
 
   @Patch(':id/translations')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })
@@ -204,7 +205,7 @@ export class ApartmentsController {
   }
 
   @Delete(':id/translations/:language')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Apartment ID', type: 'number' })

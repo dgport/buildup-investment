@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
 import { PartnersModule } from './partners/partners.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -10,6 +12,9 @@ import { CalculatorModule } from './calculator/calculator.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     PartnersModule,
     ProjectsModule,
     PrismaModule,
@@ -19,7 +24,5 @@ import { CalculatorModule } from './calculator/calculator.module';
     HomepageSlidesModule,
     CalculatorModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

@@ -33,6 +33,7 @@ import { AuthGuard } from '@/auth/guards/basic-auth.guard';
 import { UpdateHomepageSlideDto } from './dto/UpdateHomepageSlides.dto';
 import { UpsertSlideTranslationDto } from './dto/UpsertTranslations.dto';
 import { CreateHomepageSlideDto } from './dto/CreateHompageSlides.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
 @ApiTags('Homepage Slides')
 @Controller('homepage-slides')
@@ -53,7 +54,7 @@ export class HomepageSlidesController {
   }
 
   @Get('admin')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all slides (admin only, includes inactive)' })
   @ApiQuery({
@@ -87,7 +88,7 @@ export class HomepageSlidesController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
@@ -104,7 +105,7 @@ export class HomepageSlidesController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update a homepage slide' })
@@ -123,7 +124,7 @@ export class HomepageSlidesController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a homepage slide' })
   @ApiParam({ name: 'id', description: 'Slide ID', type: 'number' })
@@ -147,7 +148,7 @@ export class HomepageSlidesController {
   }
 
   @Patch(':id/translations')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add or update a translation' })
   @ApiParam({ name: 'id', description: 'Slide ID', type: 'number' })
@@ -166,7 +167,7 @@ export class HomepageSlidesController {
   }
 
   @Delete(':id/translations/:language')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a specific translation' })
   @ApiParam({ name: 'id', description: 'Slide ID', type: 'number' })
