@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Card,
   CardContent,
@@ -11,9 +12,14 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { useSignUp } from '@/lib/hooks/useAuth'
+import { authService } from '@/lib/services/auth.service'
 
 const SignupPage = () => {
+  const navigate = useNavigate()
+  const signUpMutation = useSignUp()
+
   const [formData, setFormData] = useState({
     firstname: '',
     lastname: '',
@@ -23,18 +29,14 @@ const SignupPage = () => {
   })
 
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState({})
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  const handleChange = e => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }))
-    // Clear field error when user starts typing
     if (fieldErrors[name]) {
       setFieldErrors(prev => ({
         ...prev,
@@ -44,7 +46,7 @@ const SignupPage = () => {
   }
 
   const validateForm = () => {
-    const errors = {}
+    const errors: Record<string, string> = {}
 
     if (!formData.firstname.trim()) {
       errors.firstname = 'First name is required'
@@ -80,48 +82,22 @@ const SignupPage = () => {
   }
 
   const handleSubmit = async () => {
-    setError('')
-    setSuccess(false)
-
     if (!validateForm()) {
       return
     }
 
-    setLoading(true)
-
-    try {
-      const response = await fetch('http://localhost:3000/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Signup failed')
-      }
-
-      setSuccess(true)
-      setFormData({
-        firstname: '',
-        lastname: '',
-        email: '',
-        password: '',
-        phone: '',
-      })
-    } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    signUpMutation.mutate(formData, {
+      onSuccess: () => {
+        // Show success message for 3 seconds then redirect
+        setTimeout(() => {
+          navigate('/signin')
+        }, 3000)
+      },
+    })
   }
 
   const handleGoogleSignup = () => {
-    // Redirect to Google OAuth endpoint
-    window.location.href = 'http://localhost:3000/api/auth/google'
+    authService.googleAuth()
   }
 
   return (
@@ -137,18 +113,21 @@ const SignupPage = () => {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {error && (
+          {signUpMutation.isError && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {(signUpMutation.error as any)?.response?.data?.message ||
+                  'Something went wrong. Please try again.'}
+              </AlertDescription>
             </Alert>
           )}
 
-          {success && (
+          {signUpMutation.isSuccess && (
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                Account created successfully! Please check your email to verify
-                your account.
+                Account created successfully! Redirecting to sign in...
               </AlertDescription>
             </Alert>
           )}
@@ -165,7 +144,7 @@ const SignupPage = () => {
                   value={formData.firstname}
                   onChange={handleChange}
                   className={fieldErrors.firstname ? 'border-red-500' : ''}
-                  disabled={loading}
+                  disabled={signUpMutation.isPending}
                 />
                 {fieldErrors.firstname && (
                   <p className="text-xs text-red-500">
@@ -184,7 +163,7 @@ const SignupPage = () => {
                   value={formData.lastname}
                   onChange={handleChange}
                   className={fieldErrors.lastname ? 'border-red-500' : ''}
-                  disabled={loading}
+                  disabled={signUpMutation.isPending}
                 />
                 {fieldErrors.lastname && (
                   <p className="text-xs text-red-500">{fieldErrors.lastname}</p>
@@ -202,7 +181,7 @@ const SignupPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={fieldErrors.email ? 'border-red-500' : ''}
-                disabled={loading}
+                disabled={signUpMutation.isPending}
               />
               {fieldErrors.email && (
                 <p className="text-xs text-red-500">{fieldErrors.email}</p>
@@ -222,13 +201,13 @@ const SignupPage = () => {
                   className={
                     fieldErrors.password ? 'border-red-500 pr-10' : 'pr-10'
                   }
-                  disabled={loading}
+                  disabled={signUpMutation.isPending}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  disabled={loading}
+                  disabled={signUpMutation.isPending}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -251,16 +230,16 @@ const SignupPage = () => {
                 placeholder="+1 (555) 000-0000"
                 value={formData.phone}
                 onChange={handleChange}
-                disabled={loading}
+                disabled={signUpMutation.isPending}
               />
             </div>
 
             <Button
               onClick={handleSubmit}
               className="w-full"
-              disabled={loading}
+              disabled={signUpMutation.isPending}
             >
-              {loading ? (
+              {signUpMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating account...
@@ -287,7 +266,7 @@ const SignupPage = () => {
             variant="outline"
             className="w-full"
             onClick={handleGoogleSignup}
-            disabled={loading}
+            disabled={signUpMutation.isPending}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path

@@ -1,4 +1,9 @@
+import { IsString } from 'class-validator';
+
 export class UpdatePasswordInput {
-  password: string;
+  @IsString()
   token: string;
+
+  @IsString()
+  password: string;
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Card,
   CardContent,
@@ -10,11 +11,16 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Loader2, AlertCircle, Info } from 'lucide-react'
+import { useSignIn } from '@/lib/hooks/useAuth'
+import { authService } from '@/lib/services/auth.service'
 
 const SigninPage = () => {
+  const navigate = useNavigate()
+  const signInMutation = useSignIn()
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,27 +28,31 @@ const SigninPage = () => {
 
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [fieldErrors, setFieldErrors] = useState({})
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [googleAccountEmail, setGoogleAccountEmail] = useState<string | null>(
+    null
+  )
 
-  const handleChange = e => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }))
-    // Clear field error when user starts typing
     if (fieldErrors[name]) {
       setFieldErrors(prev => ({
         ...prev,
         [name]: '',
       }))
     }
+    // Clear Google account error when user starts typing
+    if (name === 'email' || name === 'password') {
+      setGoogleAccountEmail(null)
+    }
   }
 
   const validateForm = () => {
-    const errors = {}
+    const errors: Record<string, string> = {}
 
     if (!formData.email.trim()) {
       errors.email = 'Email is required'
@@ -61,53 +71,36 @@ const SigninPage = () => {
   }
 
   const handleSubmit = async () => {
-    setError('')
-
     if (!validateForm()) {
       return
     }
 
-    setLoading(true)
-
-    try {
-      const response = await fetch('http://localhost:3000/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    signInMutation.mutate(
+      { ...formData, rememberMe },
+      {
+        onSuccess: () => {
+          navigate('/dashboard')
         },
-        credentials: 'include', // Important for cookies
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Sign in failed')
+        onError: (error: any) => {
+          const errorMessage = error?.response?.data?.message || ''
+          // Check if this is a Google-only account error
+          if (
+            errorMessage.includes('Google') ||
+            errorMessage.includes('add a password')
+          ) {
+            setGoogleAccountEmail(formData.email)
+          }
+        },
       }
-
-      // Store access token
-      if (rememberMe) {
-        localStorage.setItem('accessToken', data.accessToken)
-      } else {
-        sessionStorage.setItem('accessToken', data.accessToken)
-      }
-
-      // Redirect to dashboard or home page
-      window.location.href = '/dashboard'
-    } catch (err) {
-      setError(err.message || 'Invalid email or password. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    )
   }
 
   const handleGoogleSignin = () => {
-    // Redirect to Google OAuth endpoint
-    window.location.href = 'http://localhost:3000/api/auth/google'
+    authService.googleAuth()
   }
 
-  const handleKeyPress = e => {
-    if (e.key === 'Enter' && !loading) {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !signInMutation.isPending) {
       handleSubmit()
     }
   }
@@ -125,10 +118,52 @@ const SigninPage = () => {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {error && (
+          {/* Google Account Error - Special Alert */}
+          {googleAccountEmail && (
+            <Alert className="bg-blue-50 border-blue-200">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertTitle className="text-blue-900">
+                Google Account Detected
+              </AlertTitle>
+              <AlertDescription className="text-blue-800">
+                <p className="mb-3">
+                  The account <strong>{googleAccountEmail}</strong> was created
+                  with Google.
+                </p>
+                <div className="space-y-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleGoogleSignin}
+                    className="w-full"
+                  >
+                    Sign in with Google
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      navigate(
+                        `/forgot-password?email=${encodeURIComponent(googleAccountEmail)}`
+                      )
+                    }
+                    className="w-full"
+                  >
+                    Add a password to this account
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Regular Error Alert */}
+          {signInMutation.isError && !googleAccountEmail && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {(signInMutation.error as any)?.response?.data?.message ||
+                  'Invalid email or password. Please try again.'}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -144,7 +179,7 @@ const SigninPage = () => {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 className={fieldErrors.email ? 'border-red-500' : ''}
-                disabled={loading}
+                disabled={signInMutation.isPending}
                 autoComplete="email"
               />
               {fieldErrors.email && (
@@ -174,14 +209,14 @@ const SigninPage = () => {
                   className={
                     fieldErrors.password ? 'border-red-500 pr-10' : 'pr-10'
                   }
-                  disabled={loading}
+                  disabled={signInMutation.isPending}
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  disabled={loading}
+                  disabled={signInMutation.isPending}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -195,8 +230,8 @@ const SigninPage = () => {
               <Checkbox
                 id="remember"
                 checked={rememberMe}
-                onCheckedChange={setRememberMe}
-                disabled={loading}
+                onCheckedChange={checked => setRememberMe(checked as boolean)}
+                disabled={signInMutation.isPending}
               />
               <label
                 htmlFor="remember"
@@ -209,9 +244,9 @@ const SigninPage = () => {
             <Button
               onClick={handleSubmit}
               className="w-full"
-              disabled={loading}
+              disabled={signInMutation.isPending}
             >
-              {loading ? (
+              {signInMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
@@ -238,7 +273,7 @@ const SigninPage = () => {
             variant="outline"
             className="w-full"
             onClick={handleGoogleSignin}
-            disabled={loading}
+            disabled={signInMutation.isPending}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path

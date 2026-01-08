@@ -1,18 +1,32 @@
-import { ROUTES } from '@/constants/routes'
-import { getAccessToken } from '@/lib/utils/auth'
 import { Navigate, Outlet } from 'react-router-dom'
+import { useCurrentUser } from '@/lib/hooks/useAuth'
+import { Loader2 } from 'lucide-react'
 
 interface ProtectedRouteProps {
   redirectTo?: string
+  requireAdmin?: boolean
 }
 
 export const ProtectedRoutes = ({
-  redirectTo = ROUTES.SIGNIN,
+  redirectTo = '/signin',
+  requireAdmin = false,
 }: ProtectedRouteProps) => {
-  const token = getAccessToken()
+  const { data: user, isLoading, isError } = useCurrentUser()
 
-  if (!token) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+      </div>
+    )
+  }
+
+  if (isError || !user) {
     return <Navigate to={redirectTo} replace />
+  }
+
+  if (requireAdmin && user.role !== 'ADMIN') {
+    return <Navigate to="/unauthorized" replace />
   }
 
   return <Outlet />

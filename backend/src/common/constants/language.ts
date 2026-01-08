@@ -1,2 +1,2 @@
-export const LANGUAGES = ['ka', 'en', 'ru', 'ar', 'he'] as const;
+export const LANGUAGES = ['ka', 'en', 'ru'] as const;
 export type Language = (typeof LANGUAGES)[number];

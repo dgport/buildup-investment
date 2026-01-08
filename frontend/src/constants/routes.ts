@@ -8,6 +8,11 @@ export const ROUTES = {
   PROPERTIES: '/properties',
   PROPERTY: '/properties/:id',
   PARTNERS: '/partners',
-  VERIFY_EMAIL: '/verify-email'
-  
+  VERIFY_EMAIL: '/verify-email',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
+  DASHBOARD: '/dashboard',
+  AUTH_SUCCESS: '/auth/success',
+  AUTH_ERROR: '/auth/error',
+  ADD_PASSWORD: '/add-password',
 } as const

@@ -6,6 +6,11 @@ import { LoadingScreen } from '@/components/shared/loaders/LoadingScreen'
 import SignupPage from '@/pages/Signup'
 import SigninPage from '@/pages/Signin'
 import VerifyEmailPage from '@/pages/VerifyEmail'
+import ForgotPasswordPage from '@/pages/ForgotPassword'
+import ResetPasswordPage from '@/pages/ResetPassword'
+import DashboardPage from '@/pages/Dashboard'
+import { GoogleAuthSuccess } from '@/pages/GoogleAuthSuccess'
+import { GoogleAuthError } from '@/pages/GoogleAuthError'
 const Home = lazy(() => import('@/pages/Home'))
 const Signin = lazy(() => import('@/pages/Signin'))
 const Admin = lazy(() => import('@/pages/Admin'))
@@ -29,9 +34,24 @@ export const AppRoutes = () => {
         <Route path={ROUTES.SIGNUP} element={<SignupPage />} />
         <Route path={ROUTES.SIGNIN} element={<SigninPage />} />
         <Route path={ROUTES.VERIFY_EMAIL} element={<VerifyEmailPage />} />
+        <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
+        <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
+        <Route path={ROUTES.AUTH_SUCCESS} element={<GoogleAuthSuccess />} />
+        <Route path={ROUTES.AUTH_ERROR} element={<GoogleAuthError />} />
 
-        <Route element={<ProtectedRoutes redirectTo={ROUTES.SIGNIN} />}>
+        <Route
+          element={
+            <ProtectedRoutes redirectTo={ROUTES.SIGNIN} requireAdmin={true} />
+          }
+        >
           <Route path={ROUTES.ADMIN} element={<Admin />} />
+        </Route>
+        <Route
+          element={
+            <ProtectedRoutes redirectTo={ROUTES.SIGNIN} requireAdmin={false} />
+          }
+        >
+          <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
         </Route>
         <Route path={ROUTES.UNAUTHORIZED} element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />

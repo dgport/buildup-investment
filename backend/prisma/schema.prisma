@@ -7,6 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==================== ENUMS ====================
+
+enum UserRole {
+  REGULAR
+  ADMIN
+}
+
+enum AuthMethod {
+  CREDENTIALS
+  GOOGLE
+  BOTH
+}
+
+enum PropertyStatus {
+  PENDING     // Waiting for admin approval
+  APPROVED    // Approved and visible
+  REJECTED    // Rejected by admin
+  DRAFT       // User's draft
+}
 
 enum Region {
   BATUMI
@@ -16,107 +35,6 @@ enum Region {
   GONIO
   UREKI
 }
-
-model Partners {
-  id          Int      @id @default(autoincrement())
-  companyName String   @map("company_name") @unique
-  image       String?
-  createdAt   DateTime @map("created_at") @default(now())
-
-  projects     Projects[]
-  translations PartnerTranslations[]
-
-  @@map("partners")
-}
-
-model Projects {
-  id              Int       @id @default(autoincrement())
-  projectName     String    @map("project_name")
-  location        String?   
-  street          String?    
-  region          Region?   
-  image           String?
-  gallery         String[]  @default([]) 
-  priceFrom       Int?      @map("price_from")  
-  deliveryDate    DateTime? @map("delivery_date")  
-  numFloors       Int?      @map("num_floors")  
-  numApartments   Int?      @map("num_apartments")  
-  hotSale         Boolean   @map("hot_sale") @default(false)
-  public          Boolean   @default(true)
-  createdAt       DateTime  @map("created_at") @default(now())
-  updatedAt       DateTime  @map("updated_at") @updatedAt @default(now())
-  partnerId       Int       @map("partner_id")
-
-  partner      Partners              @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  translations ProjectTranslations[]
-  apartments   Apartments[]
-
-  @@map("projects")
-  @@index([region])
-  @@index([location])
-}
-
-model Apartments {
-  id        Int      @id @default(autoincrement())
-  room      Int
-  area      Int
-  images    String[]  
-  createdAt DateTime @map("created_at") @default(now())
-  projectId Int      @map("project_id")
-
-  project      Projects                @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  translations ApartmentTranslations[]
-
-  @@map("apartments")
-}
-
-model PartnerTranslations {
-  id          Int    @id @default(autoincrement())
-  partnerId   Int    @map("partner_id")
-  language    String
-  companyName String @map("company_name")
-
-  partner Partners @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-
-  @@unique([partnerId, language])
-  @@map("partner_translations")
-}
-
-model ProjectTranslations {
-  id          Int    @id @default(autoincrement())
-  projectId   Int    @map("project_id")
-  language    String
-  projectName String @map("project_name")
-  street      String?  
-
-  project Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@unique([projectId, language])
-  @@map("project_translations")
-} 
-
-
-model RegionTranslations {
-  id       Int    @id @default(autoincrement())
-  region   Region
-  language String
-  name     String
-
-  @@unique([region, language], name: "region_language")  
-  @@map("region_translations")
-}
-model ApartmentTranslations {
-  id          Int     @id @default(autoincrement())
-  apartmentId Int     @map("apartment_id")
-  language    String
-  description String?
-
-  apartment Apartments @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
-
-  @@unique([apartmentId, language])
-  @@map("apartment_translations")
-}
-
 
 enum PropertyType {
   APARTMENT
@@ -166,142 +84,8 @@ enum Occupancy {
   NINE
   TEN_PLUS
 }
- 
- 
-model Property {
-  id              String           @id @default(cuid())
-  externalId      String           @unique @map("external_id")
-  propertyType    PropertyType     @map("property_type")
-  dealType        DealType         @map("deal_type")
-  location        String?         
-  region          Region?          // Region enum (BATUMI, KOBULETI, etc.)
-  address         String?          // Street address
-  price           Int?
-  hotSale         Boolean          @map("hot_sale") @default(false)
-  public          Boolean          @default(true)
-  createdAt       DateTime         @map("created_at") @default(now())
-  updatedAt       DateTime         @map("updated_at") @updatedAt
-  totalArea       Int?             @map("total_area")
-  rooms           Int?
-  bedrooms        Int?
-  bathrooms       Int?
-  floors          Int?
-  floorsTotal     Int?             @map("floors_total")
-  ceilingHeight   Float?           @map("ceiling_height")
-  isNonStandard   Boolean          @map("is_non_standard") @default(false)
-  occupancy       Occupancy?
-  heating         HeatingType?
-  hotWater        HotWaterType?    @map("hot_water")
-  parking         ParkingType?
-  hasConditioner      Boolean @map("has_conditioner") @default(false)
-  hasFurniture        Boolean @map("has_furniture") @default(false)
-  hasBed              Boolean @map("has_bed") @default(false)
-  hasSofa             Boolean @map("has_sofa") @default(false)
-  hasTable            Boolean @map("has_table") @default(false)
-  hasChairs           Boolean @map("has_chairs") @default(false)
-  hasStove            Boolean @map("has_stove") @default(false)
-  hasRefrigerator     Boolean @map("has_refrigerator") @default(false)
-  hasOven             Boolean @map("has_oven") @default(false)
-  hasWashingMachine   Boolean @map("has_washing_machine") @default(false)
-  hasKitchenAppliances Boolean @map("has_kitchen_appliances") @default(false)
-  hasBalcony          Boolean @map("has_balcony") @default(false)
-  balconyArea         Float?  @map("balcony_area")
-  hasNaturalGas       Boolean @map("has_natural_gas") @default(false)
-  hasInternet         Boolean @map("has_internet") @default(false)
-  hasTV               Boolean @map("has_tv") @default(false)
-  hasSewerage         Boolean @map("has_sewerage") @default(false)
-  isFenced            Boolean @map("is_fenced") @default(false)
-  hasYardLighting     Boolean @map("has_yard_lighting") @default(false)
-  hasGrill            Boolean @map("has_grill") @default(false)
-  hasAlarm            Boolean @map("has_alarm") @default(false)
-  hasVentilation      Boolean @map("has_ventilation") @default(false)
-  hasWater            Boolean @map("has_water") @default(false)
-  hasElectricity      Boolean @map("has_electricity") @default(false)
-  hasGate             Boolean @map("has_gate") @default(false)
 
-  translations     PropertyTranslations[]
-  galleryImages    PropertyGalleryImage[]
-
-  @@map("properties")
-  @@index([propertyType])
- 
-  @@index([region])
-  @@index([location])
-  @@index([price])
-  @@index([dealType])
-  @@index([hotSale])
-  @@index([public])
-}
-
-model PropertyTranslations {
-  id              Int      @id @default(autoincrement())
-  propertyId      String   @map("property_id")
-  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  language        String
-  
-  title           String
-  address         String?  // Translatable street address
-  description     String?  @db.Text
-
-  @@unique([propertyId, language])
-  @@map("property_translations")
-  @@index([propertyId])
-  @@index([language])
-}
-
-model PropertyGalleryImage {
-  id          Int      @id @default(autoincrement())
-  propertyId  String   @map("property_id")
-  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  imageUrl    String   @map("image_url")
-  order       Int      @default(0)
-  createdAt   DateTime @map("created_at") @default(now())
-
-  @@map("property_gallery_images")
-  @@index([propertyId])
-}
-
-
-model HomepageSlide {
-  id        Int      @id @default(autoincrement())
-  image     String
-  link      String?  
-  order     Int      @default(0)
-  isActive  Boolean  @map("is_active") @default(true)
-  createdAt DateTime @map("created_at") @default(now())
-  updatedAt DateTime @map("updated_at") @updatedAt
-
-  translations HomepageSlideTranslations[]
-
-  @@map("homepage_slides")
-}
-
-model HomepageSlideTranslations {
-  id      Int    @id @default(autoincrement())
-  slideId Int    @map("slide_id")
-  language String
-  title   String
-
-  slide HomepageSlide @relation(fields: [slideId], references: [id], onDelete: Cascade)
-
-  @@unique([slideId, language])
-  @@map("homepage_slide_translations")
-}
-
-
-model MortgageRate {
-  id            Int      @id @default(autoincrement())
-  yearFrom      Int      @map("year_from")  
-  yearTo        Int      @map("year_to")   
-  interestRate  Float    @map("interest_rate")  
-  isActive      Boolean  @map("is_active") @default(true)
-  createdAt     DateTime @map("created_at") @default(now())
-  updatedAt     DateTime @map("updated_at") @updatedAt
-
-  @@unique([yearFrom, yearTo])
-  @@map("mortgage_rates")
-}
-
+// ==================== USER & AUTH MODELS ====================
 
 model User {
   id                        String     @id @default(uuid())
@@ -322,8 +106,10 @@ model User {
   createdAt                 DateTime   @default(now()) @map("created_at")
   updatedAt                 DateTime   @updatedAt @map("updated_at")
   lastLogin                 DateTime?  @map("last_login")
+  
   accounts                  Account[]
   sessions                  Session[]
+  properties                Property[]  // User can have multiple properties
 
   @@map("users")
 }
@@ -341,6 +127,7 @@ model Account {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
   userId            String   @map("user_id")
+  
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
@@ -357,6 +144,7 @@ model Session {
   ipAddress String?  @map("ip_address")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
@@ -377,13 +165,182 @@ model LoginAttempt {
   @@index([ipAddress, createdAt])
 }
 
-enum UserRole {
-  REGULAR
-  ADMIN
+// ==================== SETTINGS MODEL ====================
+
+model SiteSettings {
+  id              Int      @id @default(autoincrement())
+  key             String   @unique  // e.g., "default_contact_phone"
+  value           String
+  description     String?
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
 }
 
-enum AuthMethod {
-  CREDENTIALS
-  GOOGLE
-  BOTH
+// ==================== PROPERTY MODELS ====================
+
+model Property {
+  id                      String           @id @default(cuid())
+  externalId              String           @unique @map("external_id")
+  propertyType            PropertyType     @map("property_type")
+  dealType                DealType         @map("deal_type")
+  location                String?
+  region                  Region?
+  address                 String?
+  price                   Int?
+  hotSale                 Boolean          @map("hot_sale") @default(false)
+  public                  Boolean          @default(true)
+  
+  // User relationship and status
+  userId                  String?          @map("user_id")
+  status                  PropertyStatus   @default(APPROVED)
+  contactPhone            String?          @map("contact_phone")  // User's custom phone or null for default
+  rejectionReason         String?          @map("rejection_reason") @db.Text
+  
+  createdAt               DateTime         @map("created_at") @default(now())
+  updatedAt               DateTime         @map("updated_at") @updatedAt
+  totalArea               Int?             @map("total_area")
+  rooms                   Int?
+  bedrooms                Int?
+  bathrooms               Int?
+  floors                  Int?
+  floorsTotal             Int?             @map("floors_total")
+  ceilingHeight           Float?           @map("ceiling_height")
+  isNonStandard           Boolean          @map("is_non_standard") @default(false)
+  occupancy               Occupancy?
+  heating                 HeatingType?
+  hotWater                HotWaterType?    @map("hot_water")
+  parking                 ParkingType?
+  hasConditioner          Boolean          @map("has_conditioner") @default(false)
+  hasFurniture            Boolean          @map("has_furniture") @default(false)
+  hasBed                  Boolean          @map("has_bed") @default(false)
+  hasSofa                 Boolean          @map("has_sofa") @default(false)
+  hasTable                Boolean          @map("has_table") @default(false)
+  hasChairs               Boolean          @map("has_chairs") @default(false)
+  hasStove                Boolean          @map("has_stove") @default(false)
+  hasRefrigerator         Boolean          @map("has_refrigerator") @default(false)
+  hasOven                 Boolean          @map("has_oven") @default(false)
+  hasWashingMachine       Boolean          @map("has_washing_machine") @default(false)
+  hasKitchenAppliances    Boolean          @map("has_kitchen_appliances") @default(false)
+  hasBalcony              Boolean          @map("has_balcony") @default(false)
+  balconyArea             Float?           @map("balcony_area")
+  hasNaturalGas           Boolean          @map("has_natural_gas") @default(false)
+  hasInternet             Boolean          @map("has_internet") @default(false)
+  hasTV                   Boolean          @map("has_tv") @default(false)
+  hasSewerage             Boolean          @map("has_sewerage") @default(false)
+  isFenced                Boolean          @map("is_fenced") @default(false)
+  hasYardLighting         Boolean          @map("has_yard_lighting") @default(false)
+  hasGrill                Boolean          @map("has_grill") @default(false)
+  hasAlarm                Boolean          @map("has_alarm") @default(false)
+  hasVentilation          Boolean          @map("has_ventilation") @default(false)
+  hasWater                Boolean          @map("has_water") @default(false)
+  hasElectricity          Boolean          @map("has_electricity") @default(false)
+  hasGate                 Boolean          @map("has_gate") @default(false)
+
+  user                    User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  translations            PropertyTranslations[]
+  galleryImages           PropertyGalleryImage[]
+
+  @@map("properties")
+  @@index([userId])
+  @@index([status])
+  @@index([propertyType])
+  @@index([region])
+  @@index([location])
+  @@index([price])
+  @@index([dealType])
+  @@index([hotSale])
+  @@index([public])
+}
+
+model PropertyTranslations {
+  id          Int      @id @default(autoincrement())
+  propertyId  String   @map("property_id")
+  language    String
+  title       String
+  address     String?
+  description String?  @db.Text
+
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, language])
+  @@map("property_translations")
+  @@index([propertyId])
+  @@index([language])
+}
+
+model PropertyGalleryImage {
+  id         Int      @id @default(autoincrement())
+  propertyId String   @map("property_id")
+  imageUrl   String   @map("image_url")
+  order      Int      @default(0)
+  createdAt  DateTime @map("created_at") @default(now())
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_gallery_images")
+  @@index([propertyId])
+}
+
+model RegionTranslations {
+  id       Int    @id @default(autoincrement())
+  region   Region
+  language String
+  name     String
+
+  @@unique([region, language], name: "region_language")
+  @@map("region_translations")
+}
+
+// ==================== PARTNER MODELS ====================
+
+model Partners {
+  id          Int      @id @default(autoincrement())
+  companyName String   @map("company_name") @unique
+  image       String?
+  createdAt   DateTime @map("created_at") @default(now())
+
+  translations PartnerTranslations[]
+
+  @@map("partners")
+}
+
+model PartnerTranslations {
+  id          Int    @id @default(autoincrement())
+  partnerId   Int    @map("partner_id")
+  language    String
+  companyName String @map("company_name")
+
+  partner Partners @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, language])
+  @@map("partner_translations")
+}
+
+// ==================== HOMEPAGE MODELS ====================
+
+model HomepageSlide {
+  id        Int      @id @default(autoincrement())
+  image     String
+  link      String?
+  order     Int      @default(0)
+  isActive  Boolean  @map("is_active") @default(true)
+  createdAt DateTime @map("created_at") @default(now())
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  translations HomepageSlideTranslations[]
+
+  @@map("homepage_slides")
+}
+
+model HomepageSlideTranslations {
+  id       Int    @id @default(autoincrement())
+  slideId  Int    @map("slide_id")
+  language String
+  title    String
+
+  slide HomepageSlide @relation(fields: [slideId], references: [id], onDelete: Cascade)
+
+  @@unique([slideId, language])
+  @@map("homepage_slide_translations")
 }

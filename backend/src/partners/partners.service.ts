@@ -228,19 +228,10 @@ export class PartnersService {
   async deletePartner(id: number) {
     const partner = await this.prismaService.partners.findUnique({
       where: { id },
-      include: {
-        projects: true,
-      },
     });
 
     if (!partner) {
       throw new NotFoundException(`Partner with ID "${id}" not found`);
-    }
-
-    if (partner.projects && partner.projects.length > 0) {
-      throw new ConflictException(
-        `Cannot delete partner "${partner.companyName}" because it has ${partner.projects.length} associated project(s). Please delete or reassign the projects first.`,
-      );
     }
 
     if (partner.image) {

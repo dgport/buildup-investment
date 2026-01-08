@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
@@ -9,7 +10,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { TranslationSyncUtil } from '@/common/utils/translation-sync.util';
 import { LANGUAGES } from '@/common/constants/language';
-import { Region } from '@prisma/client';
+import { Region, UserRole, PropertyStatus } from '@prisma/client';
 
 interface FindAllParams {
   lang?: string;
@@ -27,6 +28,8 @@ interface FindAllParams {
   rooms?: number;
   bedrooms?: number;
   includePrivate?: boolean;
+  onlyApproved?: boolean;
+  userId?: string;
 }
 
 @Injectable()
@@ -75,6 +78,40 @@ export class PropertiesService {
     return translation;
   }
 
+  private async getDefaultContactPhone(): Promise<string> {
+    const setting = await this.prismaService.siteSettings.findUnique({
+      where: { key: 'default_contact_phone' },
+    });
+    return setting?.value || '+995 XXX XXX XXX';
+  }
+
+  private async checkPropertyOwnership(
+    propertyId: string,
+    userId: string,
+    userRole: UserRole,
+  ): Promise<void> {
+    // Admins can access all properties
+    if (userRole === UserRole.ADMIN) {
+      return;
+    }
+
+    const property = await this.prismaService.property.findUnique({
+      where: { id: propertyId },
+      select: { userId: true },
+    });
+
+    if (!property) {
+      throw new NotFoundException(`Property with ID "${propertyId}" not found`);
+    }
+
+    // Regular users can only access their own properties
+    if (property.userId !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to access this property',
+      );
+    }
+  }
+
   async findAll(params: FindAllParams = {}) {
     const {
       lang = 'en',
@@ -92,6 +129,8 @@ export class PropertiesService {
       rooms,
       bedrooms,
       includePrivate = false,
+      onlyApproved = true,
+      userId,
     } = params;
 
     const skip = (page - 1) * limit;
@@ -99,6 +138,15 @@ export class PropertiesService {
 
     if (!includePrivate) {
       where.public = true;
+    }
+
+    if (onlyApproved) {
+      where.status = PropertyStatus.APPROVED;
+    }
+
+    // Filter by userId if provided (for user's own properties)
+    if (userId) {
+      where.userId = userId;
     }
 
     if (externalId) {
@@ -141,6 +189,15 @@ export class PropertiesService {
         galleryImages: {
           orderBy: { order: 'asc' },
         },
+        user: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
     });
 
@@ -166,6 +223,8 @@ export class PropertiesService {
       }
     });
 
+    const defaultPhone = await this.getDefaultContactPhone();
+
     const mappedProperties = properties.map((property) => {
       const regionTranslation = property.region
         ? regionTranslationMap.get(property.region)
@@ -188,6 +247,10 @@ export class PropertiesService {
         price: property.price,
         hotSale: property.hotSale,
         public: property.public,
+        status: property.status,
+        contactPhone: property.contactPhone || defaultPhone,
+        userId: property.userId,
+        user: property.user,
         createdAt: property.createdAt,
         updatedAt: property.updatedAt,
         totalArea: property.totalArea,
@@ -245,11 +308,33 @@ export class PropertiesService {
     };
   }
 
-  async findOne(id: string, lang = 'en', includePrivate = false) {
+  // Get only user's own properties (enforced at service level)
+  async findUserProperties(
+    userId: string,
+    params: Partial<FindAllParams> = {},
+  ) {
+    return this.findAll({
+      ...params,
+      userId, // Always filter by userId
+      includePrivate: true,
+      onlyApproved: false,
+    });
+  }
+
+  async findOne(
+    id: string,
+    lang = 'en',
+    includePrivate = false,
+    onlyApproved = true,
+  ) {
     const where: any = { id };
 
     if (!includePrivate) {
       where.public = true;
+    }
+
+    if (onlyApproved) {
+      where.status = PropertyStatus.APPROVED;
     }
 
     const property = await this.prismaService.property.findFirst({
@@ -258,6 +343,15 @@ export class PropertiesService {
         translations: true,
         galleryImages: {
           orderBy: { order: 'asc' },
+        },
+        user: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            email: true,
+            phone: true,
+          },
         },
       },
     });
@@ -276,6 +370,8 @@ export class PropertiesService {
         (t) => t.language === lang && t.title && t.title.trim(),
       ) || property.translations.find((t) => t.language === 'en' && t.title);
 
+    const defaultPhone = await this.getDefaultContactPhone();
+
     return {
       id: property.id,
       externalId: property.externalId,
@@ -288,6 +384,11 @@ export class PropertiesService {
       price: property.price,
       hotSale: property.hotSale,
       public: property.public,
+      status: property.status,
+      contactPhone: property.contactPhone || defaultPhone,
+      userId: property.userId,
+      user: property.user,
+      rejectionReason: property.rejectionReason,
       createdAt: property.createdAt,
       updatedAt: property.updatedAt,
       totalArea: property.totalArea,
@@ -332,8 +433,15 @@ export class PropertiesService {
     };
   }
 
-  async createProperty(dto: CreatePropertyDto, images?: Express.Multer.File[]) {
+  async createProperty(
+    dto: CreatePropertyDto,
+    images?: Express.Multer.File[],
+    userId?: string,
+    userRole?: UserRole,
+  ) {
     const generatedExternalId = await this.generateUniqueExternalId();
+
+    const isAdmin = userRole === UserRole.ADMIN;
 
     const property = await this.prismaService.property.create({
       data: {
@@ -345,6 +453,9 @@ export class PropertiesService {
         address: dto.address || null,
         hotSale: dto.hotSale || false,
         public: dto.public !== undefined ? dto.public : true,
+        userId: userId || null, // Always set the userId
+        status: isAdmin ? PropertyStatus.APPROVED : PropertyStatus.APPROVED,
+        contactPhone: dto.contactPhone || null,
         price: dto.price ? parseInt(dto.price as any) : null,
         totalArea: dto.totalArea ? parseInt(dto.totalArea as any) : null,
         rooms: dto.rooms ? parseInt(dto.rooms as any) : null,
@@ -420,14 +531,21 @@ export class PropertiesService {
       }
     }
 
-    return this.findOne(property.id, 'en', true);
+    return this.findOne(property.id, 'en', true, false);
   }
 
   async updateProperty(
     id: string,
     dto: UpdatePropertyDto,
     images?: Express.Multer.File[],
+    userId?: string,
+    userRole?: UserRole,
   ) {
+    // Check ownership - will throw if user doesn't have access
+    if (userId && userRole) {
+      await this.checkPropertyOwnership(id, userId, userRole);
+    }
+
     const property = await this.prismaService.property.findUnique({
       where: { id },
     });
@@ -446,6 +564,8 @@ export class PropertiesService {
     if (dto.address !== undefined) updateData.address = dto.address || null;
     if (dto.hotSale !== undefined) updateData.hotSale = dto.hotSale;
     if (dto.public !== undefined) updateData.public = dto.public;
+    if (dto.contactPhone !== undefined)
+      updateData.contactPhone = dto.contactPhone || null;
     if (dto.price !== undefined)
       updateData.price = dto.price ? parseInt(dto.price as any) : null;
     if (dto.totalArea !== undefined)
@@ -545,10 +665,15 @@ export class PropertiesService {
       }
     }
 
-    return this.findOne(updatedProperty.id, 'en', true);
+    return this.findOne(updatedProperty.id, 'en', true, false);
   }
 
-  async deleteProperty(id: string) {
+  async deleteProperty(id: string, userId?: string, userRole?: UserRole) {
+    // Check ownership - will throw if user doesn't have access
+    if (userId && userRole) {
+      await this.checkPropertyOwnership(id, userId, userRole);
+    }
+
     const property = await this.prismaService.property.findUnique({
       where: { id },
       include: {
@@ -571,7 +696,15 @@ export class PropertiesService {
     return { message: 'Property deleted successfully' };
   }
 
-  async getTranslations(propertyId: string) {
+  async getTranslations(
+    propertyId: string,
+    userId?: string,
+    userRole?: UserRole,
+  ) {
+    if (userId && userRole) {
+      await this.checkPropertyOwnership(propertyId, userId, userRole);
+    }
+
     const property = await this.prismaService.property.findUnique({
       where: { id: propertyId },
       include: {
@@ -615,7 +748,13 @@ export class PropertiesService {
     title: string,
     address?: string,
     description?: string,
+    userId?: string,
+    userRole?: UserRole,
   ) {
+    if (userId && userRole) {
+      await this.checkPropertyOwnership(propertyId, userId, userRole);
+    }
+
     const property = await this.prismaService.property.findUnique({
       where: { id: propertyId },
     });
@@ -648,9 +787,18 @@ export class PropertiesService {
     return translation;
   }
 
-  async deleteTranslation(propertyId: string, language: string) {
+  async deleteTranslation(
+    propertyId: string,
+    language: string,
+    userId?: string,
+    userRole?: UserRole,
+  ) {
     if (language === 'en') {
       throw new ConflictException('Cannot delete English translation');
+    }
+
+    if (userId && userRole) {
+      await this.checkPropertyOwnership(propertyId, userId, userRole);
     }
 
     const translation =
@@ -681,7 +829,16 @@ export class PropertiesService {
     return { message: 'Translation deleted successfully' };
   }
 
-  async deleteGalleryImage(propertyId: string, imageId: number) {
+  async deleteGalleryImage(
+    propertyId: string,
+    imageId: number,
+    userId?: string,
+    userRole?: UserRole,
+  ) {
+    if (userId && userRole) {
+      await this.checkPropertyOwnership(propertyId, userId, userRole);
+    }
+
     const image = await this.prismaService.propertyGalleryImage.findUnique({
       where: { id: imageId },
     });

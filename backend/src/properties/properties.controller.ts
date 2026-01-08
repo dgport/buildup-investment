@@ -10,10 +10,12 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { PropertiesService } from './properties.service';
@@ -32,9 +34,8 @@ import { multerConfig } from '../common/config/multer.config';
 import { UpsertPropertyTranslationDto } from './dto/UpsertPropertyTranslation.dto';
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
-import { AuthGuard } from '@/auth/guards/basic-auth.guard';
-import { Region } from '@prisma/client';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { Region } from '@prisma/client';
 
 @ApiTags('Properties')
 @Controller('properties')
@@ -73,31 +74,21 @@ export class PropertiesController {
         'Premium real estate investment in Georgia'
       ).substring(0, 160);
 
-      // FIXED: Handle image URL correctly to avoid duplicate /uploads
       let imageUrl = 'https://api.buildup.ge/uploads/logo.png';
 
       if (property.galleryImages && property.galleryImages.length > 0) {
         const imgPath = property.galleryImages[0].imageUrl;
 
         if (imgPath) {
-          // If it's already a full URL
           if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
             imageUrl = imgPath;
-          }
-          // If path already contains 'uploads/' anywhere
-          else if (imgPath.includes('uploads/')) {
-            imageUrl = `https://api.buildup.ge/${imgPath.replace(/^\/+/, '')}`; // Remove leading slashes
-          }
-          // If path starts with /uploads/
-          else if (imgPath.startsWith('/uploads/')) {
+          } else if (imgPath.includes('uploads/')) {
+            imageUrl = `https://api.buildup.ge/${imgPath.replace(/^\/+/, '')}`;
+          } else if (imgPath.startsWith('/uploads/')) {
             imageUrl = `https://api.buildup.ge${imgPath}`;
-          }
-          // If path starts with /
-          else if (imgPath.startsWith('/')) {
+          } else if (imgPath.startsWith('/')) {
             imageUrl = `https://api.buildup.ge${imgPath}`;
-          }
-          // Plain filename without path
-          else {
+          } else {
             imageUrl = `https://api.buildup.ge/uploads/${imgPath}`;
           }
         }
@@ -105,7 +96,6 @@ export class PropertiesController {
 
       const canonicalUrl = `https://buildup.ge/properties/${id}`;
 
-      // Escape HTML special characters
       const escapeHtml = (text: string): string => {
         const map: { [key: string]: string } = {
           '&': '&amp;',
@@ -184,7 +174,7 @@ export class PropertiesController {
 
   @Get()
   @ApiOperation({
-    summary: 'Get all PUBLIC properties with pagination and filters',
+    summary: 'Get all APPROVED public properties with pagination and filters',
   })
   @ApiQuery({
     name: 'lang',
@@ -274,7 +264,7 @@ export class PropertiesController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Public properties retrieved successfully',
+    description: 'Public approved properties retrieved successfully',
   })
   async findAll(
     @Query('lang') lang?: string,
@@ -308,11 +298,63 @@ export class PropertiesController {
       rooms: rooms ? parseInt(rooms, 10) : undefined,
       bedrooms: bedrooms ? parseInt(bedrooms, 10) : undefined,
       includePrivate: false,
+      onlyApproved: true,
+    });
+  }
+
+  @Get('my-properties')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user properties' })
+  @ApiQuery({
+    name: 'lang',
+    required: false,
+    description: 'Language code',
+    example: 'en',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number',
+    example: 1,
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page',
+    example: 10,
+    type: 'number',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User properties retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMyProperties(
+    @Req() req: any,
+    @Query('lang') lang?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    // FIX: Use req.user.id instead of req.user.userId
+    const userId = req.user.id;
+
+    if (!userId) {
+      throw new UnauthorizedException('User ID not found in token');
+    }
+
+    console.log('✅ Getting properties for userId:', userId);
+
+    return this.propertiesService.findUserProperties(userId, {
+      lang,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
     });
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get PUBLIC property by ID' })
+  @ApiOperation({ summary: 'Get PUBLIC APPROVED property by ID' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiQuery({
     name: 'lang',
@@ -326,7 +368,7 @@ export class PropertiesController {
   })
   @ApiResponse({ status: 404, description: 'Property not found' })
   async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
-    return this.propertiesService.findOne(id, lang, false);
+    return this.propertiesService.findOne(id, lang, false, true);
   }
 
   @Get('admin/all')
@@ -458,6 +500,7 @@ export class PropertiesController {
       rooms: rooms ? parseInt(rooms, 10) : undefined,
       bedrooms: bedrooms ? parseInt(bedrooms, 10) : undefined,
       includePrivate: true,
+      onlyApproved: false,
     });
   }
 
@@ -481,7 +524,7 @@ export class PropertiesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   async findOneAdmin(@Param('id') id: string, @Query('lang') lang?: string) {
-    return this.propertiesService.findOne(id, lang, true);
+    return this.propertiesService.findOne(id, lang, true, false);
   }
 
   @Post()
@@ -489,93 +532,134 @@ export class PropertiesController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Create a new property (Admin only)' })
+  @ApiOperation({ summary: 'Create a new property (Authenticated users)' })
   @ApiResponse({ status: 201, description: 'Property created successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseInterceptors(FilesInterceptor('images', 20, multerConfig('properties')))
   @ApiBody({ type: CreatePropertyDto })
   async createProperty(
+    @Req() req: any,
     @Body() dto: CreatePropertyDto,
     @UploadedFiles() images?: Express.Multer.File[],
   ) {
-    return this.propertiesService.createProperty(dto, images);
+    // FIX: Use req.user.id instead of req.user.userId
+    return this.propertiesService.createProperty(
+      dto,
+      images,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Update a property (Admin only)' })
+  @ApiOperation({
+    summary: 'Update a property (Owner or Admin)',
+  })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Property updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not property owner' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   @UseInterceptors(FilesInterceptor('images', 20, multerConfig('properties')))
   @ApiBody({ type: UpdatePropertyDto })
   async updateProperty(
+    @Req() req: any,
     @Param('id') id: string,
     @Body() dto: UpdatePropertyDto,
     @UploadedFiles() images?: Express.Multer.File[],
   ) {
-    return this.propertiesService.updateProperty(id, dto, images);
+    // FIX: Use req.user.id instead of req.user.userId
+    return this.propertiesService.updateProperty(
+      id,
+      dto,
+      images,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a property (Admin only)' })
+  @ApiOperation({ summary: 'Delete a property (Owner or Admin)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Property deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not property owner' })
   @ApiResponse({ status: 404, description: 'Property not found' })
-  async deleteProperty(@Param('id') id: string) {
-    return this.propertiesService.deleteProperty(id);
+  async deleteProperty(@Req() req: any, @Param('id') id: string) {
+    // FIX: Use req.user.id instead of req.user.userId
+    return this.propertiesService.deleteProperty(
+      id,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @Get(':id/translations')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all translations for a property (Admin only)' })
+  @ApiOperation({
+    summary: 'Get all translations for a property (Owner or Admin)',
+  })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiResponse({
     status: 200,
     description: 'Translations retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not property owner' })
   @ApiResponse({ status: 404, description: 'Property not found' })
-  async getTranslations(@Param('id') id: string) {
-    return this.propertiesService.getTranslations(id);
+  async getTranslations(@Req() req: any, @Param('id') id: string) {
+    // FIX: Use req.user.id instead of req.user.userId
+    return this.propertiesService.getTranslations(
+      id,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @Patch(':id/translations')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Add or update a translation (Admin only)' })
+  @ApiOperation({
+    summary: 'Add or update a translation (Owner or Admin)',
+  })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiResponse({
     status: 200,
     description: 'Translation added/updated successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not property owner' })
   @ApiResponse({ status: 404, description: 'Property not found' })
   @ApiBody({ type: UpsertPropertyTranslationDto })
   async upsertTranslation(
+    @Req() req: any,
     @Param('id') id: string,
     @Body() dto: UpsertPropertyTranslationDto,
   ) {
+    // FIX: Use req.user.id instead of req.user.userId
     return this.propertiesService.upsertTranslation(
       id,
       dto.language,
       dto.title,
       dto.address,
       dto.description,
+      req.user.id,
+      req.user.role,
     );
   }
 
   @Delete(':id/translations/:language')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a specific translation (Admin only)' })
+  @ApiOperation({
+    summary: 'Delete a specific translation (Owner or Admin)',
+  })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiParam({
     name: 'language',
@@ -584,27 +668,42 @@ export class PropertiesController {
   })
   @ApiResponse({ status: 200, description: 'Translation deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not property owner' })
   @ApiResponse({ status: 404, description: 'Translation not found' })
   async deleteTranslation(
+    @Req() req: any,
     @Param('id') id: string,
     @Param('language') language: string,
   ) {
-    return this.propertiesService.deleteTranslation(id, language);
+    // FIX: Use req.user.id instead of req.user.userId
+    return this.propertiesService.deleteTranslation(
+      id,
+      language,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @Delete(':id/images/:imageId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a gallery image (Admin only)' })
+  @ApiOperation({ summary: 'Delete a gallery image (Owner or Admin)' })
   @ApiParam({ name: 'id', description: 'Property ID', type: 'string' })
   @ApiParam({ name: 'imageId', description: 'Image ID', type: 'string' })
   @ApiResponse({ status: 200, description: 'Image deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not property owner' })
   @ApiResponse({ status: 404, description: 'Image not found' })
   async deleteGalleryImage(
+    @Req() req: any,
     @Param('id') id: string,
     @Param('imageId') imageId: number,
   ) {
-    return this.propertiesService.deleteGalleryImage(id, imageId);
+    return this.propertiesService.deleteGalleryImage(
+      id,
+      imageId,
+      req.user.id,
+      req.user.role,
+    );
   }
 }

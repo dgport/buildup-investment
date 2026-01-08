@@ -25,6 +25,22 @@ export const propertiesService = {
     })
   },
 
+  // Add this method for user's own properties
+  getMyProperties: (filters?: PropertyFilters) => {
+    const cleanFilters = filters
+      ? Object.fromEntries(
+          Object.entries(filters).filter(
+            ([_, value]) =>
+              value !== undefined && value !== null && value !== ''
+          )
+        )
+      : {}
+
+    return api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.MY_PROPERTIES, {
+      params: cleanFilters,
+    })
+  },
+
   getAllAdmin: (filters?: PropertyFilters) => {
     const cleanFilters = filters
       ? Object.fromEntries(
@@ -35,7 +51,7 @@ export const propertiesService = {
         )
       : {}
 
-    return api.get<PropertiesResponse>('/properties/admin/all', {
+    return api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.ADMIN_ALL, {
       params: cleanFilters,
     })
   },
@@ -46,7 +62,7 @@ export const propertiesService = {
     }),
 
   getByIdAdmin: (id: string, lang?: string) =>
-    api.get<Property>(`/properties/admin/${id}`, {
+    api.get<Property>(API_ENDPOINTS.PROPERTIES.ADMIN_BY_ID(id), {
       params: lang ? { lang } : {},
     }),
 

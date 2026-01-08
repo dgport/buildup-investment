@@ -1,4 +1,3 @@
-// hooks/useProperties.ts
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '../tanstack/query-client'
 import type {
@@ -11,9 +10,10 @@ import type {
 } from '../types/properties'
 import { propertiesService } from '../services/properties.service'
 
+// Public properties (for frontend listing pages)
 export const useProperties = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
-    queryKey: ['properties', filters],
+    queryKey: ['properties', 'public', filters],
     queryFn: async () => {
       const response = await propertiesService.getAll(filters)
       return response.data
@@ -21,6 +21,18 @@ export const useProperties = (filters?: PropertyFilters) => {
   })
 }
 
+// User's own properties (ALWAYS filtered by userId on backend)
+export const useMyProperties = (filters?: PropertyFilters) => {
+  return useQuery<PropertiesResponse>({
+    queryKey: ['properties', 'my-properties', filters],
+    queryFn: async () => {
+      const response = await propertiesService.getMyProperties(filters)
+      return response.data
+    },
+  })
+}
+
+// Admin view - all properties (requires ADMIN role)
 export const usePropertiesAdmin = (filters?: PropertyFilters) => {
   return useQuery<PropertiesResponse>({
     queryKey: ['properties', 'admin', filters],
@@ -31,9 +43,10 @@ export const usePropertiesAdmin = (filters?: PropertyFilters) => {
   })
 }
 
+// Public property detail
 export const useProperty = (id: string, lang?: string) => {
   return useQuery<Property>({
-    queryKey: ['properties', id, lang],
+    queryKey: ['properties', 'public', id, lang],
     queryFn: async () => {
       const response = await propertiesService.getById(id, lang)
       return response.data
@@ -42,6 +55,7 @@ export const useProperty = (id: string, lang?: string) => {
   })
 }
 
+// Admin property detail (includes private properties)
 export const usePropertyAdmin = (id: string, lang?: string) => {
   return useQuery<Property>({
     queryKey: ['properties', 'admin', id, lang],
@@ -53,6 +67,7 @@ export const usePropertyAdmin = (id: string, lang?: string) => {
   })
 }
 
+// Create property (auto-assigned to current user)
 export const useCreateProperty = () => {
   return useMutation({
     mutationFn: async ({
@@ -66,11 +81,13 @@ export const useCreateProperty = () => {
       return response.data
     },
     onSuccess: () => {
+      // Invalidate all property-related queries
       queryClient.invalidateQueries({ queryKey: ['properties'] })
     },
   })
 }
 
+// Update property (ownership checked on backend)
 export const useUpdateProperty = () => {
   return useMutation({
     mutationFn: async ({
@@ -87,11 +104,17 @@ export const useUpdateProperty = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['properties'] })
-      queryClient.invalidateQueries({ queryKey: ['properties', variables.id] })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'public', variables.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'admin', variables.id],
+      })
     },
   })
 }
 
+// Delete property (ownership checked on backend)
 export const useDeleteProperty = () => {
   return useMutation({
     mutationFn: async (id: string) => {
@@ -104,6 +127,7 @@ export const useDeleteProperty = () => {
   })
 }
 
+// Property translations (ownership checked on backend)
 export const usePropertyTranslations = (id: string) => {
   return useQuery<PropertyTranslation[]>({
     queryKey: ['properties', id, 'translations'],
@@ -115,6 +139,7 @@ export const usePropertyTranslations = (id: string) => {
   })
 }
 
+// Upsert translation (ownership checked on backend)
 export const useUpsertPropertyTranslation = () => {
   return useMutation({
     mutationFn: async ({
@@ -131,11 +156,17 @@ export const useUpsertPropertyTranslation = () => {
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id, 'translations'],
       })
-      queryClient.invalidateQueries({ queryKey: ['properties', variables.id] })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'public', variables.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'admin', variables.id],
+      })
     },
   })
 }
 
+// Delete translation (ownership checked on backend)
 export const useDeletePropertyTranslation = () => {
   return useMutation({
     mutationFn: async ({ id, language }: { id: string; language: string }) => {
@@ -146,11 +177,17 @@ export const useDeletePropertyTranslation = () => {
       queryClient.invalidateQueries({
         queryKey: ['properties', variables.id, 'translations'],
       })
-      queryClient.invalidateQueries({ queryKey: ['properties', variables.id] })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'public', variables.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'admin', variables.id],
+      })
     },
   })
 }
 
+// Delete image (ownership checked on backend)
 export const useDeletePropertyImage = () => {
   return useMutation({
     mutationFn: async ({
@@ -168,12 +205,19 @@ export const useDeletePropertyImage = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['properties', variables.propertyId],
+        queryKey: ['properties', 'public', variables.propertyId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'admin', variables.propertyId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'my-properties'],
       })
     },
   })
 }
 
+// Add images to property (ownership checked on backend)
 export const useAddPropertyImages = () => {
   return useMutation({
     mutationFn: async ({ id, images }: { id: string; images: File[] }) => {
@@ -182,7 +226,13 @@ export const useAddPropertyImages = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['properties', variables.id],
+        queryKey: ['properties', 'public', variables.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'admin', variables.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['properties', 'my-properties'],
       })
     },
   })
