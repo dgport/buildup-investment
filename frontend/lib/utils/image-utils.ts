@@ -1,13 +1,13 @@
 export const getImageUrl = (
   imagePath?: string,
-  apiUrl: string = import.meta.env.VITE_API_IMAGE_URL
+  apiUrl: string = "",
 ): string => {
-  if (!imagePath) return '/placeholder.svg'
+  if (!imagePath) return "/placeholder.svg";
 
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return imagePath
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
   }
 
-  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
-  return `${apiUrl}${cleanPath}`
-}
+  const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  return `${apiUrl}${cleanPath}`;
+};
