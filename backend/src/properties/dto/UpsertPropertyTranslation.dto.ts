@@ -2,10 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpsertPropertyTranslationDto {
-  @ApiProperty({
-    description: 'Language code',
-    example: 'ka',
-  })
+  @ApiProperty({ description: 'Language code', example: 'ka' })
   @IsString()
   @IsNotEmpty()
   language: string;

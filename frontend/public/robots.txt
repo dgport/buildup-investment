@@ -1,19 +1,21 @@
-
 User-agent: *
 Allow: /
 
- 
-Disallow: /admin
-Disallow: /signin
-Disallow: /signup
-Disallow: /unauthorized
-
-
-Allow: /
-Allow: /properties
-Allow: /partners
+# Pages
+Allow: /services
+Allow: /services/financial-audit
+Allow: /services/tax-services
+Allow: /services/accounting
+Allow: /services/valuation
+Allow: /services/legal
+Allow: /services/consulting
+Allow: /team
+Allow: /team/
+Allow: /about
 Allow: /contact
 
+# Block Next.js internals
+Disallow: /_next/
+Disallow: /api/
 
-Sitemap: https://buildup.ge/sitemap.xml
-Crawl-delay: 1
+Sitemap: https://www.prestigeaudit.ge/sitemap.xml

@@ -1,0 +1,20 @@
+{
+  "label": "Get In Touch",
+  "heading": "Let's Discuss Your Investment Goals",
+  "subheading": "Reach out and our team will get back to you within 24 hours.",
+  "fullName": "Full Name",
+  "fullNamePlaceholder": "Your name",
+  "email": "Email Address",
+  "emailPlaceholder": "you@example.com",
+  "phone": "Phone Number",
+  "message": "Message",
+  "messagePlaceholder": "Tell us about your investment interests...",
+  "send": "Send Message",
+  "sending": "Sending...",
+  "successMessage": "Message sent successfully! We'll be in touch soon.",
+  "locationLabel": "Location",
+  "locationValue": "Batumi, Georgia — Investment & Development Hub",
+  "phoneLabel": "Phone",
+  "emailLabel": "Email",
+  "connectLabel": "Connect With Us"
+}

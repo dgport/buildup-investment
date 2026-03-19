@@ -1,10 +1,12 @@
 import { IsEmail, IsString, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class SigninRequest {
-  @IsEmail({}, { message: 'Email must be a valid email address' })
+  @IsEmail()
+  @Transform(({ value }) => value?.trim().toLowerCase())
   email: string;
 
   @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  @MinLength(6)
   password: string;
 }

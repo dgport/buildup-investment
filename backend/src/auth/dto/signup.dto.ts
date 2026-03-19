@@ -1,50 +1,45 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
+  IsStrongPassword,
+  IsUrl,
   Matches,
   MaxLength,
   MinLength,
-  IsStrongPassword,
-  IsOptional,
-  IsUrl,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class SignupRequest {
-  @IsString({ message: 'First name must be a string' })
-  @IsNotEmpty({ message: 'First name is required' })
+  @IsString()
+  @IsNotEmpty()
   @Transform(({ value }) => value?.trim())
   @Matches(/^[a-zA-Z\s'-]+$/, {
     message:
       'First name can only contain letters, spaces, hyphens, and apostrophes',
   })
-  @MinLength(2, { message: 'First name must be at least 2 characters long' })
-  @MaxLength(50, { message: 'First name cannot exceed 50 characters' })
+  @MinLength(2)
+  @MaxLength(50)
   firstname: string;
 
-  @IsString({ message: 'Last name must be a string' })
-  @IsNotEmpty({ message: 'Last name is required' })
+  @IsString()
+  @IsNotEmpty()
   @Transform(({ value }) => value?.trim())
   @Matches(/^[a-zA-Z\s'-]+$/, {
     message:
       'Last name can only contain letters, spaces, hyphens, and apostrophes',
   })
-  @MinLength(2, { message: 'Last name must be at least 2 characters long' })
-  @MaxLength(50, { message: 'Last name cannot exceed 50 characters' })
+  @MinLength(2)
+  @MaxLength(50)
   lastname: string;
 
-  @IsString({ message: 'Email must be a string' })
-  @IsNotEmpty({ message: 'Email is required' })
+  @IsEmail()
+  @IsNotEmpty()
   @Transform(({ value }) => value?.trim().toLowerCase())
-  @IsEmail({}, { message: 'Please provide a valid email address' })
-  @MaxLength(255, { message: 'Email cannot exceed 255 characters' })
+  @MaxLength(255)
   email: string;
 
-  @IsString({ message: 'Password must be a string' })
-  @IsNotEmpty({ message: 'Password is required' })
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(128, { message: 'Password cannot exceed 128 characters' })
   @IsStrongPassword(
     {
       minLength: 8,
@@ -55,13 +50,14 @@ export class SignupRequest {
     },
     {
       message:
-        'Password must contain at least 8 characters with uppercase, lowercase, number, and special character',
+        'Password must be at least 8 characters with uppercase, lowercase, number, and special character',
     },
   )
+  @MaxLength(128)
   password: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'Avatar must be a valid URL' })
+  @IsUrl()
   avatar?: string;
 
   @IsOptional()

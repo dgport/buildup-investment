@@ -2,8 +2,8 @@ import { PrismaClient, Region } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function seedRegionTranslations() {
-  const translations = [
+async function seedRegionTranslations(): Promise<void> {
+  const translations: { region: Region; language: string; name: string }[] = [
     { region: Region.BATUMI, language: 'en', name: 'Batumi' },
     { region: Region.BATUMI, language: 'ka', name: 'ბათუმი' },
     { region: Region.BATUMI, language: 'ru', name: 'Батуми' },
@@ -41,14 +41,16 @@ async function seedRegionTranslations() {
       create: translation,
     });
   }
+
+  console.log(`✅ Seeded ${translations.length} region translations`);
 }
 
-async function main() {
+async function main(): Promise<void> {
   await seedRegionTranslations();
 }
 
 main()
-  .then(() => console.log('✅ Regions seeded'))
+  .then(() => console.log('✅ Seed completed'))
   .catch((e) => {
     console.error('❌ Seed error:', e);
     process.exit(1);

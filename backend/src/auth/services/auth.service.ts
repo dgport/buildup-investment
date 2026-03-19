@@ -1,51 +1,29 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Response, Request } from 'express';
+import { UserRole } from '@prisma/client';
 import { SignupRequest } from '../dto/signup.dto';
 import { SigninRequest } from '../dto/signin.dto';
-import { AuthResponse } from '../types/auth-response.type';
-
+import {
+  AuthResponse,
+  RefreshTokenResponse,
+} from '../types/auth-response.type';
+import { GoogleRequest } from '../types/google-request.type';
+import { JwtPayload } from '../types/jwt-payload.type';
+import { User } from '../types/user.type';
 import { UserAccountService } from './user-account.service';
 import { TokenService } from './token.service';
-import { RefreshTokenResponse } from '../types/refresh-token-response.type';
-import { GoogleRequest } from '../types/google-request.type';
 import { CookieService } from './cookie.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userAccountService: UserAccountService,
-    private tokenService: TokenService,
-    private cookieService: CookieService,
+    private readonly userAccountService: UserAccountService,
+    private readonly tokenService: TokenService,
+    private readonly cookieService: CookieService,
   ) {}
 
   async signup(dto: SignupRequest) {
-    const result = await this.userAccountService.createUserWithCredentials(dto);
-    return result;
-  }
-
-  async signupOrLoginWithGoogle(
-    googleUser: GoogleRequest,
-    response: Response,
-  ): Promise<AuthResponse> {
-    const user =
-      await this.userAccountService.signupOrLoginWithGoogle(googleUser);
-
-    const tokens = await this.tokenService.generateTokens(
-      user.id,
-      user.email,
-      user.role,
-      user.firstname,
-      user.lastname,
-    );
-
-    await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
-    this.cookieService.setRefreshTokenCookie(response, tokens.refreshToken);
-    const { password, ...userWithoutPassword } = user;
-
-    return {
-      user: userWithoutPassword,
-      accessToken: tokens.accessToken,
-    };
+    return this.userAccountService.createUserWithCredentials(dto);
   }
 
   async signin(dto: SigninRequest, response: Response): Promise<AuthResponse> {
@@ -53,23 +31,17 @@ export class AuthService {
       dto.email,
       dto.password,
     );
+    return this.issueTokensAndRespond(user, response);
+  }
 
-    const tokens = await this.tokenService.generateTokens(
-      user.id,
-      user.email,
-      user.role,
-      user.firstname,
-      user.lastname,
+  async signupOrLoginWithGoogle(
+    req: GoogleRequest,
+    response: Response,
+  ): Promise<AuthResponse> {
+    const user = await this.userAccountService.signupOrLoginWithGoogle(
+      req.user,
     );
-
-    await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
-    this.cookieService.setRefreshTokenCookie(response, tokens.refreshToken);
-
-    const { password, ...userWithoutPassword } = user;
-    return {
-      user: userWithoutPassword,
-      accessToken: tokens.accessToken,
-    };
+    return this.issueTokensAndRespond(user, response);
   }
 
   async refreshAccessToken(
@@ -82,56 +54,25 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token not found');
     }
 
-    const { payload, storedToken } =
+    const { payload, storedTokenId } =
       await this.tokenService.verifyRefreshToken(refreshToken);
+    const user = await this.userAccountService.findById(payload.sub);
+    const tokenPayload = this.buildPayload(user);
 
-    const isNearExpiry = await this.tokenService.isRefreshTokenNearExpiry(
-      refreshToken,
-      1,
-    );
+    const isNearExpiry =
+      await this.tokenService.isRefreshTokenNearExpiry(refreshToken);
 
     if (isNearExpiry) {
-      const newTokens = await this.tokenService.generateTokens(
-        payload.sub,
-        payload.email,
-        payload.role,
-        payload.firstname,
-        payload.lastname,
-        payload.avatar,
-      );
-      await this.tokenService.revokeRefreshTokenById(storedToken.id);
-      await this.tokenService.saveRefreshToken(
-        payload.sub,
-        newTokens.refreshToken,
-      );
-      this.cookieService.setRefreshTokenCookie(
-        response,
-        newTokens.refreshToken,
-      );
-
-      const user = await this.userAccountService.findById(payload.sub);
-
-      return {
-        accessToken: newTokens.accessToken,
-        user: user,
-      };
-    } else {
-      const newAccessToken = await this.tokenService.generateAccessToken(
-        payload.sub,
-        payload.email,
-        payload.role,
-        payload.firstname,
-        payload.lastname,
-        payload.avatar,
-      );
-
-      const user = await this.userAccountService.findById(payload.sub);
-
-      return {
-        accessToken: newAccessToken,
-        user: user,
-      };
+      const tokens = await this.tokenService.generateTokens(tokenPayload);
+      await this.tokenService.revokeRefreshTokenById(storedTokenId);
+      await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
+      this.cookieService.setRefreshTokenCookie(response, tokens.refreshToken);
+      return { accessToken: tokens.accessToken, user };
     }
+
+    const accessToken =
+      await this.tokenService.generateAccessToken(tokenPayload);
+    return { accessToken, user };
   }
 
   async logout(
@@ -145,7 +86,6 @@ export class AuthService {
     }
 
     this.cookieService.clearAuthCookies(response);
-
     return { message: 'Logged out successfully' };
   }
 
@@ -155,7 +95,31 @@ export class AuthService {
   ): Promise<{ message: string }> {
     await this.tokenService.revokeAllUserTokens(userId);
     this.cookieService.clearAuthCookies(response);
-
     return { message: 'Logged out from all devices successfully' };
+  }
+
+  // ─── Private ─────────────────────────────────────────────────────────────────
+
+  private buildPayload(user: User): JwtPayload {
+    return {
+      sub: user.id,
+      email: user.email,
+      role: user.role as UserRole,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      avatar: user.avatar ?? undefined,
+    };
+  }
+
+  private async issueTokensAndRespond(
+    user: User,
+    response: Response,
+  ): Promise<AuthResponse> {
+    const tokens = await this.tokenService.generateTokens(
+      this.buildPayload(user),
+    );
+    await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
+    this.cookieService.setRefreshTokenCookie(response, tokens.refreshToken);
+    return { user, accessToken: tokens.accessToken };
   }
 }

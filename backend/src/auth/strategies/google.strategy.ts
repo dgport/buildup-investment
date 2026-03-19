@@ -2,51 +2,35 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
-import { AuthService } from '../services/auth.service';
- 
+import { GoogleUser } from '../types/google-request.type';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-    constructor(
-        private configService: ConfigService,
-        private authService: AuthService
-    ) {
-        const clientID = configService.get('GOOGLE_CLIENT_ID');
-        const clientSecret = configService.get('GOOGLE_CLIENT_SECRET');
-        const callbackURL = configService.get('GOOGLE_CALLBACK_URL');
+  constructor(configService: ConfigService) {
+    super({
+      clientID: configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
+      clientSecret: configService.getOrThrow<string>('GOOGLE_CLIENT_SECRET'),
+      callbackURL: configService.getOrThrow<string>('GOOGLE_CALLBACK_URL'),
+      scope: ['email', 'profile'],
+    });
+  }
 
-        if (!clientID || !clientSecret || !callbackURL) {
-            throw new Error(
-                'Missing Google OAuth configuration. Please check your environment variables.'
-            );
-        }
+  validate(
+    _accessToken: string,
+    _refreshToken: string,
+    profile: any,
+    done: VerifyCallback,
+  ): void {
+    const { name, emails, photos, id } = profile;
 
-        super({
-            clientID,
-            clientSecret,
-            callbackURL,
-            scope: ['email', 'profile'],
-        });
-    }
+    const user: GoogleUser = {
+      googleId: id,
+      email: emails[0].value,
+      firstname: name.givenName,
+      lastname: name.familyName,
+      avatar: photos[0]?.value,
+    };
 
-    async validate(
-        accessToken: string,
-        refreshToken: string,
-        profile: any,
-        done: VerifyCallback
-    ): Promise<any> {
-        const { name, emails, photos, id } = profile;
-
-        const user = {
-            email: emails[0].value,
-            firstname: name.givenName,
-            lastname: name.familyName,
-            avatar: photos[0].value,
-            googleId: id,
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-        };
-
-        done(null, user);
-    }
+    done(null, user);
+  }
 }

@@ -1,0 +1,66 @@
+{
+  "switchingTexts": [
+    "Premium Properties",
+    "Strategic Investments",
+    "Luxury Developments",
+    "Global Opportunities",
+    "Secure Returns"
+  ],
+  "subtitle": "Your gateway to exceptional real estate opportunities in Georgia's most desirable locations",
+  "cta": "Explore Properties",
+  "dotAriaLabel": "Go to slide {index}",
+  "since": "SINCE 2022",
+  "region": "GEORGIA",
+  "badge": "Our Expertise",
+  "sectionTitle": "What We Offer",
+  "sectionSubtitle": "A complete range of real estate and investment services tailored to your goals",
+  "items": [
+    {
+      "header": "Premium Batumi Properties",
+      "text": "Discover luxury apartments, seaside villas, and commercial spaces in the heart of Batumi. We specialize in prime Black Sea coast locations with stunning views."
+    },
+    {
+      "header": "Full Construction Services",
+      "text": "From foundation to finish — our experienced construction team delivers high-quality residential and commercial projects across Georgia, meeting international standards."
+    },
+    {
+      "header": "Investment Opportunities",
+      "text": "Navigate Georgia's thriving real estate market with confidence. We offer expert guidance on profitable investments, property management, and rental income optimization."
+    },
+    {
+      "header": "Turnkey Solutions",
+      "text": "Comprehensive property development services including design, construction, legal support, and interior finishing — all handled by our dedicated team in Batumi."
+    }
+  ],
+  "clientsSectionLabel": "Our Partners",
+  "mortgageBadge": "Mortgage Calculator",
+  "propertyPrice": "Property Price",
+  "downPayment": "Down Payment",
+  "loanTerm": "Loan Term",
+  "years": "years",
+  "year": "year",
+  "monthlyPayment": "Monthly Payment",
+  "loan": "Loan",
+  "loanAmount": "Loan Amount",
+  "equityShare": "Equity Share",
+  "mortgageCta": "Get Pre-Approved",
+  "aboutLabel": "Real Estate & Development",
+  "aboutHeadingRegular": "Building",
+  "aboutHeadingItalic": "Premium",
+  "aboutHeadingSuffix": "Properties in Batumi",
+  "aboutBody": "We develop and deliver exceptional residential and commercial real estate along the Black Sea coast. From land acquisition to turnkey handover, every project is built to the highest standards with your investment in mind.",
+  "aboutCta": "View Properties",
+  "aboutLocation": "Batumi, Georgia — Black Sea Coast",
+  "aboutStat1Value": "50+",
+  "aboutStat1Label": "Projects",
+  "aboutStat2Value": "3+",
+  "aboutStat2Label": "Years",
+  "aboutStat3Value": "200+",
+  "aboutStat3Label": "Clients",
+  "featuredProperties": "Featured Properties",
+  "seeAll": "See All",
+  "priceOnRequest": "Price on request",
+  "hotSale": "Hot Sale",
+  "rooms": "Rooms",
+  "area": "Area"
+}

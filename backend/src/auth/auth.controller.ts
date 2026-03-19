@@ -10,19 +10,23 @@ import {
   HttpStatus,
   Query,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { UserRole } from '@prisma/client';
 import { AuthService } from './services/auth.service';
-import { ScheduledTasksService } from './services/sheduled-tasks.service';
+
 import { UserAccountService } from './services/user-account.service';
 import { SignupRequest } from './dto/signup.dto';
 import { SigninRequest } from './dto/signin.dto';
 import { UpdatePasswordInput } from './dto/update-password.dto';
-import { User } from './types/user.type';
 import { GoogleRequest } from './types/google-request.type';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { User } from './types/user.type';
+import { ScheduledTasksService } from './services/sheduled-tasks.service';
 
 @Controller('auth')
 export class AuthController {
@@ -30,34 +34,29 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly scheduledTasksService: ScheduledTasksService,
     private readonly userAccountService: UserAccountService,
+    private readonly config: ConfigService,
   ) {}
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async signup(@Body() dto: SignupRequest) {
-    try {
-      const result = await this.authService.signup(dto);
-      return {
-        success: true,
-        message:
-          'Account created successfully. Please check your email to verify your account.',
-        userId: result.id,
-        email: result.email,
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Signup failed');
-    }
+    const result = await this.authService.signup(dto);
+    return {
+      success: true,
+      message:
+        'Account created. Please check your email to verify your account.',
+      userId: result.id,
+      email: result.email,
+    };
   }
 
   @Post('signin')
   @HttpCode(HttpStatus.OK)
   async signin(
     @Body() dto: SigninRequest,
-    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.signin(dto, res);
-    return result;
+    return this.authService.signin(dto, res);
   }
 
   @Post('refresh-token')
@@ -66,87 +65,98 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!req.cookies) {
-      throw new BadRequestException('No cookies found in request');
-    }
-    return await this.authService.refreshAccessToken(req, res);
+    return this.authService.refreshAccessToken(req, res);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.logout(req, res);
-    return result;
+    return this.authService.logout(req, res);
   }
 
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth() {}
-
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: GoogleRequest, @Res() res: Response) {
-    try {
-      const result = await this.authService.signupOrLoginWithGoogle(req, res);
-      const redirectUrl = `http://localhost:5173/auth/success?token=${result.accessToken}`;
-      res.redirect(redirectUrl);
-    } catch (error) {
-      console.error('❌ Google auth error:', error);
-      const errorMessage = encodeURIComponent(
-        error.message || 'Authentication failed',
-      );
-      const errorUrl = `http://localhost:5173/auth/error?message=${errorMessage}`;
-      res.redirect(errorUrl);
-    }
+  @Post('logout-all')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async logoutAll(
+    @CurrentUser() user: User,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.logoutAll(user.id, res);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getCurrentUser(@CurrentUser() user: User) {
+  getCurrentUser(@CurrentUser() user: User) {
     return user;
   }
 
+  // ─── Google OAuth ─────────────────────────────────────────────────────────────
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth() {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@Req() req: GoogleRequest, @Res() res: Response) {
+    const frontendUrl = this.config.getOrThrow<string>('FRONTEND_URL');
+    try {
+      const result = await this.authService.signupOrLoginWithGoogle(req, res);
+      res.redirect(
+        `${frontendUrl}/google-auth-success?token=${result.accessToken}`,
+      );
+    } catch (error) {
+      const message = encodeURIComponent(
+        error.message ?? 'Authentication failed',
+      );
+      res.redirect(`${frontendUrl}/auth/error?message=${message}`);
+    }
+  }
+
+  // ─── Email Verification ───────────────────────────────────────────────────────
+
   @Get('verify-email')
   async verifyEmail(@Query('token') token: string) {
-    if (!token || token.trim().length === 0) {
-      throw new BadRequestException('Token is required');
+    if (!token?.trim()) {
+      throw new BadRequestException('Verification token is required');
     }
-    const result = await this.userAccountService.verifyEmail(token);
-    return { message: result.message };
+    return this.userAccountService.verifyEmail(token);
   }
 
   @Post('resend-verification')
   @HttpCode(HttpStatus.OK)
   async resendVerificationEmail(@Body('email') email: string) {
-    const result = await this.userAccountService.resendVerificationEmail(email);
-    return { message: result.message };
+    return this.userAccountService.resendVerificationEmail(email);
   }
+
+  // ─── Password Management ──────────────────────────────────────────────────────
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  async sendUpdatePasswordEmail(@Body('email') email: string) {
-    const result = await this.userAccountService.sendUpdatePasswordEmail(email);
-    return { message: result };
+  async forgotPassword(@Body('email') email: string) {
+    return this.userAccountService.sendUpdatePasswordEmail(email);
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  async updatePassword(@Body() dto: UpdatePasswordInput) {
+  async resetPassword(@Body() dto: UpdatePasswordInput) {
     await this.userAccountService.updatePassword(dto);
     return { message: 'Password updated successfully' };
   }
 
-  @Post('cleanup-tokens')
-  @HttpCode(HttpStatus.OK)
-  async cleanupTokens() {
-    const result = await this.scheduledTasksService.manualTokenCleanup();
+  // ─── Admin ────────────────────────────────────────────────────────────────────
 
-    if (result.success) {
-      return {
-        message: `Successfully cleaned up ${result.deletedCount} expired tokens`,
-      };
-    } else {
+  @Post('cleanup-tokens')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async cleanupTokens(@CurrentUser() user: User) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Admin access required');
+    }
+    const result = await this.scheduledTasksService.manualTokenCleanup();
+    if (!result.success) {
       throw new BadRequestException(`Token cleanup failed: ${result.error}`);
     }
+    return { message: `Cleaned up ${result.deletedCount} expired tokens` };
   }
 }

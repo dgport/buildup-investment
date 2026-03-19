@@ -2,10 +2,10 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
-
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthTokens } from '../types/auth-tokens.type';
 import { calculateExpiryDate } from '../../common/utils/expiry-date.util';
+import { JwtPayload } from '../types/jwt-payload.type';
 
 @Injectable()
 export class TokenService {
@@ -17,129 +17,64 @@ export class TokenService {
     private readonly prisma: PrismaService,
   ) {}
 
-  // ------------------------
-  // Helpers
-  // ------------------------
-  private getExpires(key: string, fallback: StringValue): StringValue {
-    return (this.config.get<string>(key) ?? fallback) as StringValue;
-  }
+  // ─── Token Generation ────────────────────────────────────────────────────────
 
-  // ------------------------
-  // Token generation
-  // ------------------------
-  async generateTokens(
-    userId: string,
-    email: string,
-    role: string,
-    firstname?: string,
-    lastname?: string,
-    avatar?: string,
-  ): Promise<AuthTokens> {
-    const payload = {
-      sub: userId,
-      email,
-      role,
-      firstname,
-      lastname,
-      avatar,
-    };
-
+  async generateTokens(payload: JwtPayload): Promise<AuthTokens> {
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwt.signAsync(payload, {
-        secret: this.config.get<string>('JWT_SECRET'),
-        expiresIn: this.getExpires('JWT_ACCESS_TOKEN_EXPIRATION', '15m'),
-      }),
-      this.jwt.signAsync(payload, {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.getExpires('JWT_REFRESH_TOKEN_EXPIRATION', '7d'),
-      }),
+      this.signAccessToken(payload),
+      this.signRefreshToken(payload),
     ]);
-
     return { accessToken, refreshToken };
   }
 
-  async generateAccessToken(
-    userId: string,
-    email: string,
-    role: string,
-    firstname?: string,
-    lastname?: string,
-    avatar?: string,
-  ): Promise<string> {
-    const payload = {
-      sub: userId,
-      email,
-      role,
-      firstname,
-      lastname,
-      avatar,
-    };
-
-    return this.jwt.signAsync(payload, {
-      secret: this.config.get<string>('JWT_SECRET'),
-      expiresIn: this.getExpires('JWT_ACCESS_TOKEN_EXPIRATION', '15m'),
-    });
+  async generateAccessToken(payload: JwtPayload): Promise<string> {
+    return this.signAccessToken(payload);
   }
 
-  // ------------------------
-  // Verification
-  // ------------------------
-  async verifyRefreshToken(token: string) {
+  // ─── Verification ────────────────────────────────────────────────────────────
+
+  async verifyRefreshToken(
+    token: string,
+  ): Promise<{ payload: JwtPayload; storedTokenId: string }> {
+    let payload: JwtPayload;
+
     try {
-      const payload = await this.jwt.verifyAsync(token, {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      payload = await this.jwt.verifyAsync<JwtPayload>(token, {
+        secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
       });
-
-      const storedToken = await this.prisma.session.findFirst({
-        where: {
-          token,
-          userId: payload.sub,
-          isRevoked: false,
-          expiresAt: { gt: new Date() },
-        },
-      });
-
-      if (!storedToken) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      return { payload, storedToken };
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
-  }
 
-  async verifyAccessToken(token: string) {
-    try {
-      return await this.jwt.verifyAsync(token, {
-        secret: this.config.get<string>('JWT_SECRET'),
-      });
-    } catch {
-      throw new UnauthorizedException('Invalid access token');
+    const storedToken = await this.prisma.session.findFirst({
+      where: {
+        token,
+        userId: payload.sub,
+        isRevoked: false,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!storedToken) {
+      throw new UnauthorizedException(
+        'Refresh token has been revoked or expired',
+      );
     }
+
+    return { payload, storedTokenId: storedToken.id };
   }
 
-  // ------------------------
-  // Refresh token persistence
-  // ------------------------
-  async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
+  // ─── Persistence ─────────────────────────────────────────────────────────────
+
+  async saveRefreshToken(userId: string, token: string): Promise<void> {
+    const expiresAt = calculateExpiryDate(
+      this.getExpiry('JWT_REFRESH_TOKEN_EXPIRATION', '7d'),
+    );
+
     await this.prisma.session.upsert({
-      where: { token: refreshToken },
-      update: {
-        userId,
-        expiresAt: calculateExpiryDate(
-          this.getExpires('JWT_REFRESH_TOKEN_EXPIRATION', '7d'),
-        ),
-        isRevoked: false,
-      },
-      create: {
-        token: refreshToken,
-        userId,
-        expiresAt: calculateExpiryDate(
-          this.getExpires('JWT_REFRESH_TOKEN_EXPIRATION', '7d'),
-        ),
-        isRevoked: false,
-      },
+      where: { token },
+      create: { token, userId, expiresAt, isRevoked: false },
+      update: { userId, expiresAt, isRevoked: false },
     });
   }
 
@@ -147,96 +82,87 @@ export class TokenService {
     token: string,
     thresholdDays = 1,
   ): Promise<boolean> {
-    const storedToken = await this.prisma.session.findFirst({
+    const stored = await this.prisma.session.findFirst({
       where: { token, isRevoked: false },
     });
 
-    if (!storedToken) return true;
+    if (!stored) return true;
 
-    const now = new Date();
-    const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
-    const threshold = new Date(now.getTime() + thresholdMs);
-
-    return storedToken.expiresAt <= threshold;
+    const threshold = new Date(
+      Date.now() + thresholdDays * 24 * 60 * 60 * 1000,
+    );
+    return stored.expiresAt <= threshold;
   }
 
-  // ------------------------
-  // Revocation
-  // ------------------------
-  async revokeRefreshTokenById(id: string) {
+  // ─── Revocation ──────────────────────────────────────────────────────────────
+
+  async revokeRefreshTokenById(id: string): Promise<void> {
     await this.prisma.session.update({
       where: { id },
       data: { isRevoked: true },
     });
   }
 
-  async revokeRefreshToken(token: string) {
+  async revokeRefreshToken(token: string): Promise<void> {
     await this.prisma.session.updateMany({
       where: { token, isRevoked: false },
       data: { isRevoked: true },
     });
   }
 
-  async revokeAllUserTokens(userId: string) {
+  async revokeAllUserTokens(userId: string): Promise<void> {
     await this.prisma.session.updateMany({
       where: { userId, isRevoked: false },
       data: { isRevoked: true },
     });
   }
 
-  // ------------------------
-  // Maintenance & stats
-  // ------------------------
+  // ─── Maintenance ─────────────────────────────────────────────────────────────
+
   async cleanupExpiredTokens(): Promise<{ deletedCount: number }> {
-    try {
-      const result = await this.prisma.session.deleteMany({
-        where: {
-          OR: [{ expiresAt: { lt: new Date() } }, { isRevoked: true }],
-        },
-      });
+    const result = await this.prisma.session.deleteMany({
+      where: {
+        OR: [{ expiresAt: { lt: new Date() } }, { isRevoked: true }],
+      },
+    });
 
-      this.logger.log(`Cleaned up ${result.count} expired/revoked tokens`);
-
-      return { deletedCount: result.count };
-    } catch (error) {
-      this.logger.error('Failed to cleanup expired tokens', error);
-      throw error;
-    }
+    this.logger.log(`Cleaned up ${result.count} expired/revoked tokens`);
+    return { deletedCount: result.count };
   }
 
-  async getTokenStats(): Promise<{
-    totalSessions: number;
-    activeSessions: number;
-    expiredSessions: number;
-    revokedSessions: number;
-  }> {
+  async getTokenStats() {
     const now = new Date();
+    const [total, active, expired, revoked] = await Promise.all([
+      this.prisma.session.count(),
+      this.prisma.session.count({
+        where: { isRevoked: false, expiresAt: { gt: now } },
+      }),
+      this.prisma.session.count({
+        where: { isRevoked: false, expiresAt: { lte: now } },
+      }),
+      this.prisma.session.count({ where: { isRevoked: true } }),
+    ]);
 
-    const [totalSessions, activeSessions, expiredSessions, revokedSessions] =
-      await Promise.all([
-        this.prisma.session.count(),
-        this.prisma.session.count({
-          where: {
-            isRevoked: false,
-            expiresAt: { gt: now },
-          },
-        }),
-        this.prisma.session.count({
-          where: {
-            isRevoked: false,
-            expiresAt: { lte: now },
-          },
-        }),
-        this.prisma.session.count({
-          where: { isRevoked: true },
-        }),
-      ]);
+    return { total, active, expired, revoked };
+  }
 
-    return {
-      totalSessions,
-      activeSessions,
-      expiredSessions,
-      revokedSessions,
-    };
+  // ─── Private ─────────────────────────────────────────────────────────────────
+
+  private signAccessToken(payload: JwtPayload): Promise<string> {
+    return this.jwt.signAsync(payload, {
+      secret: this.config.getOrThrow<string>('JWT_SECRET'),
+      expiresIn: this.getExpiry('JWT_ACCESS_TOKEN_EXPIRATION', '15m'),
+    });
+  }
+
+  private signRefreshToken(payload: JwtPayload): Promise<string> {
+    return this.jwt.signAsync(payload, {
+      secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      expiresIn: this.getExpiry('JWT_REFRESH_TOKEN_EXPIRATION', '7d'),
+    });
+  }
+
+  private getExpiry(key: string, fallback: StringValue): StringValue {
+    return (this.config.get<string>(key) ?? fallback) as StringValue;
   }
 }

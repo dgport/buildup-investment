@@ -2,36 +2,32 @@ import { Module } from '@nestjs/common';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
-
+import type { StringValue } from 'ms';
+import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
 import { UserAccountService } from './services/user-account.service';
 import { TokenService } from './services/token.service';
 import { CookieService } from './services/cookie.service';
-import { ScheduledTasksService } from './services/sheduled-tasks.service';
 import { EmailService } from './services/email.service';
-
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtAuthGuard } from './guards/jwt-auth.guard'; // ✅
-import { AuthController } from './auth.controller';
-
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ScheduledTasksService } from './services/sheduled-tasks.service';
+import { OptionalJwtAuthGuard } from './guards/optional-auth.guard';
 @Module({
   imports: [
     ConfigModule,
-    ScheduleModule.forRoot(),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService): JwtModuleOptions => ({
-        secret: configService.getOrThrow<string>('JWT_SECRET'),
+      inject: [ConfigService],
+      useFactory: (config: ConfigService): JwtModuleOptions => ({
+        secret: config.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: (configService.get<string>(
-            'JWT_ACCESS_TOKEN_EXPIRATION',
-          ) ?? '15m') as any,
+          expiresIn: (config.get<string>('JWT_ACCESS_TOKEN_EXPIRATION') ??
+            '15m') as StringValue,
         },
       }),
-      inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
@@ -44,11 +40,13 @@ import { AuthController } from './auth.controller';
     EmailService,
     GoogleStrategy,
     JwtStrategy,
-    JwtAuthGuard, // ✅ REQUIRED
+    JwtAuthGuard,
+    OptionalJwtAuthGuard,
   ],
   exports: [
     AuthService,
-    JwtAuthGuard, // ✅ REQUIRED
+    JwtAuthGuard,
+    OptionalJwtAuthGuard,
     JwtModule,
     PassportModule,
   ],
