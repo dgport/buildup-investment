@@ -3,11 +3,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { Search, X, SlidersHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Search, X, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+
 import {
   Select,
   SelectContent,
@@ -18,7 +17,6 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -42,7 +40,7 @@ interface PropertyFiltersProps {
 }
 
 export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
-  const t = useTranslations("filters");
+  const t = useTranslations("properties");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -79,7 +77,6 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
     }
   }, [isLandSelected]);
 
-  // Fetch all properties once to extract unique regions with translated names
   const { data: allPropertiesResponse } = useProperties({
     lang: locale,
     limit: 1000,
@@ -96,10 +93,24 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
       .sort((a, b) => a.regionName.localeCompare(b.regionName));
   }, [allPropertiesResponse]);
 
+  const activeFilterCount = [
+    filters.propertyType !== "all",
+    filters.dealType !== "all",
+    filters.region !== "all",
+    filters.externalId.trim() !== "",
+    filters.priceFrom > 0,
+    filters.priceTo < MAX_PRICE,
+    filters.areaFrom > 0,
+    filters.areaTo < MAX_AREA,
+    filters.rooms !== "all",
+    filters.bedrooms !== "all",
+  ].filter(Boolean).length;
+
+  const hasActiveFilters = activeFilterCount > 0;
+
   const applyFilters = () => {
     const params = new URLSearchParams();
     params.set("page", "1");
-
     if (filters.propertyType !== "all")
       params.set("propertyType", filters.propertyType);
     if (filters.dealType !== "all") params.set("dealType", filters.dealType);
@@ -139,88 +150,74 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
     onFilterChange?.();
   };
 
-  const hasActiveFilters =
-    filters.propertyType !== "all" ||
-    filters.dealType !== "all" ||
-    filters.region !== "all" ||
-    filters.externalId.trim() !== "" ||
-    filters.priceFrom > 0 ||
-    filters.priceTo < MAX_PRICE ||
-    filters.areaFrom > 0 ||
-    filters.areaTo < MAX_AREA ||
-    filters.rooms !== "all" ||
-    filters.bedrooms !== "all";
-
   return (
-    <div className="mb-6">
+    <div className="mb-8">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto gap-2 border-2 hover:border-blue-400 transition-colors"
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            <span className="font-semibold">
-              {t("title", { defaultValue: "Filters" })}
-            </span>
+          <button className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-teal-200 bg-white hover:bg-teal-50 hover:border-teal-400 transition-all duration-200 text-teal-900 font-medium text-sm shadow-sm">
+            <SlidersHorizontal className="w-4 h-4 text-teal-700" />
+            <span>{t("filterTitle", { defaultValue: "Filters" })}</span>
             {hasActiveFilters && (
-              <span className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                {t("active", { defaultValue: "Active" })}
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-teal-950 text-xs font-bold leading-none">
+                {activeFilterCount}
               </span>
             )}
-          </Button>
+          </button>
         </SheetTrigger>
 
         <SheetContent
           side="left"
-          className="w-full sm:w-[420px] overflow-y-auto z-50"
+          className="w-full sm:w-[480px] flex flex-col p-0 overflow-x-hidden border-r border-teal-100"
         >
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2 text-xl">
-              <div className="p-1.5 bg-blue-500 rounded-lg">
-                <SlidersHorizontal className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between px-6 py-5 border-b border-teal-100 bg-teal-950">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 bg-amber-400 rounded-lg">
+                <SlidersHorizontal className="w-4 h-4 text-teal-950" />
               </div>
-              {t("propertyFilters", { defaultValue: "Property Filters" })}
-            </SheetTitle>
-          </SheetHeader>
+              <SheetTitle className="text-white font-semibold text-base m-0">
+                {t("propertyFilters", { defaultValue: "Property Filters" })}
+              </SheetTitle>
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-1.5 text-xs text-teal-300 hover:text-amber-400 transition-colors font-medium"
+              >
+                <X className="w-3.5 h-3.5" />
+                {t("clear", { defaultValue: "Clear all" })}
+              </button>
+            )}
+          </div>
 
-          <div className="mt-6 space-y-4">
-            {/* ID search */}
-            <FilterSection
-              label={t("propertyId", { defaultValue: "Property ID" })}
-              color="bg-orange-500"
-            >
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            <Field label={t("propertyId", { defaultValue: "Search by ID" })}>
               <Input
                 placeholder={t("enterPropertyId", {
-                  defaultValue: "Enter property ID…",
+                  defaultValue: "Property ID…",
                 })}
                 value={filters.externalId}
                 onChange={(e) =>
                   setFilters({ ...filters, externalId: e.target.value })
                 }
-                className="h-10 border-2 focus:border-orange-500"
+                className="h-10 border-teal-200 focus:border-teal-500 focus:ring-teal-500/20 rounded-lg text-sm"
               />
-            </FilterSection>
+            </Field>
 
-            {/* Property type */}
-            <FilterSection
-              label={t("propertyType", { defaultValue: "Property Type" })}
-              color="bg-blue-500"
-            >
+            <Field label={t("propertyType", { defaultValue: "Property Type" })}>
               <Select
                 value={filters.propertyType}
                 onValueChange={(v) =>
                   setFilters({ ...filters, propertyType: v })
                 }
               >
-                <SelectTrigger className="h-10 border-2">
+                <SelectTrigger className="h-10 border-teal-200 rounded-lg text-sm focus:border-teal-500">
                   <SelectValue
-                    placeholder={t("allTypes", { defaultValue: "All Types" })}
+                    placeholder={t("allTypes", { defaultValue: "All types" })}
                   />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("allTypes", { defaultValue: "All Types" })}
+                    {t("allTypes", { defaultValue: "All types" })}
                   </SelectItem>
                   {Object.values(PropertyType).map((type) => (
                     <SelectItem key={type} value={type}>
@@ -229,25 +226,21 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   ))}
                 </SelectContent>
               </Select>
-            </FilterSection>
+            </Field>
 
-            {/* Deal type */}
-            <FilterSection
-              label={t("dealType", { defaultValue: "Deal Type" })}
-              color="bg-blue-400"
-            >
+            <Field label={t("dealType", { defaultValue: "Deal Type" })}>
               <Select
                 value={filters.dealType}
                 onValueChange={(v) => setFilters({ ...filters, dealType: v })}
               >
-                <SelectTrigger className="h-10 border-2">
+                <SelectTrigger className="h-10 border-teal-200 rounded-lg text-sm focus:border-teal-500">
                   <SelectValue
-                    placeholder={t("allDeals", { defaultValue: "All Deals" })}
+                    placeholder={t("allDeals", { defaultValue: "All deals" })}
                   />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("allDeals", { defaultValue: "All Deals" })}
+                    {t("allDeals", { defaultValue: "All deals" })}
                   </SelectItem>
                   {Object.values(DealType).map((type) => (
                     <SelectItem key={type} value={type}>
@@ -256,27 +249,23 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   ))}
                 </SelectContent>
               </Select>
-            </FilterSection>
+            </Field>
 
-            {/* Region */}
-            <FilterSection
-              label={t("region", { defaultValue: "Region" })}
-              color="bg-teal-500"
-            >
+            <Field label={t("region", { defaultValue: "Region" })}>
               <Select
                 value={filters.region}
                 onValueChange={(v) => setFilters({ ...filters, region: v })}
               >
-                <SelectTrigger className="h-10 border-2">
+                <SelectTrigger className="h-10 border-teal-200 rounded-lg text-sm focus:border-teal-500">
                   <SelectValue
                     placeholder={t("allRegions", {
-                      defaultValue: "All Regions",
+                      defaultValue: "All regions",
                     })}
                   />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("allRegions", { defaultValue: "All Regions" })}
+                    {t("allRegions", { defaultValue: "All regions" })}
                   </SelectItem>
                   {uniqueRegions.map(({ region, regionName }) => (
                     <SelectItem key={region} value={region}>
@@ -285,15 +274,16 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                   ))}
                 </SelectContent>
               </Select>
-            </FilterSection>
+            </Field>
 
-            {/* Price range */}
+            <div className="border-t border-teal-100" />
+
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <FilterLabel color="bg-blue-500">
-                  {t("priceRange", { defaultValue: "Price Range" })}
-                </FilterLabel>
-                <span className="text-sm font-bold text-blue-600">
+                <FieldLabel>
+                  {t("priceRange", { defaultValue: "Price range" })}
+                </FieldLabel>
+                <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
                   {filters.priceFrom > 0 || filters.priceTo < MAX_PRICE
                     ? `$${filters.priceFrom.toLocaleString()} – $${filters.priceTo.toLocaleString()}`
                     : t("any", { defaultValue: "Any" })}
@@ -307,22 +297,20 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                 onValueChange={([from, to]) =>
                   setFilters({ ...filters, priceFrom: from, priceTo: to })
                 }
+                className="[&_[role=slider]]:bg-teal-900 [&_[role=slider]]:border-teal-900 [&_.range]:bg-teal-700"
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span className="bg-muted px-2 py-0.5 rounded-full">$0</span>
-                <span className="bg-muted px-2 py-0.5 rounded-full">
-                  ${MAX_PRICE.toLocaleString()}
-                </span>
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>$0</span>
+                <span>${MAX_PRICE.toLocaleString()}</span>
               </div>
             </div>
 
-            {/* Area range */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <FilterLabel color="bg-purple-500">
+                <FieldLabel>
                   {t("area", { defaultValue: "Area (m²)" })}
-                </FilterLabel>
-                <span className="text-sm font-bold text-purple-600">
+                </FieldLabel>
+                <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
                   {filters.areaFrom > 0 || filters.areaTo < MAX_AREA
                     ? `${filters.areaFrom} – ${filters.areaTo} m²`
                     : t("any", { defaultValue: "Any" })}
@@ -336,89 +324,76 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
                 onValueChange={([from, to]) =>
                   setFilters({ ...filters, areaFrom: from, areaTo: to })
                 }
+                className="[&_[role=slider]]:bg-teal-900 [&_[role=slider]]:border-teal-900 [&_.range]:bg-teal-700"
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span className="bg-muted px-2 py-0.5 rounded-full">0 m²</span>
-                <span className="bg-muted px-2 py-0.5 rounded-full">
-                  {MAX_AREA} m²
-                </span>
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>0 m²</span>
+                <span>{MAX_AREA} m²</span>
               </div>
             </div>
 
-            {/* Rooms & bedrooms */}
             {!isLandSelected && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">
-                    {t("rooms", { defaultValue: "Rooms" })}
-                  </Label>
-                  <Select
-                    value={filters.rooms}
-                    onValueChange={(v) => setFilters({ ...filters, rooms: v })}
-                  >
-                    <SelectTrigger className="h-10 border-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">
-                        {t("any", { defaultValue: "Any" })}
-                      </SelectItem>
-                      {["1", "2", "3", "4", "5"].map((n) => (
-                        <SelectItem key={n} value={n}>
-                          {n === "5" ? "5+" : n}
+              <>
+                <div className="border-t border-teal-100" />
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label={t("rooms", { defaultValue: "Rooms" })}>
+                    <Select
+                      value={filters.rooms}
+                      onValueChange={(v) =>
+                        setFilters({ ...filters, rooms: v })
+                      }
+                    >
+                      <SelectTrigger className="h-10 border-teal-200 rounded-lg text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">
+                          {t("any", { defaultValue: "Any" })}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">
-                    {t("bedrooms", { defaultValue: "Bedrooms" })}
-                  </Label>
-                  <Select
-                    value={filters.bedrooms}
-                    onValueChange={(v) =>
-                      setFilters({ ...filters, bedrooms: v })
-                    }
-                  >
-                    <SelectTrigger className="h-10 border-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">
-                        {t("any", { defaultValue: "Any" })}
-                      </SelectItem>
-                      {["1", "2", "3", "4"].map((n) => (
-                        <SelectItem key={n} value={n}>
-                          {n === "4" ? "4+" : n}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
+                        {["1", "2", "3", "4", "5"].map((n) => (
+                          <SelectItem key={n} value={n}>
+                            {n === "5" ? "5+" : n}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
 
-            {/* Actions */}
-            <div className="pt-4 space-y-2 border-t">
-              <Button
-                onClick={applyFilters}
-                className="w-full h-10 bg-blue-500 hover:bg-blue-600 font-semibold"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                {t("apply", { defaultValue: "Apply Filters" })}
-              </Button>
-              {hasActiveFilters && (
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="w-full h-10 border-2 font-semibold hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  {t("clear", { defaultValue: "Clear All Filters" })}
-                </Button>
-              )}
-            </div>
+                  <Field label={t("bedrooms", { defaultValue: "Bedrooms" })}>
+                    <Select
+                      value={filters.bedrooms}
+                      onValueChange={(v) =>
+                        setFilters({ ...filters, bedrooms: v })
+                      }
+                    >
+                      <SelectTrigger className="h-10 border-teal-200 rounded-lg text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">
+                          {t("any", { defaultValue: "Any" })}
+                        </SelectItem>
+                        {["1", "2", "3", "4"].map((n) => (
+                          <SelectItem key={n} value={n}>
+                            {n === "4" ? "4+" : n}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="px-6 py-4 border-t border-teal-100 bg-white">
+            <button
+              onClick={applyFilters}
+              className="w-full h-11 rounded-xl bg-teal-900 hover:bg-teal-800 active:scale-[0.98] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-150"
+            >
+              <Search className="w-4 h-4" />
+              {t("apply", { defaultValue: "Apply Filters" })}
+            </button>
           </div>
         </SheetContent>
       </Sheet>
@@ -426,34 +401,25 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
   );
 }
 
-function FilterSection({
+function Field({
   label,
-  color,
   children,
 }: {
   label: string;
-  color: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
-      <FilterLabel color={color}>{label}</FilterLabel>
+    <div className="space-y-1.5">
+      <FieldLabel>{label}</FieldLabel>
       {children}
     </div>
   );
 }
 
-function FilterLabel({
-  color,
-  children,
-}: {
-  color: string;
-  children: React.ReactNode;
-}) {
+function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
-      <div className={`w-0.5 h-4 ${color} rounded-full`} />
+    <label className="text-xs font-semibold uppercase tracking-wide text-teal-700">
       {children}
-    </Label>
+    </label>
   );
 }

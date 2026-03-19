@@ -1,5 +1,6 @@
 {
   "title": "Properties",
+
   "count": "{count} properties found",
   "error": "Failed to load properties. Please try again.",
   "empty": "No properties match your filters.",
@@ -61,5 +62,20 @@
   "statusApproved": "Approved",
   "statusPending": "Pending",
   "statusRejected": "Rejected",
-  "statusDraft": "Draft"
+  "statusDraft": "Draft",
+  "propertyId": "Search by ID",
+  "enterPropertyId": "Property ID",
+  "propertyType": "Property Type",
+  "allTypes": "All types",
+  "dealType": "Deal Type",
+  "allDeals": "All deals",
+  "region": "Region",
+  "allRegions": "All regions",
+  "priceRange": "Price range",
+  "any": "Any",
+  "bedrooms": "Bedrooms",
+  "apply": "Apply Filters",
+  "clear": "Clear All Filters",
+  "active": "Active",
+  "propertyFilters": "Property Filters"
 }
