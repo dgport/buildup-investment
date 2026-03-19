@@ -60,7 +60,7 @@ function PropertiesContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="   px-4 sm:px-6  md:px-12 lg:px-16 xl:px-28 py-10">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="bg-teal-900 rounded-xl p-2">
