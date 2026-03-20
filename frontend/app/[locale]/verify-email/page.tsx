@@ -74,7 +74,7 @@ const VerifyEmailPage = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/auth/verify-email?token=${token}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/verify-email?token=${token}`,
         {
           method: "GET",
           headers: {
@@ -82,7 +82,6 @@ const VerifyEmailPage = () => {
           },
         },
       );
-
       const data = await response.json();
 
       if (response.ok) {
@@ -137,7 +136,7 @@ const VerifyEmailPage = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3000/api/auth/resend-verification",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/resend-verification`,
         {
           method: "POST",
           headers: {
