@@ -44,8 +44,7 @@ export const authService = {
     ),
 
   googleAuth: () => {
-    // Construct full backend URL using the api instance's baseURL
-    const baseURL = api.defaults.baseURL || "http://localhost:3000/api";
+    const baseURL = api.defaults.baseURL;
     window.location.href = `${baseURL}${API_ENDPOINTS.AUTH.GOOGLE}`;
   },
 

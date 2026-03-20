@@ -8,80 +8,48 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import PropertyCard from "@/components/shared/PropertyCard";
-
-// Temporary Mock Data
-const MOCK_PROPERTIES = [
-  {
-    id: "1",
-    externalId: "RE-2024-001",
-    image: "property-1.jpg", // Ensure these paths work or use placeholder URLs
-    galleryImages: [
-      { imageUrl: "property-1.jpg", order: 1 },
-      { imageUrl: "property-2.jpg", order: 2 },
-    ],
-    priceUSD: 125000,
-    priceGEL: 350000,
-    regionName: "Vake, Tbilisi",
-    rooms: 3,
-    title: "Luxury Apartment with City View",
-    totalArea: 85,
-    propertyType: "APARTMENT",
-    hotSale: true,
-    dateAdded: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    externalId: "RE-2024-002",
-    image: "property-2.jpg",
-    priceUSD: 89000,
-    priceGEL: 249200,
-    regionName: "Saburtalo, Tbilisi",
-    rooms: 2,
-    title: "Modern Studio near Metro",
-    totalArea: 45,
-    propertyType: "APARTMENT",
-    hotSale: false,
-    dateAdded: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    externalId: "RE-2024-003",
-    image: "property-3.jpg",
-    priceUSD: 210000,
-    priceGEL: 588000,
-    regionName: "Batumi, Adjara",
-    rooms: 4,
-    title: "Seaside Villa with Garden",
-    totalArea: 150,
-    propertyType: "VILLA",
-    hotSale: true,
-    dateAdded: new Date().toISOString(),
-  },
-  {
-    id: "4",
-    externalId: "RE-2024-004",
-    image: "property-4.jpg",
-    priceUSD: 155000,
-    priceGEL: 434000,
-    regionName: "Old Tbilisi",
-    rooms: 3,
-    title: "Authentic Renovated House",
-    totalArea: 110,
-    propertyType: "HOUSE",
-    hotSale: false,
-    dateAdded: new Date().toISOString(),
-  },
-];
+import { useProperties } from "@/lib/hooks/useProperties";
 
 const PropertyCarousel = () => {
   const t = useTranslations("main");
+  const locale = useLocale();
 
-  // In the future, you will replace 'MOCK_PROPERTIES' with your hook data
-  const properties = MOCK_PROPERTIES;
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useProperties({
+    page: 1,
+    limit: 8,
+    lang: locale,
+  });
 
-  if (properties.length === 0) return null;
+  const properties = response?.data ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="py-12 px-6 md:px-12 lg:px-16 xl:px-28 bg-[#FAFAF8]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden animate-pulse"
+            >
+              <div className="h-48 bg-gray-200" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || properties.length === 0) return null;
 
   return (
     <div className="py-12 px-6 md:px-12 lg:px-16 xl:px-28 bg-[#FAFAF8]">
@@ -105,11 +73,21 @@ const PropertyCarousel = () => {
                 key={property.id}
                 className="cursor-default basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-2"
               >
-                {/* Note: The Link is already handled inside the PropertyCard via router.push 
-                   or you can keep it here. I've added padding (p-2) to the item for spacing.
-                */}
                 <div className="h-full transform transition-transform duration-300 hover:-translate-y-1">
-                  <PropertyCard property={property as any} />
+                  <PropertyCard
+                    property={{
+                      id: property.id,
+                      externalId: property.externalId,
+                      galleryImages: property.galleryImages,
+                      priceUSD: property.price,
+                      regionName: property.regionName,
+                      rooms: property.rooms ?? undefined,
+                      title: property.translation?.title ?? "",
+                      totalArea: property.totalArea,
+                      hotSale: property.hotSale,
+                      dateAdded: property.createdAt,
+                    }}
+                  />
                 </div>
               </CarouselItem>
             ))}

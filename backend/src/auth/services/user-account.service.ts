@@ -42,8 +42,6 @@ export class UserAccountService {
     private readonly emailService: EmailService,
   ) {}
 
-  // ─── Registration ─────────────────────────────────────────────────────────────
-
   async createUserWithCredentials(dto: SignupRequest): Promise<User> {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -78,7 +76,6 @@ export class UserAccountService {
       select: USER_SELECT,
     });
 
-    // Fire-and-forget — don't block signup if email fails
     this.emailService
       .sendVerificationEmail(user.email, user.firstname, token)
       .catch(() => null);
@@ -139,8 +136,6 @@ export class UserAccountService {
     return this.findById(user.id);
   }
 
-  // ─── Authentication ───────────────────────────────────────────────────────────
-
   async validateCredentials(email: string, password: string): Promise<User> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
@@ -170,8 +165,6 @@ export class UserAccountService {
       select: USER_SELECT,
     }) as Promise<User>;
   }
-
-  // ─── Email Verification ───────────────────────────────────────────────────────
 
   async verifyEmail(token: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findFirst({
@@ -226,8 +219,6 @@ export class UserAccountService {
     return { message: 'Verification email sent successfully' };
   }
 
-  // ─── Password Management ──────────────────────────────────────────────────────
-
   async sendUpdatePasswordEmail(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
@@ -279,8 +270,6 @@ export class UserAccountService {
     });
   }
 
-  // ─── Lookup ───────────────────────────────────────────────────────────────────
-
   async findById(id: string): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -291,8 +280,6 @@ export class UserAccountService {
 
     return user as User;
   }
-
-  // ─── Private ─────────────────────────────────────────────────────────────────
 
   private generateExpiringToken(minutes: number): {
     token: string;
