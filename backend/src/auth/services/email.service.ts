@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import {
   addPasswordEmailTemplate,
   resetPasswordEmailTemplate,
@@ -10,23 +10,12 @@ import {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly transporter: nodemailer.Transporter;
+  private readonly resend: Resend;
   private readonly from: string;
 
   constructor(private readonly config: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: config.getOrThrow<string>('EMAIL_USER'),
-        pass: config.getOrThrow<string>('EMAIL_APP_PASSWORD'),
-      },
-    });
-
-    this.from =
-      config.get<string>('EMAIL_FROM') ??
-      config.getOrThrow<string>('EMAIL_USER');
+    this.resend = new Resend(config.getOrThrow<string>('RESEND_API_KEY'));
+    this.from = config.get<string>('EMAIL_FROM') ?? 'onboarding@resend.dev';
   }
 
   async sendVerificationEmail(
@@ -66,7 +55,13 @@ export class EmailService {
 
   private async send(to: string, subject: string, html: string): Promise<void> {
     try {
-      await this.transporter.sendMail({ from: this.from, to, subject, html });
+      const { error } = await this.resend.emails.send({
+        from: this.from,
+        to,
+        subject,
+        html,
+      });
+      if (error) throw new Error(error.message);
       this.logger.log(`Email sent: "${subject}" → ${to}`);
     } catch (error) {
       this.logger.error(`Failed to send email: "${subject}" → ${to}`, error);
