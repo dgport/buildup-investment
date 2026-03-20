@@ -43,7 +43,7 @@ api.interceptors.response.use(
 
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api"}/auth/refresh-token`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api"}/auth/refresh-token`,
           {},
           { withCredentials: true },
         );

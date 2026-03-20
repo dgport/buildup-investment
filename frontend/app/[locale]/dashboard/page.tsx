@@ -12,7 +12,7 @@ import { PropertyStatus } from "@/lib/types/properties";
 import { Pagination } from "@/components/shared/Pagination";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ??
+  process.env.NEXT_PUBLIC_BASE_URL?.replace("/api", "") ??
   "http://localhost:3000";
 
 const PROPERTIES_PER_PAGE = 9;
