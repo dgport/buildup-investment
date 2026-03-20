@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { addPasswordEmailTemplate, resetPasswordEmailTemplate, verificationEmailTemplate } from '../templates/email.templates';
+import {
+  addPasswordEmailTemplate,
+  resetPasswordEmailTemplate,
+  verificationEmailTemplate,
+} from '../templates/email.templates';
 
 @Injectable()
 export class EmailService {
@@ -11,12 +15,13 @@ export class EmailService {
 
   constructor(private readonly config: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: config.getOrThrow<string>('EMAIL_USER'),
         pass: config.getOrThrow<string>('EMAIL_APP_PASSWORD'),
       },
-      tls: { rejectUnauthorized: false },
     });
 
     this.from =
