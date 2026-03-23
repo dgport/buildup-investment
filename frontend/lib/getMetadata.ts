@@ -1,18 +1,6 @@
 import { getLocale } from "next-intl/server";
 
-type MetaPage =
-  | "team"
-  | "contact"
-  | "home"
-  | "about"
-  | "services"
-  | "financial-audit"
-  | "tax-services"
-  | "accounting"
-  | "valuation"
-  | "legal"
-  | "consulting"
-  | "teaching-center";
+export type MetaPage = "home";
 
 interface MetaEntry {
   title: string;
@@ -35,10 +23,11 @@ export async function getPageMetadata(page: MetaPage) {
     openGraph: {
       title: entry.ogTitle,
       description: entry.ogDescription,
-      siteName: "Prestige Audit",
+      siteName: "Build Up Investment",
+      url: "https://buildup.ge",
       images: [
         {
-          url: "/og-image.avif",
+          url: "/Logo.png",
           width: 1200,
           height: 630,
           alt: entry.ogTitle,

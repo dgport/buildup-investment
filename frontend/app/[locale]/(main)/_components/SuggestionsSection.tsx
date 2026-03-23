@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
   Carousel,
@@ -94,8 +95,9 @@ export default function SuggestSection() {
         <div className="text-center mb-14 lg:mb-18">
           <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-[#A8C44A]/40 bg-white/70 backdrop-blur-sm shadow-sm mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]" />
+            {/* FIX: was t("badge"), now t("suggestBadge") */}
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#3D6B4F]">
-              {t("badge")}
+              {t("suggestBadge")}
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-[#1E3A2A]">

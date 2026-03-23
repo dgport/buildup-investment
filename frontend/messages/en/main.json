@@ -11,7 +11,8 @@
   "dotAriaLabel": "Go to slide {index}",
   "since": "SINCE 2022",
   "region": "GEORGIA",
-  "badge": "Our Expertise",
+
+  "suggestBadge": "Our Expertise",
   "sectionTitle": "What We Offer",
   "sectionSubtitle": "A complete range of real estate and investment services tailored to your goals",
   "items": [
@@ -32,7 +33,9 @@
       "text": "Comprehensive property development services including design, construction, legal support, and interior finishing — all handled by our dedicated team in Batumi."
     }
   ],
+
   "clientsSectionLabel": "Our Partners",
+
   "mortgageBadge": "Mortgage Calculator",
   "propertyPrice": "Property Price",
   "downPayment": "Down Payment",
@@ -44,6 +47,7 @@
   "loanAmount": "Loan Amount",
   "equityShare": "Equity Share",
   "mortgageCta": "Get Pre-Approved",
+
   "aboutLabel": "Real Estate & Development",
   "aboutHeadingRegular": "Building",
   "aboutHeadingItalic": "Premium",
@@ -57,10 +61,11 @@
   "aboutStat2Label": "Years",
   "aboutStat3Value": "200+",
   "aboutStat3Label": "Clients",
+
   "featuredProperties": "Featured Properties",
   "seeAll": "See All",
   "priceOnRequest": "Price on request",
-  "hotSale": "Hot Sale",
+  "hotSale": "VIP",
   "rooms": "Rooms",
   "area": "Area"
 }

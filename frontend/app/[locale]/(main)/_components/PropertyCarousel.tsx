@@ -52,7 +52,7 @@ const PropertyCarousel = () => {
   if (error || properties.length === 0) return null;
 
   return (
-    <div className="py-12 px-6 md:px-12 lg:px-16 xl:px-28 bg-[#FAFAF8]">
+    <div className="py-12 px-6 md:px-12 lg:px-16 xl:px-20 bg-[#FAFAF8]">
       <div className="w-full">
         <div className="flex justify-between items-center px-4 mb-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-teal-900">
@@ -71,7 +71,7 @@ const PropertyCarousel = () => {
             {properties.map((property) => (
               <CarouselItem
                 key={property.id}
-                className="cursor-default basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-2"
+                className="cursor-default basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 mx-1 "
               >
                 <div className="h-full transform transition-transform duration-300 hover:-translate-y-1">
                   <PropertyCard

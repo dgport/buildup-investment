@@ -1,74 +1,8 @@
 {
-  "team": {
-    "title": "Our Team | Prestige Audit",
-    "description": "Meet the expert team of auditors, accountants, and financial consultants at Prestige Audit LLC.",
-    "ogTitle": "Our Team | Prestige Audit",
-    "ogDescription": "Expert auditors, accountants, and financial consultants serving Georgia and beyond."
-  },
-  "contact": {
-    "title": "Contact Us | Prestige Audit",
-    "description": "Get in touch with Prestige Audit LLC. We are based in Batumi, Georgia and ready to assist with your financial needs.",
-    "ogTitle": "Contact Prestige Audit",
-    "ogDescription": "Reach out to our team of financial experts in Batumi, Georgia."
-  },
   "home": {
-    "title": "Prestige Audit | Financial Audit & Consulting",
-    "description": "Prestige Audit LLC offers professional financial audit, tax services, accounting, and business consulting in Georgia.",
-    "ogTitle": "Prestige Audit | Financial Audit & Consulting",
-    "ogDescription": "Professional audit, tax, accounting, and consulting services in Georgia."
-  },
-  "about": {
-    "title": "About Us | Prestige Audit",
-    "description": "Learn about Prestige Audit LLC — our mission, values, and experienced team of financial professionals.",
-    "ogTitle": "About Prestige Audit",
-    "ogDescription": "Our mission, values, and experienced team of financial professionals in Georgia."
-  },
-  "services": {
-    "title": "Our Services | Prestige Audit",
-    "description": "Explore our full range of services: financial audit, tax consulting, accounting, valuation, legal support, and business consulting.",
-    "ogTitle": "Services | Prestige Audit",
-    "ogDescription": "Financial audit, tax consulting, accounting, valuation, legal support, and business consulting."
-  },
-  "financial-audit": {
-    "title": "Financial Audit | Prestige Audit",
-    "description": "Professional financial audit services in Georgia by Prestige Audit LLC.",
-    "ogTitle": "Financial Audit | Prestige Audit",
-    "ogDescription": "Independent, accurate financial audits for businesses across Georgia."
-  },
-  "tax-services": {
-    "title": "Tax Services | Prestige Audit",
-    "description": "Expert tax consulting and compliance services for businesses in Georgia.",
-    "ogTitle": "Tax Services | Prestige Audit",
-    "ogDescription": "Tax planning, filing, and compliance handled by certified experts."
-  },
-  "accounting": {
-    "title": "Accounting Services | Prestige Audit",
-    "description": "Full-cycle accounting and bookkeeping services for businesses in Batumi, Georgia.",
-    "ogTitle": "Accounting Services | Prestige Audit",
-    "ogDescription": "Reliable accounting and bookkeeping tailored to your business."
-  },
-  "valuation": {
-    "title": "Valuation Services | Prestige Audit",
-    "description": "Certified asset and business valuation services by Prestige Audit LLC.",
-    "ogTitle": "Valuation Services | Prestige Audit",
-    "ogDescription": "Accurate, certified valuations for assets and businesses in Georgia."
-  },
-  "legal": {
-    "title": "Legal Support | Prestige Audit",
-    "description": "Business legal support and advisory services by Prestige Audit LLC in Georgia.",
-    "ogTitle": "Legal Support | Prestige Audit",
-    "ogDescription": "Legal advisory and support for businesses operating in Georgia."
-  },
-  "consulting": {
-    "title": "Business Consulting | Prestige Audit",
-    "description": "Strategic business consulting services to grow and optimize your company in Georgia.",
-    "ogTitle": "Business Consulting | Prestige Audit",
-    "ogDescription": "Strategic advice and planning to help your business thrive in Georgia."
-  },
-  "teaching-center": {
-    "title": "Training Center | Prestige Audit",
-    "description": "Join Prestige Audit's training center and develop your financial expertise with certified professionals.",
-    "ogTitle": "Training Center | Prestige Audit",
-    "ogDescription": "Professional financial education and certification programs in Georgia."
+    "title": "Build Up Investment — Premium Real Estate in Batumi, Georgia",
+    "description": "Discover luxury apartments, seaside villas, and investment properties on the Black Sea coast. Build Up Investment develops and delivers premium real estate in Batumi, Georgia.",
+    "ogTitle": "Build Up Investment — Premium Real Estate in Batumi",
+    "ogDescription": "Your gateway to exceptional real estate on Georgia's Black Sea coast. Luxury apartments, villas, and high-yield investment properties in Batumi."
   }
 }

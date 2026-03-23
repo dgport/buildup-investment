@@ -46,7 +46,6 @@ export default function AboutParallax() {
       ref={sectionRef}
       className="relative w-full overflow-hidden bg-[#f3f5f4]"
     >
-      {/* Top chevron mask */}
       <div className="absolute top-0 left-0 w-full h-20 3xl:h-24 4xl:h-28 5xl:h-36 z-20 pointer-events-none">
         <svg
           viewBox="0 0 1440 80"
@@ -58,11 +57,10 @@ export default function AboutParallax() {
       </div>
 
       <div className="relative overflow-hidden bg-[#f3f5f4] min-h-[600px] md:min-h-[800px] 3xl:min-h-[900px] 4xl:min-h-[1000px] 5xl:min-h-[1200px]">
-        {/* Batumi construction background */}
         <motion.div
           style={{
             y: bgY,
-            backgroundImage: `url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1800&q=80&fit=crop')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1800&q=80&fit=crop')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             contain: "strict",

@@ -11,7 +11,8 @@
   "dotAriaLabel": "გადადით სლაიდზე {index}",
   "since": "2022 წლიდან",
   "region": "საქართველო",
-  "badge": "ჩვენი გამოცდილება",
+
+  "suggestBadge": "ჩვენი გამოცდილება",
   "sectionTitle": "ჩვენი სერვისები",
   "sectionSubtitle": "უძრავი ქონებისა და ინვესტიციების სრული სპექტრი თქვენი მიზნების შესაბამისად",
   "items": [
@@ -32,7 +33,9 @@
       "text": "ქონების განვითარების სრული პაკეტი: დიზაინი, მშენებლობა, იურიდიული მხარდაჭერა და ინტერიერის გაფორმება — ყველაფერი ჩვენი გუნდის მიერ ბათუმში."
     }
   ],
+
   "clientsSectionLabel": "ჩვენი პარტნიორები",
+
   "mortgageBadge": "იპოთეკის კალკულატორი",
   "propertyPrice": "ქონების ღირებულება",
   "downPayment": "პირველადი შენატანი",
@@ -44,6 +47,7 @@
   "loanAmount": "სესხის თანხა",
   "equityShare": "საკუთარი წილი",
   "mortgageCta": "წინასწარი დამტკიცება",
+
   "aboutLabel": "უძრავი ქონება და განვითარება",
   "aboutHeadingRegular": "ვაშენებთ",
   "aboutHeadingItalic": "პრემიუმ",
@@ -57,10 +61,11 @@
   "aboutStat2Label": "წელი",
   "aboutStat3Value": "200+",
   "aboutStat3Label": "კლიენტი",
+
   "featuredProperties": "გამორჩეული ობიექტები",
   "seeAll": "ყველას ნახვა",
   "priceOnRequest": "ფასი მოთხოვნით",
-  "hotSale": "ცხელი გაყიდვა",
+  "hotSale": "VIP",
   "rooms": "ოთახი",
   "area": "ფართი"
 }

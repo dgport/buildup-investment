@@ -17,15 +17,8 @@ import { Switch } from "@/components/ui/switch";
 import { useTranslations } from "next-intl";
 import { useCurrency } from "@/lib/currency";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") ??
-  "http://localhost:3000";
-
 function resolveImageUrl(imageUrl: string): string {
-  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-    return imageUrl;
-  }
-  return `${API_BASE}/${imageUrl.replace(/^\/+/, "")}`;
+  return `${process.env.NEXT_PUBLIC_API_IMAGE_URL}${imageUrl.replace(/^\/+/, "")}`;
 }
 
 interface GalleryImage {
