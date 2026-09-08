@@ -24,8 +24,12 @@ export async function generateMetadata() {
   return {
     ...meta,
     icons: {
-      icon: "/favicon.png",
-      apple: "/favicon.png",
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/icons/favicon-64.png", type: "image/png", sizes: "64x64" },
+        { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+      ],
+      apple: "/apple-touch-icon.png",
     },
     manifest: "/manifest.webmanifest",
   };

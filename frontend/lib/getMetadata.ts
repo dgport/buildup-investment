@@ -12,7 +12,8 @@ interface MetaEntry {
 }
 
 const SITE_NAME = "Build Up Investment";
-const OG_IMAGE = { url: "/og-image.avif", width: 1200, height: 630 };
+/** JPG on purpose: social crawlers (Facebook, LinkedIn, X) do not render AVIF/WebP previews. */
+const OG_IMAGE = { url: "/og-image.jpg", width: 1200, height: 630, type: "image/jpeg" };
 
 export async function getPageMetadata(page: MetaPage): Promise<Metadata> {
   const locale = await getLocale();
