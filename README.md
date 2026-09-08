@@ -11,6 +11,21 @@ Signed-in users publish their own listings (apartments, villas, land, commercial
 hotels) with photos, a map pin and titles/descriptions in Georgian, English and
 Russian. Listings are public immediately; owners edit them from **My listings**.
 
+**Developer projects** (new-build complexes) are curated by the admin from
+`/admin`: developers with logo and profile, projects with gallery, status and
+construction progress, delivery quarter, price per m² / starting price,
+installment terms, amenities, video / 3D tour, map pin, and apartment types
+(rooms, area range, price, floor plans, availability). Visitors browse
+`/projects` (list + map view, filters) and `/developers`, and send consultation
+requests that land in `/admin/leads`.
+
+### Becoming admin
+
+1. Sign up on the site with the e-mail you want to use.
+2. Put it in `backend/.env` as `ADMIN_EMAIL=you@example.com`.
+3. Run `cd backend && npx prisma db seed` — the account is promoted to `ADMIN`
+   and the **ადმინი / Admin** link appears in the profile menu.
+
 ## Run locally (recommended for development)
 
 Requirements: Node 20+, a PostgreSQL server (local install or the Docker one below).
@@ -85,5 +100,14 @@ npm run build
 | DELETE | `/api/properties/:id/images/:imageId`    | owner/admin | Delete one photo                         |
 | GET/PATCH | `/api/properties/:id/translations`    | owner/admin | Per-language title/address/description   |
 | GET    | `/api/properties/admin/all`              | admin       | Everything incl. hidden listings         |
+| GET    | `/api/projects`, `/api/projects/map`     | –           | Published development projects / map pins |
+| GET    | `/api/projects/:idOrSlug`                | –           | Project with developer, unit types, related |
+| POST   | `/api/projects/:id/leads`                | –           | Consultation request (rate-limited)      |
+| GET    | `/api/developers`, `/api/developers/:slug` | –         | Developers with project counts           |
+| POST/PATCH/DELETE | `/api/projects`, `/api/projects/:id` | admin | Manage projects (JSON)                   |
+| POST   | `/api/projects/:id/images`               | admin       | Upload gallery photos (multipart `images[]`) |
+| POST/PATCH/DELETE | `/api/projects/:id/unit-types[/:utId]` | admin | Apartment types (+ `/images` floor plans) |
+| POST/PATCH/DELETE | `/api/developers[/:id]`        | admin       | Manage developers (+ `/logo` upload)     |
+| GET/PATCH/DELETE | `/api/projects/leads[/:id]`     | admin       | Leads inbox                              |
 
 Full interactive docs: `http://localhost:3000/api/docs`.

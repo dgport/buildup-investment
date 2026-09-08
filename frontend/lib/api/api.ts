@@ -76,6 +76,7 @@ api.interceptors.response.use(
           const path = window.location.pathname;
           const isPublic =
             !path.startsWith("/dashboard") &&
+            !path.startsWith("/admin") &&
             !/^\/properties\/(new|[^/]+\/edit)/.test(path);
           if (!isPublic) window.location.href = "/signin";
         }

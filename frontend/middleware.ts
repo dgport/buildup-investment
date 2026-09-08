@@ -7,6 +7,7 @@ const intlMiddleware = createMiddleware(routing);
 /** Routes that need a signed-in user (checked via the accessToken cookie). */
 const PROTECTED_PATTERNS = [
   /^\/dashboard(\/|$)/,
+  /^\/admin(\/|$)/,
   /^\/properties\/new(\/|$)/,
   /^\/properties\/[^/]+\/edit(\/|$)/,
 ];

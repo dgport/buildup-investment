@@ -18,6 +18,8 @@ export default function Footer() {
   const quickLinks = [
     { path: ROUTES.HOME, label: t("nav.home") },
     { path: ROUTES.PROPERTIES, label: t("nav.properties") },
+    { path: ROUTES.PROJECTS, label: t("nav.projects") },
+    { path: ROUTES.DEVELOPERS, label: t("nav.developers") },
     { path: ROUTES.CONTACT, label: t("nav.contact") },
   ];
 

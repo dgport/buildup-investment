@@ -21,10 +21,10 @@ enum AuthMethod {
 }
 
 enum PropertyStatus {
-  PENDING     // Waiting for admin approval
-  APPROVED    // Approved and visible
-  REJECTED    // Rejected by admin
-  DRAFT       // User's draft
+  PENDING // Waiting for admin approval
+  APPROVED // Approved and visible
+  REJECTED // Rejected by admin
+  DRAFT // User's draft
 }
 
 enum Region {
@@ -106,10 +106,10 @@ model User {
   createdAt                 DateTime   @default(now()) @map("created_at")
   updatedAt                 DateTime   @updatedAt @map("updated_at")
   lastLogin                 DateTime?  @map("last_login")
-  
-  accounts                  Account[]
-  sessions                  Session[]
-  properties                Property[]  // User can have multiple properties
+
+  accounts   Account[]
+  sessions   Session[]
+  properties Property[] // User can have multiple properties
 
   @@map("users")
 }
@@ -127,8 +127,8 @@ model Account {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
   userId            String   @map("user_id")
-  
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -144,12 +144,12 @@ model Session {
   ipAddress String?  @map("ip_address")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("sessions")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([expiresAt])
+  @@map("sessions")
 }
 
 model LoginAttempt {
@@ -160,19 +160,19 @@ model LoginAttempt {
   success   Boolean
   createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("login_attempts")
   @@index([email, createdAt])
   @@index([ipAddress, createdAt])
+  @@map("login_attempts")
 }
 
 // ==================== SETTINGS MODEL ====================
 
 model SiteSettings {
-  id              Int      @id @default(autoincrement())
-  key             String   @unique  // e.g., "default_contact_phone"
-  value           String
-  description     String?
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id          Int      @id @default(autoincrement())
+  key         String   @unique // e.g., "default_contact_phone"
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
 }
@@ -180,68 +180,67 @@ model SiteSettings {
 // ==================== PROPERTY MODELS ====================
 
 model Property {
-  id                      String           @id @default(cuid())
-  externalId              String           @unique @map("external_id")
-  propertyType            PropertyType     @map("property_type")
-  dealType                DealType         @map("deal_type")
-  location                String?
-  region                  Region?
-  address                 String?
-  price                   Int?
-  hotSale                 Boolean          @map("hot_sale") @default(false)
-  public                  Boolean          @default(true)
-  
+  id           String       @id @default(cuid())
+  externalId   String       @unique @map("external_id")
+  propertyType PropertyType @map("property_type")
+  dealType     DealType     @map("deal_type")
+  location     String?
+  region       Region?
+  address      String?
+  price        Int?
+  hotSale      Boolean      @default(false) @map("hot_sale")
+  public       Boolean      @default(true)
+
   // User relationship and status
-  userId                  String?          @map("user_id")
-  status                  PropertyStatus   @default(APPROVED)
-  contactPhone            String?          @map("contact_phone")  // User's custom phone or null for default
-  rejectionReason         String?          @map("rejection_reason") @db.Text
-  
-  createdAt               DateTime         @map("created_at") @default(now())
-  updatedAt               DateTime         @map("updated_at") @updatedAt
-  totalArea               Int?             @map("total_area")
-  rooms                   Int?
-  bedrooms                Int?
-  bathrooms               Int?
-  floors                  Int?
-  floorsTotal             Int?             @map("floors_total")
-  ceilingHeight           Float?           @map("ceiling_height")
-  isNonStandard           Boolean          @map("is_non_standard") @default(false)
-  occupancy               Occupancy?
-  heating                 HeatingType?
-  hotWater                HotWaterType?    @map("hot_water")
-  parking                 ParkingType?
-  hasConditioner          Boolean          @map("has_conditioner") @default(false)
-  hasFurniture            Boolean          @map("has_furniture") @default(false)
-  hasBed                  Boolean          @map("has_bed") @default(false)
-  hasSofa                 Boolean          @map("has_sofa") @default(false)
-  hasTable                Boolean          @map("has_table") @default(false)
-  hasChairs               Boolean          @map("has_chairs") @default(false)
-  hasStove                Boolean          @map("has_stove") @default(false)
-  hasRefrigerator         Boolean          @map("has_refrigerator") @default(false)
-  hasOven                 Boolean          @map("has_oven") @default(false)
-  hasWashingMachine       Boolean          @map("has_washing_machine") @default(false)
-  hasKitchenAppliances    Boolean          @map("has_kitchen_appliances") @default(false)
-  hasBalcony              Boolean          @map("has_balcony") @default(false)
-  balconyArea             Float?           @map("balcony_area")
-  hasNaturalGas           Boolean          @map("has_natural_gas") @default(false)
-  hasInternet             Boolean          @map("has_internet") @default(false)
-  hasTV                   Boolean          @map("has_tv") @default(false)
-  hasSewerage             Boolean          @map("has_sewerage") @default(false)
-  isFenced                Boolean          @map("is_fenced") @default(false)
-  hasYardLighting         Boolean          @map("has_yard_lighting") @default(false)
-  hasGrill                Boolean          @map("has_grill") @default(false)
-  hasAlarm                Boolean          @map("has_alarm") @default(false)
-  hasVentilation          Boolean          @map("has_ventilation") @default(false)
-  hasWater                Boolean          @map("has_water") @default(false)
-  hasElectricity          Boolean          @map("has_electricity") @default(false)
-  hasGate                 Boolean          @map("has_gate") @default(false)
+  userId          String?        @map("user_id")
+  status          PropertyStatus @default(APPROVED)
+  contactPhone    String?        @map("contact_phone") // User's custom phone or null for default
+  rejectionReason String?        @map("rejection_reason") @db.Text
 
-  user                    User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  translations            PropertyTranslations[]
-  galleryImages           PropertyGalleryImage[]
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  totalArea            Int?          @map("total_area")
+  rooms                Int?
+  bedrooms             Int?
+  bathrooms            Int?
+  floors               Int?
+  floorsTotal          Int?          @map("floors_total")
+  ceilingHeight        Float?        @map("ceiling_height")
+  isNonStandard        Boolean       @default(false) @map("is_non_standard")
+  occupancy            Occupancy?
+  heating              HeatingType?
+  hotWater             HotWaterType? @map("hot_water")
+  parking              ParkingType?
+  hasConditioner       Boolean       @default(false) @map("has_conditioner")
+  hasFurniture         Boolean       @default(false) @map("has_furniture")
+  hasBed               Boolean       @default(false) @map("has_bed")
+  hasSofa              Boolean       @default(false) @map("has_sofa")
+  hasTable             Boolean       @default(false) @map("has_table")
+  hasChairs            Boolean       @default(false) @map("has_chairs")
+  hasStove             Boolean       @default(false) @map("has_stove")
+  hasRefrigerator      Boolean       @default(false) @map("has_refrigerator")
+  hasOven              Boolean       @default(false) @map("has_oven")
+  hasWashingMachine    Boolean       @default(false) @map("has_washing_machine")
+  hasKitchenAppliances Boolean       @default(false) @map("has_kitchen_appliances")
+  hasBalcony           Boolean       @default(false) @map("has_balcony")
+  balconyArea          Float?        @map("balcony_area")
+  hasNaturalGas        Boolean       @default(false) @map("has_natural_gas")
+  hasInternet          Boolean       @default(false) @map("has_internet")
+  hasTV                Boolean       @default(false) @map("has_tv")
+  hasSewerage          Boolean       @default(false) @map("has_sewerage")
+  isFenced             Boolean       @default(false) @map("is_fenced")
+  hasYardLighting      Boolean       @default(false) @map("has_yard_lighting")
+  hasGrill             Boolean       @default(false) @map("has_grill")
+  hasAlarm             Boolean       @default(false) @map("has_alarm")
+  hasVentilation       Boolean       @default(false) @map("has_ventilation")
+  hasWater             Boolean       @default(false) @map("has_water")
+  hasElectricity       Boolean       @default(false) @map("has_electricity")
+  hasGate              Boolean       @default(false) @map("has_gate")
 
-  @@map("properties")
+  user          User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  translations  PropertyTranslations[]
+  galleryImages PropertyGalleryImage[]
+
   @@index([userId])
   @@index([status])
   @@index([propertyType])
@@ -251,22 +250,23 @@ model Property {
   @@index([dealType])
   @@index([hotSale])
   @@index([public])
+  @@map("properties")
 }
 
 model PropertyTranslations {
-  id          Int      @id @default(autoincrement())
-  propertyId  String   @map("property_id")
+  id          Int     @id @default(autoincrement())
+  propertyId  String  @map("property_id")
   language    String
   title       String
   address     String?
-  description String?  @db.Text
+  description String? @db.Text
 
-  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, language])
-  @@map("property_translations")
   @@index([propertyId])
   @@index([language])
+  @@map("property_translations")
 }
 
 model PropertyGalleryImage {
@@ -274,12 +274,12 @@ model PropertyGalleryImage {
   propertyId String   @map("property_id")
   imageUrl   String   @map("image_url")
   order      Int      @default(0)
-  createdAt  DateTime @map("created_at") @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  @@map("property_gallery_images")
   @@index([propertyId])
+  @@map("property_gallery_images")
 }
 
 model RegionTranslations {
@@ -292,4 +292,191 @@ model RegionTranslations {
   @@map("region_translations")
 }
 
- 
+// ==================== DEVELOPER PROJECTS ====================
+
+enum ProjectStatus {
+  PLANNED // Sales started, construction not yet
+  UNDER_CONSTRUCTION
+  COMPLETED
+}
+
+enum UnitAvailability {
+  AVAILABLE
+  LIMITED
+  SOLD_OUT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+model Developer {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  logo        String?
+  website     String?
+  phone       String?
+  email       String?
+  foundedYear Int?     @map("founded_year")
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  translations DeveloperTranslation[]
+  projects     Project[]
+
+  @@index([published])
+  @@map("developers")
+}
+
+model DeveloperTranslation {
+  id          Int     @id @default(autoincrement())
+  developerId String  @map("developer_id")
+  language    String
+  description String? @db.Text
+
+  developer Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
+
+  @@unique([developerId, language])
+  @@map("developer_translations")
+}
+
+model Project {
+  id                   String        @id @default(cuid())
+  slug                 String        @unique
+  developerId          String        @map("developer_id")
+  region               Region?
+  address              String?
+  location             String? // "lat,lng"
+  status               ProjectStatus @default(UNDER_CONSTRUCTION)
+  progress             Int? // construction progress 0-100
+  deliveryQuarter      Int?          @map("delivery_quarter") // 1-4
+  deliveryYear         Int?          @map("delivery_year")
+  floors               Int?
+  totalApartments      Int?          @map("total_apartments")
+  pricePerSqmFrom      Int?          @map("price_per_sqm_from") // USD
+  priceFrom            Int?          @map("price_from") // USD, cheapest unit
+  hotSale              Boolean       @default(false) @map("hot_sale")
+  published            Boolean       @default(true)
+  videoUrl             String?       @map("video_url")
+  tourUrl              String?       @map("tour_url")
+  installmentAvailable Boolean       @default(false) @map("installment_available")
+  downPaymentPercent   Int?          @map("down_payment_percent")
+  installmentMonths    Int?          @map("installment_months")
+  amenities            String[]      @default([])
+  sortOrder            Int           @default(0) @map("sort_order")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  developer    Developer            @relation(fields: [developerId], references: [id], onDelete: Restrict)
+  translations ProjectTranslation[]
+  images       ProjectImage[]
+  unitTypes    ProjectUnitType[]
+  leads        ProjectLead[]
+
+  @@index([developerId])
+  @@index([region])
+  @@index([status])
+  @@index([published])
+  @@index([hotSale])
+  @@index([pricePerSqmFrom])
+  @@index([deliveryYear])
+  @@map("projects")
+}
+
+model ProjectTranslation {
+  id          Int     @id @default(autoincrement())
+  projectId   String  @map("project_id")
+  language    String
+  title       String
+  description String? @db.Text
+  address     String?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, language])
+  @@map("project_translations")
+}
+
+/// Gallery photo (unitTypeId = null) or floor plan of a unit type.
+model ProjectImage {
+  id         Int      @id @default(autoincrement())
+  projectId  String   @map("project_id")
+  unitTypeId String?  @map("unit_type_id")
+  imageUrl   String   @map("image_url")
+  order      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  project  Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  unitType ProjectUnitType? @relation(fields: [unitTypeId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([unitTypeId])
+  @@map("project_images")
+}
+
+/// Apartment type offered in a project (studio, 1-bedroom, …), not a single unit.
+model ProjectUnitType {
+  id             String           @id @default(cuid())
+  projectId      String           @map("project_id")
+  rooms          Int // 0 = studio
+  bedrooms       Int?
+  areaFrom       Float            @map("area_from")
+  areaTo         Float?           @map("area_to")
+  pricePerSqm    Int?             @map("price_per_sqm")
+  priceFrom      Int?             @map("price_from")
+  floorsFrom     Int?             @map("floors_from")
+  floorsTo       Int?             @map("floors_to")
+  availableCount Int?             @map("available_count")
+  availability   UnitAvailability @default(AVAILABLE)
+  sortOrder      Int              @default(0) @map("sort_order")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  project      Project                      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  translations ProjectUnitTypeTranslation[]
+  images       ProjectImage[]
+
+  @@index([projectId])
+  @@map("project_unit_types")
+}
+
+model ProjectUnitTypeTranslation {
+  id          Int     @id @default(autoincrement())
+  unitTypeId  String  @map("unit_type_id")
+  language    String
+  title       String?
+  description String? @db.Text
+
+  unitType ProjectUnitType @relation(fields: [unitTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([unitTypeId, language])
+  @@map("project_unit_type_translations")
+}
+
+/// Consultation request left on a project page.
+model ProjectLead {
+  id         String     @id @default(cuid())
+  projectId  String     @map("project_id")
+  unitTypeId String?    @map("unit_type_id")
+  name       String
+  phone      String
+  email      String?
+  message    String?    @db.Text
+  locale     String     @default("ka")
+  status     LeadStatus @default(NEW)
+  note       String?    @db.Text
+  ipAddress  String?    @map("ip_address")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("project_leads")
+}

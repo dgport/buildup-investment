@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -179,6 +180,19 @@ function ProfileDropdown() {
             </Link>
           </Button>
 
+          {user?.role === "ADMIN" && (
+            <Button
+              variant="ghost"
+              className="justify-start gap-3 w-full rounded-xl hover:bg-amber-400/10 hover:text-amber-300 transition-all text-sm py-2"
+              asChild
+            >
+              <Link href={ROUTES.ADMIN_PROJECTS}>
+                <ShieldCheck className="h-4 w-4 text-amber-400/70" />
+                {t("admin")}
+              </Link>
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             className="justify-start gap-3 w-full rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all text-sm py-2"
@@ -230,6 +244,7 @@ export default function Header() {
   const navItems = [
     { href: ROUTES.HOME, label: t("nav.home") },
     { href: ROUTES.PROPERTIES, label: t("nav.properties") },
+    { href: ROUTES.PROJECTS, label: t("nav.projects") },
     { href: ROUTES.CONTACT, label: t("nav.contact") },
   ];
 
@@ -392,6 +407,15 @@ export default function Header() {
                     <Plus className="h-4 w-4 text-amber-400/70" />
                     {t("nav.addProperty")}
                   </Link>
+                  {user.role === "ADMIN" && (
+                    <Link
+                      href={ROUTES.ADMIN_PROJECTS}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-amber-100/70 hover:bg-white/[0.06] hover:text-amber-300 transition-all"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-amber-400/70" />
+                      {t("nav.admin")}
+                    </Link>
+                  )}
                   <button
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400/80 hover:bg-red-500/10 hover:text-red-400 transition-all text-left"
                     onClick={signOut}

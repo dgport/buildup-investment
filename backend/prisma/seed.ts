@@ -65,9 +65,29 @@ async function seedSiteSettings(): Promise<void> {
   console.log('✅ Seeded default_contact_phone');
 }
 
+/**
+ * Promote the account listed in ADMIN_EMAIL to ADMIN (the user must have
+ * signed up first). Re-run `npx prisma db seed` after changing the variable.
+ */
+async function seedAdmin(): Promise<void> {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  if (!email) return;
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    console.log(`ℹ️  ADMIN_EMAIL ${email} has no account yet – sign up first, then re-run the seed`);
+    return;
+  }
+  if (user.role !== 'ADMIN') {
+    await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN', isVerified: true } });
+    console.log(`✅ ${email} promoted to ADMIN`);
+  }
+}
+
 async function main(): Promise<void> {
   await seedRegionTranslations();
   await seedSiteSettings();
+  await seedAdmin();
 }
 
 main()

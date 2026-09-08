@@ -10,7 +10,10 @@
     "signin": "Sign In",
     "signup": "Sign Up",
     "signout": "Sign Out",
-    "toggleMenu": "Toggle menu"
+    "toggleMenu": "Toggle menu",
+    "projects": "Projects",
+    "developers": "Developers",
+    "admin": "Admin"
   },
   "footer": {
     "description": "Strategic investments and premium real estate on the Black Sea coast.",
