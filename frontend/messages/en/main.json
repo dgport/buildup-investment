@@ -90,5 +90,14 @@
     "ctaSecondary": "How it works",
     "free": "Free",
     "freeHint": "No commission on listings"
+  },
+  "mortgage": {
+    "title": "Plan your investment",
+    "subtitle": "Estimate your monthly mortgage payment in seconds — price, down payment, term and interest rate are all in your hands.",
+    "perMonth": "Per month",
+    "interestRate": "Annual rate",
+    "totalInterest": "Total interest",
+    "totalPayment": "Total repayment",
+    "disclaimer": "This estimate is indicative and not a bank offer. Final terms depend on the bank, your income and the property valuation. Rate used: 1 USD ≈ 2.70 ₾."
   }
 }
