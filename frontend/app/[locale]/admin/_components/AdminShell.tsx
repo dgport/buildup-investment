@@ -68,7 +68,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
         </aside>
-        <main className="min-w-0">{children}</main>
+        <div className="min-w-0">{children}</div>
       </div>
     </div>
   );
