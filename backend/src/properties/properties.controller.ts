@@ -69,6 +69,8 @@ function parseListQuery(q: Record<string, string | undefined>) {
     rooms: toInt(q.rooms),
     bedrooms: toInt(q.bedrooms),
     hotSale: toBool(q.hotSale),
+    sort: q.sort,
+    excludeId: q.excludeId,
   };
 }
 
@@ -88,6 +90,8 @@ const LIST_QUERY_DOCS = [
   { name: 'rooms', required: false, type: Number },
   { name: 'bedrooms', required: false, type: Number },
   { name: 'hotSale', required: false, type: Boolean },
+  { name: 'sort', required: false, enum: ['featured', 'newest', 'price_asc', 'price_desc', 'area_desc'] },
+  { name: 'excludeId', required: false },
 ] as const;
 
 function ListQueryDocs(): MethodDecorator {

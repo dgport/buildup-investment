@@ -102,6 +102,8 @@ export function PropertyFilters() {
   const applyFilters = () => {
     const params = new URLSearchParams();
     params.set("page", "1");
+    const sort = searchParams.get("sort");
+    if (sort) params.set("sort", sort);
     if (filters.propertyType !== ALL)
       params.set("propertyType", filters.propertyType);
     if (filters.dealType !== ALL) params.set("dealType", filters.dealType);
@@ -128,7 +130,7 @@ export function PropertyFilters() {
   };
 
   return (
-    <div className="mb-8 flex items-center gap-3 flex-wrap">
+    <div className="flex items-center gap-3 flex-wrap">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <button className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-teal-200 bg-white hover:bg-teal-50 hover:border-teal-400 transition-all duration-200 text-teal-900 font-medium text-sm shadow-sm">

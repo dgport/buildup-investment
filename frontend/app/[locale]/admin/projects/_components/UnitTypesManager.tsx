@@ -12,6 +12,7 @@ import { UnitAvailability, type Project, type UnitType, type UnitTypeInput } fro
 import { useProjectMutations } from "@/lib/hooks/useProjects";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { formatAreaRange, formatUsd } from "@/lib/utils/format";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { AdminImageGallery } from "../../_components/AdminImageGallery";
@@ -71,6 +72,7 @@ export function UnitTypesManager({ project }: { project: Project }) {
   const tp = useTranslations("projects");
   const tl = useTranslations("common.language");
   const m = useProjectMutations();
+  const confirm = useConfirm();
 
   const [editing, setEditing] = useState<{ unit: UnitType | null; form: FormState } | null>(null);
   const [lang, setLang] = useState<PropertyLanguage>("ka");
@@ -152,7 +154,7 @@ export function UnitTypesManager({ project }: { project: Project }) {
                     size="icon"
                     className="text-red-600 hover:bg-red-50"
                     aria-label={t("common.delete")}
-                    onClick={() => window.confirm(t("projects.unitTypes.deleteConfirm")) && m.deleteUnitType.mutateAsync({ projectId: project.id, unitTypeId: u.id }).catch((e) => setError(getErrorMessage(e, t("common.deleteError"))))}
+                    onClick={async () => (await confirm({ description: t("projects.unitTypes.deleteConfirm"), destructive: true })) && m.deleteUnitType.mutateAsync({ projectId: project.id, unitTypeId: u.id }).catch((e) => setError(getErrorMessage(e, t("common.deleteError"))))}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

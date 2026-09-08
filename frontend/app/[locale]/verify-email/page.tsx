@@ -20,6 +20,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { authService } from "@/lib/services/auth.service";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/api/api";
 import { ROUTES } from "@/lib/constants/routes";
 
@@ -40,6 +42,7 @@ function VerifyEmailContent() {
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [resendEmail, setResendEmail] = useState("");
   const hasVerified = useRef(false);
 
   useEffect(() => {
@@ -86,17 +89,21 @@ function VerifyEmailContent() {
   }, [countdown, router]);
 
   const handleResendEmail = async () => {
-    const email = window.prompt(t("resendPrompt"));
-    if (!email) return;
+    const email = resendEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error(t("emailInvalid"));
+      return;
+    }
 
     setIsResending(true);
     setResendSuccess(false);
     try {
-      await authService.resendVerification(email.trim());
+      await authService.resendVerification(email);
       setResendSuccess(true);
       setMessage(t("resendSuccess"));
+      toast.success(t("resendSuccess"));
     } catch (err) {
-      window.alert(getErrorMessage(err, t("resendFailed")));
+      toast.error(getErrorMessage(err, t("resendFailed")));
     } finally {
       setIsResending(false);
     }
@@ -105,6 +112,15 @@ function VerifyEmailContent() {
   const goToSignIn = () => router.push(ROUTES.SIGNIN);
 
   const resendButton = (variant: "default" | "outline") => (
+    <div className="space-y-2">
+    <Input
+      type="email"
+      value={resendEmail}
+      onChange={(e) => setResendEmail(e.target.value)}
+      placeholder={t("resendPrompt")}
+      autoComplete="email"
+      className="bg-teal-950/50 border-amber-400/20 text-white placeholder:text-amber-100/30 focus:border-amber-400"
+    />
     <Button
       onClick={handleResendEmail}
       variant={variant}
@@ -127,6 +143,7 @@ function VerifyEmailContent() {
         </>
       )}
     </Button>
+    </div>
   );
 
   const renderContent = () => {

@@ -15,6 +15,7 @@ import {
   Flame,
   User,
   ImageIcon,
+  Share2,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,9 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { DetailSkeleton } from "@/components/shared/Skeletons";
+import { MobileContactBar } from "@/components/shared/MobileContactBar";
+import { SimilarProperties } from "./SimilarProperties";
+import { toast } from "sonner";
 
 import { ConditionUtilitiesSection } from "./ConditionUtilitesSection";
 import { AmenitiesFeaturesSection } from "./AmenitiesFeatureSection";
@@ -61,6 +65,7 @@ export function PropertyDetailContent() {
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [shared, setShared] = useState(false);
 
   const { data: property, isLoading, error } = useProperty(id, locale);
 
@@ -102,6 +107,21 @@ export function PropertyDetailContent() {
     return currency === "USD"
       ? `$${priceUSD.toLocaleString()}`
       : `${Math.round(priceUSD * exchangeRate).toLocaleString()} ₾`;
+  };
+
+  const share = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: document.title, url: window.location.href });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        setShared(true);
+        toast.success(t("linkCopied"));
+        setTimeout(() => setShared(false), 2000);
+      }
+    } catch {
+      /* cancelled */
+    }
   };
 
   const copy = async (value: string, done: (v: boolean) => void) => {
@@ -152,7 +172,7 @@ export function PropertyDetailContent() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20 lg:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="bg-teal-900 rounded-xl p-2 shrink-0">
@@ -167,12 +187,22 @@ export function PropertyDetailContent() {
               {t(`enums.dealType.${property.dealType}`)}
             </p>
           </div>
-          {property.hotSale && (
-            <span className="ml-auto shrink-0 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg px-3 py-1.5 shadow flex items-center gap-1.5 text-white text-xs font-bold uppercase tracking-wide">
-              <Flame className="w-4 h-4" />
-              {t("hotSale")}
-            </span>
-          )}
+          <div className="ml-auto flex items-center gap-2 shrink-0">
+            {property.hotSale && (
+              <span className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg px-3 py-1.5 shadow flex items-center gap-1.5 text-white text-xs font-bold uppercase tracking-wide">
+                <Flame className="w-4 h-4" />
+                {t("hotSale")}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={share}
+              className="inline-flex items-center gap-1.5 text-sm text-teal-800 hover:text-amber-600 border border-teal-200 rounded-xl px-3 py-2 bg-white"
+            >
+              {shared ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4" />}
+              <span className="hidden sm:inline">{shared ? t("linkCopied") : t("share")}</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -423,8 +453,17 @@ export function PropertyDetailContent() {
               </div>
             </div>
           )}
+
+          <SimilarProperties property={property} />
         </div>
       </div>
+
+      <MobileContactBar
+        phone={property.contactPhone}
+        whatsappText={t("whatsappMessage", { title, id: property.externalId ?? property.id })}
+        callLabel={t("call")}
+        whatsappLabel={t("contactWhatsApp")}
+      />
 
       <Lightbox
         open={lightboxOpen}

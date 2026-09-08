@@ -37,7 +37,6 @@
   "mapTitle": "რუკა",
   "view2d": "2D ხედი",
   "view3d": "3D ხედი",
-
   "filterTitle": "ფილტრი",
   "propertyFilters": "ობიექტის ფილტრი",
   "propertyId": "ID-ით ძებნა",
@@ -55,7 +54,6 @@
   "apply": "ფილტრის გამოყენება",
   "clear": "ყველას გასუფთავება",
   "active": "აქტიური",
-
   "fields": {
     "totalArea": "საერთო ფართი",
     "rooms": "ოთახები",
@@ -71,7 +69,6 @@
     "parking": "პარკინგი",
     "nonStandard": "არასტანდარტული განლაგება"
   },
-
   "enums": {
     "propertyType": {
       "APARTMENT": "ბინა",
@@ -131,7 +128,6 @@
       "TEN_PLUS": "10+ ადამიანი"
     }
   },
-
   "amenities": {
     "hasConditioner": "კონდიციონერი",
     "hasFurniture": "ავეჯი",
@@ -157,5 +153,17 @@
     "hasWater": "წყალი",
     "hasElectricity": "ელექტროენერგია",
     "hasGate": "ჭიშკარი"
+  },
+  "similarTitle": "მსგავსი განცხადებები",
+  "similarSeeAll": "ყველას ნახვა",
+  "share": "გაზიარება",
+  "linkCopied": "ბმული დაკოპირდა",
+  "sort": "დალაგება",
+  "sortOptions": {
+    "featured": "რეკომენდებული",
+    "newest": "ახალი",
+    "price_asc": "ფასი: ზრდადი",
+    "price_desc": "ფასი: კლებადი",
+    "area_desc": "ფართი: დიდი"
   }
 }

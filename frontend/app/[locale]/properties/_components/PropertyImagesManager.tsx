@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import type { PropertyGalleryImage } from "@/lib/types/properties";
 import { ImageDropzone, type PendingImage } from "./form/ImageDropzone";
 
@@ -29,6 +30,7 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
   const deleteImage = useDeletePropertyImage();
   const addImages = useAddPropertyImages();
   const reorder = useReorderPropertyImages();
+  const confirm = useConfirm();
 
   const [pending, setPending] = useState<PendingImage[]>([]);
   const serverImages = property?.galleryImages;
@@ -72,7 +74,7 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
   };
 
   const handleDelete = async (imageId: number) => {
-    if (!window.confirm(t("deleteConfirm"))) return;
+    if (!(await confirm({ description: t("deleteConfirm"), destructive: true }))) return;
     try {
       await deleteImage.mutateAsync({ propertyId, imageId });
       showMessage("success", t("deleted"));

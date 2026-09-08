@@ -14,6 +14,7 @@ import { formatUsd } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants/routes";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { useSearchParams } from "next/navigation";
 
 export default function AdminProjectsPage() {
@@ -24,6 +25,7 @@ export default function AdminProjectsPage() {
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const { data, isLoading } = useAdminProjects({ lang: locale, page, limit: 20, search: search || undefined, sort: "newest" });
   const { remove, update } = useProjectMutations();
@@ -127,7 +129,7 @@ export default function AdminProjectsPage() {
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             aria-label={t("common.delete")}
                             disabled={remove.isPending}
-                            onClick={() => window.confirm(t("projects.deleteConfirm")) && act(() => remove.mutateAsync(p.id), t("common.deleteError"), t("common.deleted"))}
+                            onClick={async () => (await confirm({ description: t("projects.deleteConfirm"), destructive: true })) && act(() => remove.mutateAsync(p.id), t("common.deleteError"), t("common.deleted"))}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>

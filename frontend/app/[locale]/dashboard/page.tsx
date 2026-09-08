@@ -30,6 +30,7 @@ import { CardGridSkeleton } from "@/components/shared/Skeletons";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { ROUTES } from "@/lib/constants/routes";
 import {
   PROPERTY_LANGUAGES,
@@ -256,6 +257,7 @@ function DashboardContent() {
   const tf = useTranslations("dashboard.form");
 
   const { data: user } = useCurrentUser();
+  const confirm = useConfirm();
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
   const [actionError, setActionError] = useState<string | null>(null);
   const flash = searchParams.get("created") ? tf("created") : null;
@@ -291,7 +293,7 @@ function DashboardContent() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm(t("deleteConfirm"))) return;
+    if (!(await confirm({ description: t("deleteConfirm"), destructive: true }))) return;
     setActionError(null);
     try {
       await deleteProperty.mutateAsync(id);

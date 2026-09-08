@@ -37,7 +37,6 @@
   "mapTitle": "Map",
   "view2d": "2D view",
   "view3d": "3D view",
-
   "filterTitle": "Filters",
   "propertyFilters": "Property filters",
   "propertyId": "Search by ID",
@@ -55,7 +54,6 @@
   "apply": "Apply filters",
   "clear": "Clear all",
   "active": "Active",
-
   "fields": {
     "totalArea": "Total area",
     "rooms": "Rooms",
@@ -71,7 +69,6 @@
     "parking": "Parking",
     "nonStandard": "Non-standard layout"
   },
-
   "enums": {
     "propertyType": {
       "APARTMENT": "Apartment",
@@ -131,7 +128,6 @@
       "TEN_PLUS": "10+ people"
     }
   },
-
   "amenities": {
     "hasConditioner": "Air conditioner",
     "hasFurniture": "Furniture",
@@ -157,5 +153,17 @@
     "hasWater": "Water",
     "hasElectricity": "Electricity",
     "hasGate": "Gate"
+  },
+  "similarTitle": "Similar listings",
+  "similarSeeAll": "See all",
+  "share": "Share",
+  "linkCopied": "Link copied",
+  "sort": "Sort",
+  "sortOptions": {
+    "featured": "Featured",
+    "newest": "Newest",
+    "price_asc": "Price: low to high",
+    "price_desc": "Price: high to low",
+    "area_desc": "Area: largest"
   }
 }

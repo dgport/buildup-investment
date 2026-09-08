@@ -223,6 +223,8 @@ export interface PropertyFilters {
   rooms?: number;
   bedrooms?: number;
   hotSale?: boolean;
+  sort?: "featured" | "newest" | "price_asc" | "price_desc" | "area_desc";
+  excludeId?: string;
 }
 
 export interface PropertiesResponse {

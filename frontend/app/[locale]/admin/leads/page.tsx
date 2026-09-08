@@ -11,6 +11,7 @@ import { TableSkeleton } from "@/components/shared/Skeletons";
 import { LeadStatus, type Lead } from "@/lib/types/projects";
 import { ROUTES } from "@/lib/constants/routes";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { useSearchParams } from "next/navigation";
 
@@ -29,6 +30,7 @@ export default function AdminLeadsPage() {
   const [status, setStatus] = useState<string>("");
   const { data, isLoading } = useLeads({ page, limit: 20, status: status || undefined });
   const m = useLeadMutations();
+  const confirm = useConfirm();
   const leads = data?.data ?? [];
   const counts = data?.meta.counts ?? {};
 
@@ -60,7 +62,7 @@ export default function AdminLeadsPage() {
         ) : (
           <div className="divide-y divide-gray-100">
             {leads.map((lead) => (
-              <LeadRow key={lead.id} lead={lead} locale={locale} onChange={(d) => m.update.mutateAsync({ id: lead.id, data: d }).then(() => toast.success(t("common.saved")))} onDelete={() => window.confirm(t("leads.deleteConfirm")) && m.remove.mutateAsync(lead.id)} roomsLabel={(r) => roomsLabel(tp, r)} />
+              <LeadRow key={lead.id} lead={lead} locale={locale} onChange={(d) => m.update.mutateAsync({ id: lead.id, data: d }).then(() => toast.success(t("common.saved")))} onDelete={async () => (await confirm({ description: t("leads.deleteConfirm"), destructive: true })) && m.remove.mutateAsync(lead.id)} roomsLabel={(r) => roomsLabel(tp, r)} />
             ))}
           </div>
         )}

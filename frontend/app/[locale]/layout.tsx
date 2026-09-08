@@ -10,6 +10,7 @@ import { getPageMetadata } from "@/lib/getMetadata";
 import { CurrencyProvider } from "@/lib/currency";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { ConfirmProvider } from "@/components/shared/ConfirmDialog";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -58,12 +59,14 @@ export default async function LocaleLayout({
       >
         <QueryProvider>
           <NextIntlClientProvider messages={plainMessages}>
-            <Header />
-            <CurrencyProvider>
-              <main id="main-content">{children}</main>
-            </CurrencyProvider>
-            <Footer />
-            <Toaster position="top-center" richColors closeButton />
+            <ConfirmProvider>
+              <Header />
+              <CurrencyProvider>
+                <main id="main-content">{children}</main>
+              </CurrencyProvider>
+              <Footer />
+              <Toaster position="top-center" richColors closeButton />
+            </ConfirmProvider>
           </NextIntlClientProvider>
         </QueryProvider>
       </body>

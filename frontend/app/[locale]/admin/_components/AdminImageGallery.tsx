@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { GripVertical, ImageIcon, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import type { ProjectImage } from "@/lib/types/projects";
 import { ImageDropzone, type PendingImage } from "@/app/[locale]/properties/_components/form/ImageDropzone";
@@ -31,6 +32,7 @@ export function AdminImageGallery({
   compact,
 }: Props) {
   const t = useTranslations("admin");
+  const confirm = useConfirm();
   const [pending, setPending] = useState<PendingImage[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +107,7 @@ export function AdminImageGallery({
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => window.confirm(deleteConfirm) && run(() => onDelete(img.id))}
+                onClick={async () => (await confirm({ description: deleteConfirm, destructive: true })) && run(() => onDelete(img.id))}
                 className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition"
                 aria-label={t("common.delete")}
               >

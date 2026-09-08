@@ -33,6 +33,7 @@ import {
 import { useProject } from "@/lib/hooks/useProjects";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { DetailSkeleton } from "@/components/shared/Skeletons";
+import { MobileContactBar } from "@/components/shared/MobileContactBar";
 import { formatUsd, toEmbedUrl } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants/routes";
 import type { UnitType } from "@/lib/types/projects";
@@ -141,7 +142,7 @@ export function ProjectDetailContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20 lg:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
         {/* Heading */}
         <div className="flex flex-wrap items-start gap-4 mb-6">
@@ -414,6 +415,14 @@ export function ProjectDetailContent() {
           )}
         </div>
       </div>
+
+      <MobileContactBar
+        phone={phone}
+        whatsappText={`${title} · buildup.ge`}
+        callLabel={t("detail.call")}
+        whatsappLabel={t("detail.whatsapp")}
+        action={{ label: t("detail.requestConsultation"), onClick: () => openLead(null) }}
+      />
 
       <Lightbox
         open={!!lightbox}

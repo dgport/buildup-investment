@@ -36,6 +36,10 @@ export interface FindAllParams {
   rooms?: number;
   bedrooms?: number;
   hotSale?: boolean;
+  /** Exclude one listing (used for "similar listings") */
+  excludeId?: string;
+  /** featured (default) | newest | price_asc | price_desc | area_desc */
+  sort?: string;
   includePrivate?: boolean;
   onlyApproved?: boolean;
   userId?: string;
@@ -382,6 +386,7 @@ export class PropertiesService {
       where.dealType = dealType as DealType;
     }
     if (hotSale !== undefined) where.hotSale = hotSale;
+    if (params.excludeId) where.id = { not: params.excludeId };
 
     if (priceFrom !== undefined || priceTo !== undefined) {
       where.price = {};
@@ -400,13 +405,28 @@ export class PropertiesService {
     if (bedrooms !== undefined)
       where.bedrooms = bedrooms >= 4 ? { gte: 4 } : bedrooms;
 
+    const orderBy: Prisma.PropertyOrderByWithRelationInput[] = (() => {
+      switch (params.sort) {
+        case 'newest':
+          return [{ createdAt: 'desc' }];
+        case 'price_asc':
+          return [{ price: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }];
+        case 'price_desc':
+          return [{ price: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }];
+        case 'area_desc':
+          return [{ totalArea: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }];
+        default:
+          return [{ hotSale: 'desc' }, { createdAt: 'desc' }];
+      }
+    })();
+
     const [total, properties] = await Promise.all([
       this.prismaService.property.count({ where }),
       this.prismaService.property.findMany({
         skip,
         take: limit,
         where,
-        orderBy: [{ hotSale: 'desc' }, { createdAt: 'desc' }],
+        orderBy,
         include: PROPERTY_INCLUDE,
       }),
     ]);

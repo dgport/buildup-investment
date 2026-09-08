@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { Building2, SearchX } from "lucide-react";
 import { useProperties } from "@/lib/hooks/useProperties";
@@ -9,6 +9,15 @@ import type { PropertyFilters as PropertyFiltersType } from "@/lib/types/propert
 import PropertyCard from "@/components/shared/PropertyCard";
 import { CardGridSkeleton } from "@/components/shared/Skeletons";
 import { PropertyFilters } from "./PropertyFilters";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const SORTS = ["featured", "newest", "price_asc", "price_desc", "area_desc"] as const;
 
 const PROPERTIES_PER_PAGE = 12;
 
@@ -34,6 +43,9 @@ function parseSearchParams(searchParams: URLSearchParams): PropertyFiltersType {
     areaTo: getInt("areaTo"),
     rooms: getInt("rooms"),
     bedrooms: getInt("bedrooms"),
+    sort: SORTS.includes(get("sort") as (typeof SORTS)[number])
+      ? (get("sort") as PropertyFiltersType["sort"])
+      : undefined,
   };
 }
 
@@ -41,7 +53,17 @@ export function PropertiesContent() {
   const t = useTranslations("properties");
   const locale = useLocale();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const filters = parseSearchParams(searchParams);
+
+  const setSort = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === "featured") params.delete("sort");
+    else params.set("sort", value);
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const {
     data: response,
@@ -69,7 +91,21 @@ export function PropertiesContent() {
           )}
         </div>
 
-        <PropertyFilters />
+        <div className="flex flex-wrap items-center gap-3 mb-8">
+          <PropertyFilters />
+          <div className="ml-auto">
+            <Select value={filters.sort ?? "featured"} onValueChange={setSort}>
+              <SelectTrigger className="h-10 w-[190px] border-teal-200 rounded-xl text-sm bg-white">
+                <SelectValue placeholder={t("sort")} />
+              </SelectTrigger>
+              <SelectContent>
+                {SORTS.map((s) => (
+                  <SelectItem key={s} value={s}>{t(`sortOptions.${s}`)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         {isLoading ? (
           <LoadingGrid />
