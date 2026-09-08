@@ -284,6 +284,12 @@ export default function Header() {
         headerBg,
       )}
     >
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[70] bg-amber-400 text-teal-950 font-semibold px-4 py-2 rounded-lg"
+      >
+        {t("skipToContent")}
+      </a>
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
 
       <div className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-24">
@@ -316,6 +322,7 @@ export default function Header() {
                 {i > 0 && <div className="w-px h-4 bg-amber-400/20 mx-1" />}
                 <Link
                   href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
                   className={cn(
                     "relative px-5 py-2 text-sm font-semibold rounded-lg transition-all duration-300 group/nav",
                     isActive(item.href)

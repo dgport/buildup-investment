@@ -59,5 +59,6 @@
     "description": "There was a problem loading this page. Try again or go back to the home page.",
     "retry": "Try again",
     "home": "Home page"
-  }
+  },
+  "skipToContent": "Skip to content"
 }

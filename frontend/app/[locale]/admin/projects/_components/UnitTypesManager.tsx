@@ -11,6 +11,7 @@ import { PROPERTY_LANGUAGES, type PropertyLanguage } from "@/lib/types/propertie
 import { UnitAvailability, type Project, type UnitType, type UnitTypeInput } from "@/lib/types/projects";
 import { useProjectMutations } from "@/lib/hooks/useProjects";
 import { getErrorMessage } from "@/lib/api/api";
+import { toast } from "sonner";
 import { formatAreaRange, formatUsd } from "@/lib/utils/format";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { AdminImageGallery } from "../../_components/AdminImageGallery";
@@ -95,6 +96,7 @@ export function UnitTypesManager({ project }: { project: Project }) {
         await m.createUnitType.mutateAsync({ projectId: project.id, data: payload });
       }
       setEditing(null);
+      toast.success(t("common.saved"));
     } catch (e) {
       setError(getErrorMessage(e, t("common.saveError")));
     }

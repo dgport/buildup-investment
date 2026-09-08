@@ -13,6 +13,7 @@ import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { formatUsd } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants/routes";
 import { getErrorMessage } from "@/lib/api/api";
+import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 
 export default function AdminProjectsPage() {
@@ -28,12 +29,15 @@ export default function AdminProjectsPage() {
   const { remove, update } = useProjectMutations();
   const projects = data?.data ?? [];
 
-  const act = async (fn: () => Promise<unknown>, fallback: string) => {
+  const act = async (fn: () => Promise<unknown>, fallback: string, success?: string) => {
     setError(null);
     try {
       await fn();
+      if (success) toast.success(success);
     } catch (e) {
-      setError(getErrorMessage(e, fallback));
+      const message = getErrorMessage(e, fallback);
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -100,7 +104,7 @@ export default function AdminProjectsPage() {
                       <td className="px-4 py-3">
                         <button
                           type="button"
-                          onClick={() => act(() => update.mutateAsync({ id: p.id, data: { published: !p.published } }), t("common.saveError"))}
+                          onClick={() => act(() => update.mutateAsync({ id: p.id, data: { published: !p.published } }), t("common.saveError"), t("common.saved"))}
                           className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-md px-2 py-1 border ${p.published ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200"}`}
                         >
                           {p.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -123,7 +127,7 @@ export default function AdminProjectsPage() {
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             aria-label={t("common.delete")}
                             disabled={remove.isPending}
-                            onClick={() => window.confirm(t("projects.deleteConfirm")) && act(() => remove.mutateAsync(p.id), t("common.deleteError"))}
+                            onClick={() => window.confirm(t("projects.deleteConfirm")) && act(() => remove.mutateAsync(p.id), t("common.deleteError"), t("common.deleted"))}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>

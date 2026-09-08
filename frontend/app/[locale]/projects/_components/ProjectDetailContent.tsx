@@ -235,7 +235,7 @@ export function ProjectDetailContent() {
             </div>
           </div>
 
-          <div className="card p-5 flex flex-col gap-4">
+          <div className="card p-5 flex flex-col gap-4 lg:sticky lg:top-28 self-start">
             <div className="bg-teal-950 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-teal-300">{t("detail.pricePerSqm")}</p>

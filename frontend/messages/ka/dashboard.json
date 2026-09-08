@@ -157,5 +157,6 @@
     "cancel": "გაუქმება",
     "confirm": "დადასტურება",
     "noToken": "რუკა მიუწვდომელია: NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN არ არის მითითებული."
-  }
+  },
+  "deleted": "განცხადება წაიშალა"
 }

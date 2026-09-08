@@ -35,7 +35,8 @@
     "descriptionIn": "Description ({language})",
     "titleRequired": "A title is required in at least one language",
     "required": "Required",
-    "confirmDelete": "Are you sure? This cannot be undone."
+    "confirmDelete": "Are you sure? This cannot be undone.",
+    "deleted": "Deleted"
   },
   "projects": {
     "title": "Development projects",

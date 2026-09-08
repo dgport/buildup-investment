@@ -29,6 +29,7 @@ import { Pagination } from "@/components/shared/Pagination";
 import { CardGridSkeleton } from "@/components/shared/Skeletons";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
+import { toast } from "sonner";
 import { ROUTES } from "@/lib/constants/routes";
 import {
   PROPERTY_LANGUAGES,
@@ -294,9 +295,12 @@ function DashboardContent() {
     setActionError(null);
     try {
       await deleteProperty.mutateAsync(id);
+      toast.success(t("deleted"));
       if (properties.length === 1 && page > 1) handlePageChange(page - 1);
     } catch (err) {
-      setActionError(getErrorMessage(err, t("deleteFailed")));
+      const message = getErrorMessage(err, t("deleteFailed"));
+      setActionError(message);
+      toast.error(message);
     }
   };
 

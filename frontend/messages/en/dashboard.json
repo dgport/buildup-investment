@@ -157,5 +157,6 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "noToken": "Map unavailable: NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN is not configured."
-  }
+  },
+  "deleted": "Listing deleted"
 }

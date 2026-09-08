@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
+import { toast } from "sonner";
 import type { PropertyGalleryImage } from "@/lib/types/properties";
 import { ImageDropzone, type PendingImage } from "./form/ImageDropzone";
 
@@ -50,8 +51,11 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
     return () => clearTimeout(timer);
   }, [message]);
 
-  const showMessage = (type: "success" | "error", text: string) =>
+  const showMessage = (type: "success" | "error", text: string) => {
     setMessage({ type, text });
+    if (type === "success") toast.success(text);
+    else toast.error(text);
+  };
 
   const handleUpload = async () => {
     if (!pending.length) return;

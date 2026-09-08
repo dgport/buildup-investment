@@ -10,6 +10,7 @@ import { Pagination } from "@/components/shared/Pagination";
 import { TableSkeleton } from "@/components/shared/Skeletons";
 import { LeadStatus, type Lead } from "@/lib/types/projects";
 import { ROUTES } from "@/lib/constants/routes";
+import { toast } from "sonner";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { useSearchParams } from "next/navigation";
 
@@ -59,7 +60,7 @@ export default function AdminLeadsPage() {
         ) : (
           <div className="divide-y divide-gray-100">
             {leads.map((lead) => (
-              <LeadRow key={lead.id} lead={lead} locale={locale} onChange={(d) => m.update.mutateAsync({ id: lead.id, data: d })} onDelete={() => window.confirm(t("leads.deleteConfirm")) && m.remove.mutateAsync(lead.id)} roomsLabel={(r) => roomsLabel(tp, r)} />
+              <LeadRow key={lead.id} lead={lead} locale={locale} onChange={(d) => m.update.mutateAsync({ id: lead.id, data: d }).then(() => toast.success(t("common.saved")))} onDelete={() => window.confirm(t("leads.deleteConfirm")) && m.remove.mutateAsync(lead.id)} roomsLabel={(r) => roomsLabel(tp, r)} />
             ))}
           </div>
         )}

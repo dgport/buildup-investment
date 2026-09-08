@@ -5,6 +5,7 @@ import MortgageCalculator from "./_components/MortgageCalculator";
 import AboutParallax from "./_components/AboutParallax";
 import PropertyCarousel from "./_components/PropertyCarousel";
 import ProjectsCarousel from "./_components/ProjectsCarousel";
+import ListPropertyCta from "./_components/ListPropertyCta";
 
 export default function Page() {
   return (
@@ -12,6 +13,7 @@ export default function Page() {
       <CoverSection />
       <PropertyCarousel />
       <ProjectsCarousel />
+      <ListPropertyCta />
       <AboutParallax />
       <SuggestSection />
       <MortgageCalculator />

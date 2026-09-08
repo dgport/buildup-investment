@@ -9,6 +9,7 @@ import Footer from "@/components/footer/Footer";
 import { getPageMetadata } from "@/lib/getMetadata";
 import { CurrencyProvider } from "@/lib/currency";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -59,9 +60,10 @@ export default async function LocaleLayout({
           <NextIntlClientProvider messages={plainMessages}>
             <Header />
             <CurrencyProvider>
-              <main>{children}</main>
+              <main id="main-content">{children}</main>
             </CurrencyProvider>
             <Footer />
+            <Toaster position="top-center" richColors closeButton />
           </NextIntlClientProvider>
         </QueryProvider>
       </body>

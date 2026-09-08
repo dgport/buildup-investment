@@ -255,7 +255,7 @@ export function PropertyDetailContent() {
 
           {/* Info card */}
           <div className="lg:col-span-1">
-            <div className="card p-5 h-auto lg:h-[500px] flex flex-col justify-between">
+            <div className="card p-5 h-auto lg:h-[500px] flex flex-col justify-between lg:sticky lg:top-28">
               <div>
                 <div className="bg-teal-950 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold uppercase tracking-wider text-teal-300">

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateLead } from "@/lib/hooks/useProjects";
 import { getErrorMessage } from "@/lib/api/api";
+import { toast } from "sonner";
 import type { UnitType } from "@/lib/types/projects";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { formatAreaRange } from "@/lib/utils/format";
@@ -74,6 +75,7 @@ export function LeadForm({ projectId, unitTypes, initialUnitTypeId, onSuccess }:
         },
       });
       setDone(true);
+      toast.success(t("lead.success"));
       onSuccess?.();
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status;

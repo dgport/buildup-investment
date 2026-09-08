@@ -14,6 +14,7 @@ import { PROPERTY_LANGUAGES, type PropertyLanguage } from "@/lib/types/propertie
 import type { Developer, DeveloperInput } from "@/lib/types/projects";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
+import { toast } from "sonner";
 import { ROUTES } from "@/lib/constants/routes";
 
 type FormState = Required<Pick<DeveloperInput, "name" | "published">> & Omit<DeveloperInput, "name" | "published">;
@@ -79,6 +80,7 @@ export default function AdminDevelopersPage() {
         await m.create.mutateAsync(payload);
       }
       setEditing(null);
+      toast.success(t("common.saved"));
     } catch (e) {
       setError(getErrorMessage(e, t("common.saveError")));
     }
@@ -89,6 +91,7 @@ export default function AdminDevelopersPage() {
     setListError(null);
     try {
       await m.remove.mutateAsync(dev.id);
+      toast.success(t("common.deleted"));
     } catch (e) {
       const status = (e as { response?: { status?: number } })?.response?.status;
       setListError(status === 409 ? t("developers.hasProjects") : getErrorMessage(e, t("common.deleteError")));

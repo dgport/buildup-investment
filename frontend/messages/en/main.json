@@ -11,7 +11,6 @@
   "dotAriaLabel": "Go to slide {index}",
   "since": "SINCE 2022",
   "region": "GEORGIA",
-
   "suggestBadge": "Our Expertise",
   "sectionTitle": "What We Offer",
   "sectionSubtitle": "A complete range of real estate and investment services tailored to your goals",
@@ -33,9 +32,7 @@
       "text": "Comprehensive property development services including design, construction, legal support, and interior finishing — all handled by our dedicated team in Batumi."
     }
   ],
-
   "clientsSectionLabel": "Our Partners",
-
   "mortgageBadge": "Mortgage Calculator",
   "propertyPrice": "Property Price",
   "downPayment": "Down Payment",
@@ -47,7 +44,6 @@
   "loanAmount": "Loan Amount",
   "equityShare": "Equity Share",
   "mortgageCta": "Get Pre-Approved",
-
   "aboutLabel": "Real Estate & Development",
   "aboutHeadingRegular": "Building",
   "aboutHeadingItalic": "Premium",
@@ -61,11 +57,38 @@
   "aboutStat2Label": "Years",
   "aboutStat3Value": "200+",
   "aboutStat3Label": "Clients",
-
   "featuredProperties": "Featured Properties",
   "seeAll": "See All",
   "priceOnRequest": "Price on request",
   "hotSale": "VIP",
   "rooms": "Rooms",
-  "area": "Area"
+  "area": "Area",
+  "hero": {
+    "searchTitle": "Find your place on the Black Sea coast",
+    "dealType": "Deal",
+    "propertyType": "Type",
+    "region": "Region",
+    "any": "Any",
+    "search": "Search",
+    "listings": "listings",
+    "projects": "projects",
+    "developers": "developers",
+    "quickLinks": "Quick links",
+    "allProjects": "New projects"
+  },
+  "listCta": {
+    "label": "For owners",
+    "title": "List your apartment, villa or land for free",
+    "subtitle": "Sign up in a minute, publish in five steps — with photos, a map pin and three languages.",
+    "step1Title": "Create an account",
+    "step1Text": "With e-mail or Google, it takes a minute.",
+    "step2Title": "Fill in the details",
+    "step2Text": "Type, price, area, amenities, location on the map.",
+    "step3Title": "Upload photos",
+    "step3Text": "Up to 20 photos; the first one becomes the cover.",
+    "cta": "Add a listing",
+    "ctaSecondary": "How it works",
+    "free": "Free",
+    "freeHint": "No commission on listings"
+  }
 }
