@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { SITE_URL } from "./constants/env";
 
 export type MetaPage = "home";
 
@@ -9,7 +11,10 @@ interface MetaEntry {
   ogDescription: string;
 }
 
-export async function getPageMetadata(page: MetaPage) {
+const SITE_NAME = "Build Up Investment";
+const OG_IMAGE = { url: "/og-image.avif", width: 1200, height: 630 };
+
+export async function getPageMetadata(page: MetaPage): Promise<Metadata> {
   const locale = await getLocale();
   const meta: Record<MetaPage, MetaEntry> = (
     await import(`@/messages/${locale}/meta.json`)
@@ -18,27 +23,30 @@ export async function getPageMetadata(page: MetaPage) {
   const entry = meta[page];
 
   return {
-    title: entry.title,
+    metadataBase: new URL(SITE_URL),
+    applicationName: SITE_NAME,
+    title: {
+      default: entry.title,
+      template: `%s · ${SITE_NAME}`,
+    },
     description: entry.description,
+    alternates: { canonical: "/" },
     openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
+      locale: locale === "ka" ? "ka_GE" : "en_US",
       title: entry.ogTitle,
       description: entry.ogDescription,
-      siteName: "Build Up Investment",
-      url: "https://buildup.ge",
-      images: [
-        {
-          url: "/Logo.png",
-          width: 1200,
-          height: 630,
-          alt: entry.ogTitle,
-        },
-      ],
+      url: SITE_URL,
+      images: [{ ...OG_IMAGE, alt: entry.ogTitle }],
     },
     twitter: {
-      card: "summary_large_image" as const,
+      card: "summary_large_image",
       title: entry.ogTitle,
       description: entry.ogDescription,
-      images: ["/og-image.avif"],
+      images: [OG_IMAGE.url],
     },
+    robots: { index: true, follow: true },
+    formatDetection: { telephone: true, email: true },
   };
 }

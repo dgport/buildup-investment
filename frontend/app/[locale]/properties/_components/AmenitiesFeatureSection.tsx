@@ -10,7 +10,7 @@ export function AmenitiesFeaturesSection({ property }: { property: Property }) {
   if (!available.length) return null;
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-teal-100">
+    <div className="card p-6">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3">
         {t("amenitiesTitle")}
       </h3>

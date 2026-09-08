@@ -44,6 +44,12 @@ services:
       PORT: "3000"
     volumes:
       - uploads_data:/app/public/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,7 +66,8 @@ services:
     env_file:
       - ./frontend/.env
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:

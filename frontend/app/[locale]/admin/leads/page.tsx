@@ -7,6 +7,7 @@ import { Mail, Phone, Trash2 } from "lucide-react";
 import { useLeadMutations, useLeads } from "@/lib/hooks/useProjects";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/shared/Pagination";
+import { TableSkeleton } from "@/components/shared/Skeletons";
 import { LeadStatus, type Lead } from "@/lib/types/projects";
 import { ROUTES } from "@/lib/constants/routes";
 import { roomsLabel } from "@/components/shared/ProjectCard";
@@ -52,7 +53,7 @@ export default function AdminLeadsPage() {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {isLoading ? (
-          <p className="p-8 text-center text-sm text-gray-500">{t("common.loading")}</p>
+          <TableSkeleton rows={4} />
         ) : leads.length === 0 ? (
           <p className="p-12 text-center text-sm text-gray-500">{t("leads.empty")}</p>
         ) : (

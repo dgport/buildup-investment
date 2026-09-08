@@ -24,6 +24,7 @@ import { useTranslations, useLocale } from "next-intl";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { DetailSkeleton } from "@/components/shared/Skeletons";
 
 import { ConditionUtilitiesSection } from "./ConditionUtilitesSection";
 import { AmenitiesFeaturesSection } from "./AmenitiesFeatureSection";
@@ -115,8 +116,8 @@ export function PropertyDetailContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-700" />
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <DetailSkeleton />
       </div>
     );
   }
@@ -177,7 +178,7 @@ export function PropertyDetailContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Carousel */}
           <div className="lg:col-span-2 h-[350px] lg:h-[500px]">
-            <div className="bg-white rounded-2xl overflow-hidden border border-teal-100 h-full relative">
+            <div className="card overflow-hidden h-full relative">
               <div className="overflow-hidden h-full" ref={emblaRef}>
                 <div className="flex h-full">
                   {images.length > 0 ? (
@@ -254,7 +255,7 @@ export function PropertyDetailContent() {
 
           {/* Info card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl border border-teal-100 p-5 h-auto lg:h-[500px] flex flex-col justify-between">
+            <div className="card p-5 h-auto lg:h-[500px] flex flex-col justify-between">
               <div>
                 <div className="bg-teal-950 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold uppercase tracking-wider text-teal-300">
@@ -385,7 +386,7 @@ export function PropertyDetailContent() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl p-6 border border-teal-100">
+          <div className="card p-6">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3">
               {t("descriptionTitle")}
             </h3>
@@ -400,7 +401,7 @@ export function PropertyDetailContent() {
 
           <PropertyDetailsSection property={property} />
 
-          <div className="bg-white rounded-2xl p-6 border border-teal-100">
+          <div className="card p-6">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3 flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               {t("location")}
@@ -412,7 +413,7 @@ export function PropertyDetailContent() {
           <AmenitiesFeaturesSection property={property} />
 
           {coordinates && (
-            <div className="bg-white rounded-2xl border border-teal-100 p-4">
+            <div className="card p-4">
               <div className="h-[300px] sm:h-[350px] rounded-xl overflow-hidden">
                 <MapboxMap
                   latitude={coordinates.lat}

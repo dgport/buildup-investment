@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/carousel";
 import { useTranslations, useLocale } from "next-intl";
 import PropertyCard from "@/components/shared/PropertyCard";
+import { CardSkeleton } from "@/components/shared/Skeletons";
 import { useProperties } from "@/lib/hooks/useProperties";
 import { ROUTES } from "@/lib/constants/routes";
 
@@ -30,16 +31,7 @@ const PropertyCarousel = () => {
       <div className="py-12 px-6 md:px-12 lg:px-16 xl:px-28 bg-[#FAFAF8]">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden animate-pulse"
-            >
-              <div className="h-48 bg-gray-200" />
-              <div className="p-4 space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
-              </div>
-            </div>
+            <CardSkeleton key={i} tall />
           ))}
         </div>
       </div>

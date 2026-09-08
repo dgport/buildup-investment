@@ -44,7 +44,7 @@ export function DeveloperDetailContent() {
           {t("title")}
         </Link>
 
-        <div className="bg-white rounded-2xl border border-teal-100 p-6 sm:p-8 flex flex-col sm:flex-row gap-6 mb-10">
+        <div className="card p-6 sm:p-8 flex flex-col sm:flex-row gap-6 mb-10">
           <div className="w-28 h-28 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0 overflow-hidden">
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element

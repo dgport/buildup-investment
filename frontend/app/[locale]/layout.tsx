@@ -25,6 +25,7 @@ export async function generateMetadata() {
       icon: "/favicon.png",
       apple: "/favicon.png",
     },
+    manifest: "/manifest.webmanifest",
   };
 }
 

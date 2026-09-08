@@ -137,8 +137,9 @@ export class DevelopersService {
       await FileUtils.deleteFile(FileUtils.generateImageUrl(file, 'developers') ?? '');
       throw new NotFoundException('Developer not found');
     }
-    const url = FileUtils.generateImageUrl(file, 'developers');
-    if (!url) throw new ConflictException('No logo file received');
+    const [valid] = await FileUtils.keepOnlyRealImages(file ? [file] : []);
+    const url = FileUtils.generateImageUrl(valid, 'developers');
+    if (!url) throw new ConflictException('No valid logo file received');
 
     if (dev.logo) await FileUtils.deleteFile(dev.logo);
     await this.prisma.developer.update({ where: { id }, data: { logo: url } });

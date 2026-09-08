@@ -7,6 +7,7 @@ import { useProperties } from "@/lib/hooks/useProperties";
 import { Pagination } from "@/components/shared/Pagination";
 import type { PropertyFilters as PropertyFiltersType } from "@/lib/types/properties";
 import PropertyCard from "@/components/shared/PropertyCard";
+import { CardGridSkeleton } from "@/components/shared/Skeletons";
 import { PropertyFilters } from "./PropertyFilters";
 
 const PROPERTIES_PER_PAGE = 12;
@@ -102,23 +103,7 @@ export function PropertiesContent() {
 }
 
 function LoadingGrid() {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden animate-pulse"
-        >
-          <div className="h-48 bg-gray-200" />
-          <div className="p-4 space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 rounded w-1/2" />
-            <div className="h-3 bg-gray-200 rounded w-2/3" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <CardGridSkeleton count={8} tall />;
 }
 
 function EmptyState({ message }: { message: string }) {

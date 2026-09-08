@@ -19,3 +19,8 @@ export const MAPBOX_ACCESS_TOKEN =
 
 export const WEB3FORMS_ACCESS_KEY =
   process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ?? "";
+
+/** Public site origin, used for canonical URLs, sitemap and Open Graph. */
+export const SITE_URL = stripTrailingSlash(
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://buildup.ge",
+);

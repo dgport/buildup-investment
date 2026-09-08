@@ -971,7 +971,8 @@ export class PropertiesService {
     images: Express.Multer.File[],
     startOrder: number,
   ): Promise<void> {
-    const imageData = images
+    const realImages = await FileUtils.keepOnlyRealImages(images);
+    const imageData = realImages
       .map((image, index) => ({
         url: FileUtils.generateImageUrl(image, 'properties'),
         order: startOrder + index,

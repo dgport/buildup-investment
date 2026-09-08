@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { useProject } from "@/lib/hooks/useProjects";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { DetailSkeleton } from "@/components/shared/Skeletons";
 import { formatUsd, toEmbedUrl } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants/routes";
 import type { UnitType } from "@/lib/types/projects";
@@ -91,8 +92,8 @@ export function ProjectDetailContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-700" />
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <DetailSkeleton />
       </div>
     );
   }
@@ -177,7 +178,7 @@ export function ProjectDetailContent() {
         {/* Gallery + info card */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 h-[340px] lg:h-[520px]">
-            <div className="bg-white rounded-2xl overflow-hidden border border-teal-100 h-full relative">
+            <div className="card overflow-hidden h-full relative">
               <div className="overflow-hidden h-full" ref={emblaRef}>
                 <div className="flex h-full">
                   {images.length ? (
@@ -234,7 +235,7 @@ export function ProjectDetailContent() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-teal-100 p-5 flex flex-col gap-4">
+          <div className="card p-5 flex flex-col gap-4">
             <div className="bg-teal-950 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-teal-300">{t("detail.pricePerSqm")}</p>
@@ -306,7 +307,7 @@ export function ProjectDetailContent() {
 
         <div className="space-y-6">
           {/* Description */}
-          <section className="bg-white rounded-2xl p-6 border border-teal-100">
+          <section className="card p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3">{t("detail.description")}</h2>
             {project.description ? (
               <p className="text-gray-700 whitespace-pre-line leading-relaxed">{project.description}</p>
@@ -318,7 +319,7 @@ export function ProjectDetailContent() {
           {/* Amenities + payment */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {project.amenities.length > 0 && (
-              <section className="bg-white rounded-2xl p-6 border border-teal-100">
+              <section className="card p-6">
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3">{t("detail.amenities")}</h2>
                 <div className="grid grid-cols-2 gap-2">
                   {project.amenities.map((a) => (
@@ -330,7 +331,7 @@ export function ProjectDetailContent() {
                 </div>
               </section>
             )}
-            <section className="bg-white rounded-2xl p-6 border border-teal-100">
+            <section className="card p-6">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3">{t("detail.payment")}</h2>
               <Row label={t("detail.installment")}>
                 {project.installmentAvailable ? (
@@ -369,7 +370,7 @@ export function ProjectDetailContent() {
           {(embed || project.tourUrl) && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {embed && (
-                <section className="bg-white rounded-2xl p-4 border border-teal-100">
+                <section className="card p-4">
                   <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3 flex items-center gap-2"><Video className="w-4 h-4" />{t("detail.video")}</h2>
                   <div className="aspect-video rounded-xl overflow-hidden bg-black">
                     <iframe src={embed} title={t("detail.video")} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
@@ -377,7 +378,7 @@ export function ProjectDetailContent() {
                 </section>
               )}
               {project.tourUrl && (
-                <section className="bg-white rounded-2xl p-6 border border-teal-100 flex flex-col justify-center items-start gap-3">
+                <section className="card p-6 flex flex-col justify-center items-start gap-3">
                   <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-600">{t("detail.tour")}</h2>
                   <Button asChild className="bg-teal-900 hover:bg-teal-800">
                     <a href={project.tourUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4 mr-2" />{t("detail.openTour")}</a>
@@ -389,7 +390,7 @@ export function ProjectDetailContent() {
 
           {/* Map */}
           {coords && (
-            <section className="bg-white rounded-2xl border border-teal-100 p-4">
+            <section className="card p-4">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3 flex items-center gap-2"><MapPin className="w-4 h-4" />{t("detail.map")}</h2>
               <div className="h-[320px] sm:h-[380px] rounded-xl overflow-hidden">
                 <MapboxMap latitude={coords.lat} longitude={coords.lng} labels={{ view2d: "2D", view3d: "3D" }} />

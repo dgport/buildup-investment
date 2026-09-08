@@ -2,8 +2,9 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { PropertyDetailContent } from "../_components/PropertyDetailContent";
-import { API_BASE_URL } from "@/lib/constants/env";
+import { API_BASE_URL, SITE_URL } from "@/lib/constants/env";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { jsonLd } from "@/lib/seo";
 import type { Property } from "@/lib/types/properties";
 
 interface PageProps {
@@ -48,19 +49,78 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    alternates: { canonical: `/properties/${property.id}` },
     openGraph: {
       title,
       description,
       type: "article",
+      url: `${SITE_URL}/properties/${property.id}`,
       ...(image && { images: [{ url: image }] }),
     },
   };
 }
 
-export default function PropertyDetailPage() {
+/** schema.org structured data for rich results (price, location, photos). */
+function propertyJsonLd(property: Property, locale: string) {
+  const image = property.galleryImages
+    .map((g) => resolveImageUrl(g.imageUrl))
+    .filter((s): s is string => !!s);
+  const coords = property.location?.split(",").map((v) => Number(v.trim()));
+  return {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: property.translation?.title ?? `#${property.externalId}`,
+    description: property.translation?.description ?? undefined,
+    url: `${SITE_URL}/properties/${property.id}`,
+    datePosted: property.createdAt,
+    inLanguage: locale,
+    image,
+    offers: property.price
+      ? {
+          "@type": "Offer",
+          price: property.price,
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+        }
+      : undefined,
+    about: {
+      "@type": property.propertyType === "LAND" ? "Place" : "Accommodation",
+      floorSize: property.totalArea
+        ? { "@type": "QuantitativeValue", value: property.totalArea, unitCode: "MTK" }
+        : undefined,
+      numberOfRooms: property.rooms ?? undefined,
+      numberOfBedrooms: property.bedrooms ?? undefined,
+      numberOfBathroomsTotal: property.bathrooms ?? undefined,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: property.translation?.address ?? property.address ?? undefined,
+        addressLocality: property.regionName ?? undefined,
+        addressCountry: "GE",
+      },
+      geo:
+        coords && coords.length === 2 && coords.every((n) => !Number.isNaN(n))
+          ? { "@type": "GeoCoordinates", latitude: coords[0], longitude: coords[1] }
+          : undefined,
+    },
+  };
+}
+
+export default async function PropertyDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const locale = await getLocale();
+  const property = await fetchProperty(id, locale);
+
   return (
-    <Suspense>
-      <PropertyDetailContent />
-    </Suspense>
+    <>
+      {property && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(propertyJsonLd(property, locale)) }}
+        />
+      )}
+      <Suspense>
+        <PropertyDetailContent />
+      </Suspense>
+    </>
   );
 }

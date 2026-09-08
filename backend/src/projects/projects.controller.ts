@@ -25,6 +25,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { AdminGuard } from '@/auth/guards/admin.guard';
 import {
@@ -278,6 +279,7 @@ export class ProjectsController {
   // ─── Public: lead form ────────────────────────────────────────────────────
 
   @Post(':id/leads')
+  @Throttle({ default: { limit: 5, ttl: 600_000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Request a consultation for a project' })
   createLead(@Param('id') id: string, @Body() dto: CreateLeadDto, @Req() req: Request) {

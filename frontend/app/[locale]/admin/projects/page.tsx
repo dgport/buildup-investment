@@ -8,6 +8,7 @@ import { useAdminProjects, useProjectMutations } from "@/lib/hooks/useProjects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/shared/Pagination";
+import { TableSkeleton } from "@/components/shared/Skeletons";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { formatUsd } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants/routes";
@@ -54,7 +55,7 @@ export default function AdminProjectsPage() {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {isLoading ? (
-          <p className="p-8 text-center text-sm text-gray-500">{t("common.loading")}</p>
+          <TableSkeleton rows={5} />
         ) : projects.length === 0 ? (
           <p className="p-12 text-center text-sm text-gray-500">{t("projects.empty")}</p>
         ) : (

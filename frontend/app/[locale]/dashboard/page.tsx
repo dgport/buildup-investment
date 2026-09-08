@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Pagination } from "@/components/shared/Pagination";
+import { CardGridSkeleton } from "@/components/shared/Skeletons";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
 import { ROUTES } from "@/lib/constants/routes";
@@ -45,7 +46,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const DEAL_TYPE_STYLES: Record<string, string> = {
-  SALE: "bg-blue-100 text-blue-700 border-blue-200",
+  SALE: "bg-teal-100 text-teal-800 border-teal-200",
   RENT: "bg-purple-100 text-purple-700 border-purple-200",
   DAILY_RENT: "bg-pink-100 text-pink-700 border-pink-200",
 };
@@ -75,7 +76,7 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col">
+    <div className="card card-hover overflow-hidden flex flex-col">
       <Link
         href={ROUTES.PROPERTY_EDIT(property.id)}
         className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 block"
@@ -231,7 +232,7 @@ function StatCard({
   }[tone];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <div className="card p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{label}</p>
@@ -369,7 +370,7 @@ function DashboardContent() {
         )}
 
         {user && (
-          <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="mb-6 card p-5 flex items-center gap-4">
             <div className="bg-teal-100 rounded-full w-12 h-12 flex items-center justify-center shrink-0">
               <span className="text-teal-800 font-bold text-lg">
                 {user.firstname.charAt(0)}
@@ -389,9 +390,7 @@ function DashboardContent() {
         )}
 
         {isLoading ? (
-          <div className="flex justify-center items-center py-24">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-800" />
-          </div>
+          <CardGridSkeleton count={6} />
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
             <p className="text-red-600 font-medium">{t("loadError")}</p>

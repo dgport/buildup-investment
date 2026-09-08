@@ -84,6 +84,19 @@ npm run lint
 npm run build
 ```
 
+## Security & operations
+
+- API: `helmet` security headers, gzip `compression`, global rate limit (300 req/min per IP)
+  with stricter limits on sign-in (10/min), sign-up (5/min), password reset (3/min) and the
+  lead form (5 per 10 min); uploads are verified by magic bytes, not just MIME type.
+- The API refuses to start in production with JWT secrets shorter than 32 characters or
+  identical secrets. Swagger (`/api/docs`) is off in production unless `ENABLE_SWAGGER=true`.
+- `GET /health` reports API + database status and drives the Docker healthchecks.
+- Frontend: `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS and
+  `frame-ancestors` CSP; private pages (`/admin`, `/dashboard`, auth screens) are `noindex`.
+- SEO: `/robots.txt`, `/sitemap.xml` (listings, projects, developers), `/manifest.webmanifest`,
+  canonical URLs, Open Graph defaults and schema.org JSON-LD on property and project pages.
+
 ## API overview
 
 | Method | Path                                     | Auth        | Purpose                                  |

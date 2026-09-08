@@ -254,10 +254,10 @@ export function LocationSection({ data, onChange }: SectionProps) {
         <div className="flex items-center justify-between gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
           <div className="flex items-center gap-2 min-w-0">
             <MapPin
-              className={`w-4 h-4 shrink-0 ${coords ? "text-blue-600" : "text-gray-400"}`}
+              className={`w-4 h-4 shrink-0 ${coords ? "text-teal-700" : "text-gray-400"}`}
             />
             <p
-              className={`text-sm truncate ${coords ? "font-mono text-blue-700" : "text-gray-500"}`}
+              className={`text-sm truncate ${coords ? "font-mono text-teal-800" : "text-gray-500"}`}
             >
               {coords
                 ? `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
@@ -444,7 +444,7 @@ export function AmenitiesSection({ data, onChange }: SectionProps) {
               key={key}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
                 checked
-                  ? "bg-blue-50 border-blue-300 text-blue-900"
+                  ? "bg-teal-50 border-teal-400 text-teal-950"
                   : "bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-300"
               }`}
             >

@@ -37,7 +37,7 @@ export default function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
       href={ROUTES.PROJECT(project.slug)}
-      className="group block bg-white rounded-2xl border-2 border-teal-900/20 hover:border-amber-400/70 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full"
+      className="group card card-hover block overflow-hidden h-full"
     >
       <div className="relative h-56 bg-teal-950/5 overflow-hidden">
         {cover ? (

@@ -53,5 +53,11 @@
     "ka": "ქართული",
     "en": "English",
     "ru": "Русский"
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "description": "There was a problem loading this page. Try again or go back to the home page.",
+    "retry": "Try again",
+    "home": "Home page"
   }
 }

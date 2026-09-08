@@ -83,7 +83,7 @@ export function Pagination({
               aria-current={page === currentPage ? "page" : undefined}
               className={`h-10 w-10 ${
                 page === currentPage
-                  ? "bg-blue-500 hover:bg-blue-600"
+                  ? "bg-teal-500 hover:bg-teal-900"
                   : "hover:bg-gray-100"
               }`}
             >

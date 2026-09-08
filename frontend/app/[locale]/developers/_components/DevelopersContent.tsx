@@ -6,6 +6,7 @@ import { Building2, Globe, Phone } from "lucide-react";
 import { useDevelopers } from "@/lib/hooks/useProjects";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { ROUTES } from "@/lib/constants/routes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function DevelopersContent() {
   const t = useTranslations("projects.developers");
@@ -26,7 +27,14 @@ export function DevelopersContent() {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-40 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+              <div key={i} className="card p-5 flex gap-4">
+                <Skeleton className="w-20 h-20 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-3 w-1/3" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              </div>
             ))}
           </div>
         ) : developers.length === 0 ? (
@@ -39,7 +47,7 @@ export function DevelopersContent() {
                 <Link
                   key={dev.id}
                   href={ROUTES.DEVELOPER(dev.slug)}
-                  className="group bg-white rounded-2xl border-2 border-teal-900/15 hover:border-amber-400/70 shadow-sm hover:shadow-xl transition-all p-5 flex gap-4"
+                  className="group card card-hover p-5 flex gap-4"
                 >
                   <div className="w-20 h-20 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0 overflow-hidden">
                     {logo ? (

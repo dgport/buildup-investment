@@ -32,7 +32,7 @@ export function UnitTypeCard({ unit, onAsk, onOpenImage }: Props) {
 
   return (
     <div
-      className={`bg-white rounded-2xl border border-teal-100 overflow-hidden flex flex-col ${
+      className={`card overflow-hidden flex flex-col ${
         soldOut ? "opacity-70" : ""
       }`}
     >

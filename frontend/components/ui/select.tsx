@@ -43,8 +43,8 @@ function SelectTrigger({
         "px-3.5 py-2 text-sm whitespace-nowrap",
         "transition-all duration-200 outline-none",
         "hover:border-gray-300 dark:hover:border-gray-600",
-        "focus:border-blue-500 dark:focus:border-blue-500",
-        "focus:ring-1 focus:ring-blue-500/20 dark:focus:ring-blue-500/30",
+        "focus:border-teal-600 dark:focus:border-teal-600",
+        "focus:ring-1 focus:ring-teal-600/20 dark:focus:ring-teal-500/30",
         "aria-invalid:border-red-500 aria-invalid:ring-1 aria-invalid:ring-red-500/20",
         "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-900",
         "data-[placeholder]:text-gray-500 dark:data-[placeholder]:text-gray-400",
@@ -139,7 +139,7 @@ function SelectItem({
         "py-2 pr-8 pl-2.5 text-sm outline-hidden select-none",
         "text-gray-900 dark:text-gray-100",
         "hover:bg-gray-100 dark:hover:bg-gray-800",
-        "focus:bg-blue-50 dark:focus:bg-blue-950/30",
+        "focus:bg-teal-50 dark:focus:bg-blue-950/30",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "[&_svg:not([class*='text-'])]:text-gray-500 dark:[&_svg:not([class*='text-'])]:text-gray-400",
@@ -153,7 +153,7 @@ function SelectItem({
         className="absolute right-2 flex size-3.5 items-center justify-center"
       >
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
+          <CheckIcon className="size-4 text-teal-700 dark:text-blue-400" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

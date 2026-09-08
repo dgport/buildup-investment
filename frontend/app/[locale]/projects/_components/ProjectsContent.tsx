@@ -7,6 +7,7 @@ import { Building2, LayoutGrid, Map as MapIcon, SearchX } from "lucide-react";
 import { useProjects } from "@/lib/hooks/useProjects";
 import { Pagination } from "@/components/shared/Pagination";
 import ProjectCard from "@/components/shared/ProjectCard";
+import { CardGridSkeleton } from "@/components/shared/Skeletons";
 import {
   Select,
   SelectContent,
@@ -134,17 +135,7 @@ export function ProjectsContent() {
         {view === "map" ? (
           <ProjectsMap />
         ) : isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border-2 border-gray-100 overflow-hidden animate-pulse">
-                <div className="h-56 bg-gray-200" />
-                <div className="p-4 space-y-3">
-                  <div className="h-5 bg-gray-200 rounded w-1/2" />
-                  <div className="h-3 bg-gray-200 rounded w-2/3" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <CardGridSkeleton count={8} tall />
         ) : error ? (
           <div className="flex justify-center py-24">
             <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md text-center">

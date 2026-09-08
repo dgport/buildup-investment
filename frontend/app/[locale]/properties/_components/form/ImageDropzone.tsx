@@ -112,8 +112,8 @@ export function ImageDropzone({
         onDrop={handleDrop}
         className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
           isOver
-            ? "border-blue-400 bg-blue-50/50"
-            : "border-gray-200 hover:border-blue-400 hover:bg-blue-50/30"
+            ? "border-teal-500 bg-teal-50/50"
+            : "border-gray-200 hover:border-teal-500 hover:bg-teal-50/40"
         }`}
       >
         <Upload className="w-8 h-8 text-gray-400 mb-3" />
@@ -159,7 +159,7 @@ export function ImageDropzone({
                   className="w-full h-28 object-cover"
                 />
                 {index === 0 && (
-                  <span className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                  <span className="absolute top-2 left-2 bg-teal-900 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
                     {t("cover")}
                   </span>
                 )}

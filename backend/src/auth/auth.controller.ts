@@ -13,6 +13,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { UserRole } from '@prisma/client';
@@ -38,6 +39,7 @@ export class AuthController {
   ) {}
 
   @Post('signup')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.CREATED)
   async signup(@Body() dto: SignupRequest) {
     const result = await this.authService.signup(dto);
@@ -51,6 +53,7 @@ export class AuthController {
   }
 
   @Post('signin')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   async signin(
     @Body() dto: SigninRequest,
@@ -60,6 +63,7 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Req() req: Request,
@@ -116,6 +120,7 @@ export class AuthController {
   // ─── Email Verification ───────────────────────────────────────────────────────
 
   @Get('verify-email')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async verifyEmail(@Query('token') token: string) {
     if (!token?.trim()) {
       throw new BadRequestException('Verification token is required');
@@ -124,6 +129,7 @@ export class AuthController {
   }
 
   @Post('resend-verification')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   async resendVerificationEmail(@Body('email') email: string) {
     return this.userAccountService.resendVerificationEmail(email);
@@ -132,12 +138,14 @@ export class AuthController {
   // ─── Password Management ──────────────────────────────────────────────────────
 
   @Post('forgot-password')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body('email') email: string) {
     return this.userAccountService.sendUpdatePasswordEmail(email);
   }
 
   @Post('reset-password')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: UpdatePasswordInput) {
     await this.userAccountService.updatePassword(dto);

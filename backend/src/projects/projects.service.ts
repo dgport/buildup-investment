@@ -510,7 +510,8 @@ export class ProjectsService {
     files: Express.Multer.File[] | undefined,
     unitTypeId: string | null = null,
   ) {
-    if (!files?.length) throw new BadRequestException('No images received');
+    files = await FileUtils.keepOnlyRealImages(files);
+    if (!files.length) throw new BadRequestException('No valid image files received');
 
     const project = await this.prisma.project.findUnique({ where: { id: projectId } });
     if (!project) {

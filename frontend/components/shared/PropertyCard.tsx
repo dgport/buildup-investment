@@ -84,9 +84,9 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   return (
     <Link
       href={href}
-      className="block bg-white rounded-xl border-2 border-teal-900/30 hover:border-amber-400/60 transition-all duration-300 h-full w-full cursor-pointer shadow-lg hover:shadow-2xl overflow-hidden"
+      className="card card-hover block h-full w-full cursor-pointer overflow-hidden"
     >
-      <div className="relative h-60 overflow-hidden bg-gray-100 border-b-2 border-teal-900/20">
+      <div className="relative h-60 overflow-hidden bg-gray-100 border-b border-teal-900/10">
         {allImages.length > 0 ? (
           <div className="relative h-full bg-gray-900">
             {allImages.map((src, index) => (
