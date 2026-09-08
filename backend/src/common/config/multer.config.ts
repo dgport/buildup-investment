@@ -1,8 +1,17 @@
+import { BadRequestException } from '@nestjs/common';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
+
+/** Absolute folder where every upload is stored: <cwd>/public/uploads */
+export const UPLOADS_ROOT = join(process.cwd(), 'public', 'uploads');
+
+export const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+export const MAX_IMAGES_PER_REQUEST = 20;
+
+const ALLOWED_MIME = /^image\/(jpe?g|png|gif|webp|avif|heic|heif)$/i;
 
 export const multerConfig = (folder: string) => ({
   storage: diskStorage({
@@ -11,7 +20,7 @@ export const multerConfig = (folder: string) => ({
       _file: Express.Multer.File,
       cb: (error: Error | null, destination: string) => void,
     ) => {
-      const uploadPath = `public/uploads/${folder}`;
+      const uploadPath = join(UPLOADS_ROOT, folder);
 
       if (!existsSync(uploadPath)) {
         mkdirSync(uploadPath, { recursive: true });
@@ -26,7 +35,7 @@ export const multerConfig = (folder: string) => ({
     ) => {
       const shortUuid = uuidv4().substring(0, 8);
       const timestamp = Date.now();
-      const ext = extname(file.originalname);
+      const ext = (extname(file.originalname) || '.jpg').toLowerCase();
       cb(null, `${timestamp}-${shortUuid}${ext}`);
     },
   }),
@@ -35,13 +44,19 @@ export const multerConfig = (folder: string) => ({
     file: Express.Multer.File,
     cb: (error: Error | null, acceptFile: boolean) => void,
   ) => {
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|avif)$/)) {
+    if (ALLOWED_MIME.test(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed!'), false);
+      cb(
+        new BadRequestException(
+          'Only image files are allowed (jpg, png, gif, webp, avif, heic)',
+        ),
+        false,
+      );
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: MAX_IMAGE_SIZE_BYTES,
+    files: MAX_IMAGES_PER_REQUEST,
   },
 });

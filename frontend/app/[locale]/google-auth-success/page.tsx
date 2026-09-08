@@ -1,36 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
 import { setAccessToken } from "@/lib/utils/auth";
-import { queryClient } from "@/lib/tanstack/query-client";
+import { authKeys } from "@/lib/hooks/useAuth";
+import { ROUTES } from "@/lib/constants/routes";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default function GoogleAuthSuccess() {
+function GoogleAuthSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const t = useTranslations("auth");
 
   useEffect(() => {
-    const handleSuccess = async () => {
-      const token = searchParams.get("token");
+    const token = searchParams.get("token");
 
-      if (!token) {
-        router.push("/signin?error=no_token");
-        return;
-      }
+    if (!token) {
+      router.replace(`${ROUTES.SIGNIN}?error=no_token`);
+      return;
+    }
 
-      setAccessToken(token, true);
-      await queryClient.invalidateQueries({
-        queryKey: ["auth", "currentUser"],
-      });
-      setTimeout(() => router.push("/"), 1500);
-    };
-
-    handleSuccess();
-  }, [router, searchParams]);
+    setAccessToken(token, true);
+    queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
+    // Clean the token from the URL/history before leaving
+    window.history.replaceState(null, "", window.location.pathname);
+    const timer = setTimeout(() => router.replace(ROUTES.DASHBOARD), 1200);
+    return () => clearTimeout(timer);
+  }, [router, searchParams, queryClient]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
@@ -45,14 +45,20 @@ export default function GoogleAuthSuccess() {
             <div className="h-16 w-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
               <CheckCircle2 className="h-10 w-10 text-green-400 animate-pulse" />
             </div>
-            <h2 className="text-2xl font-bold text-amber-400">
-              {t("success")}
-            </h2>
+            <h2 className="text-2xl font-bold text-amber-400">{t("success")}</h2>
             <p className="text-amber-100/70">{t("signingInWithGoogle")}</p>
             <Loader2 className="h-6 w-6 animate-spin mx-auto text-amber-400" />
           </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function GoogleAuthSuccess() {
+  return (
+    <Suspense>
+      <GoogleAuthSuccessContent />
+    </Suspense>
   );
 }

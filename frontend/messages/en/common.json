@@ -1,0 +1,54 @@
+{
+  "brand": "Build Up Investment",
+  "tagline": "Strategic Growth Partners",
+  "nav": {
+    "home": "Home",
+    "properties": "Properties",
+    "contact": "Contact",
+    "dashboard": "My Listings",
+    "addProperty": "Add Listing",
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "signout": "Sign Out",
+    "toggleMenu": "Toggle menu"
+  },
+  "footer": {
+    "description": "Strategic investments and premium real estate on the Black Sea coast.",
+    "navigation": "Navigation",
+    "getInTouch": "Get In Touch",
+    "location": "Batumi, Georgia",
+    "rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "est": "EST. 2020"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has been removed.",
+    "home": "Back to home",
+    "properties": "Browse properties"
+  },
+  "unauthorized": {
+    "title": "Access denied",
+    "description": "You don't have permission to view this page.",
+    "home": "Back to home"
+  },
+  "actions": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "continue": "Continue",
+    "close": "Close",
+    "confirm": "Confirm",
+    "retry": "Try again",
+    "loading": "Loading..."
+  },
+  "language": {
+    "ka": "ქართული",
+    "en": "English",
+    "ru": "Русский"
+  }
+}

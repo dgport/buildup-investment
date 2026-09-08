@@ -6,28 +6,27 @@ import { Building2, SearchX } from "lucide-react";
 import { useProperties } from "@/lib/hooks/useProperties";
 import { Pagination } from "@/components/shared/Pagination";
 import type { PropertyFilters as PropertyFiltersType } from "@/lib/types/properties";
-import { Region } from "@/lib/types/properties";
 import PropertyCard from "@/components/shared/PropertyCard";
 import { PropertyFilters } from "./PropertyFilters";
 
 const PROPERTIES_PER_PAGE = 12;
 
 function parseSearchParams(searchParams: URLSearchParams): PropertyFiltersType {
-  const get = (key: string) => searchParams.get(key);
+  const get = (key: string) => searchParams.get(key) ?? undefined;
   const getInt = (key: string): number | undefined => {
     const v = get(key);
     if (!v) return undefined;
     const n = parseInt(v, 10);
-    return isNaN(n) ? undefined : n;
+    return Number.isNaN(n) ? undefined : n;
   };
 
   return {
-    page: getInt("page") ?? 1,
+    page: Math.max(1, getInt("page") ?? 1),
     limit: PROPERTIES_PER_PAGE,
-    propertyType: get("propertyType") ?? undefined,
-    dealType: get("dealType") ?? undefined,
-    region: (get("region") as Region) ?? undefined,
-    externalId: get("externalId") ?? undefined,
+    propertyType: get("propertyType"),
+    dealType: get("dealType"),
+    region: get("region"),
+    externalId: get("externalId"),
     priceFrom: getInt("priceFrom"),
     priceTo: getInt("priceTo"),
     areaFrom: getInt("areaFrom"),
@@ -47,10 +46,7 @@ export function PropertiesContent() {
     data: response,
     isLoading,
     error,
-  } = useProperties({
-    ...filters,
-    lang: locale,
-  });
+  } = useProperties({ ...filters, lang: locale });
 
   const properties = response?.data ?? [];
   const meta = response?.meta;
@@ -84,21 +80,7 @@ export function PropertiesContent() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
               {properties.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={{
-                    id: property.id,
-                    externalId: property.externalId,
-                    galleryImages: property.galleryImages,
-                    priceUSD: property.price,
-                    regionName: property.regionName,
-                    rooms: property.rooms ?? undefined,
-                    title: property.translation?.title ?? "",
-                    totalArea: property.totalArea,
-                    hotSale: property.hotSale,
-                    dateAdded: property.createdAt,
-                  }}
-                />
+                <PropertyCard key={property.id} property={property} />
               ))}
             </div>
 
@@ -122,7 +104,7 @@ export function PropertiesContent() {
 function LoadingGrid() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {Array.from({ length: 12 }).map((_, i) => (
+      {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
           className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden animate-pulse"

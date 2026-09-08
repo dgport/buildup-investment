@@ -16,5 +16,6 @@
   "locationValue": "Batumi, Georgia — Investment & Development Hub",
   "phoneLabel": "Phone",
   "emailLabel": "Email",
-  "connectLabel": "Connect With Us"
+  "connectLabel": "Connect With Us",
+  "errorMessage": "Failed to send the message. Please try again or call us."
 }

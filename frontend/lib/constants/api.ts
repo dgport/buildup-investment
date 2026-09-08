@@ -1,18 +1,10 @@
-
-
 export const API_ENDPOINTS = {
-  PARTNERS: {
-    PARTNERS: "/partners",
-    PARTNER_BY_ID: (id: number) => `/partners/${id}`,
-    TRANSLATIONS: (id: number) => `/partners/${id}/translations`,
-    TRANSLATION_BY_LANGUAGE: (id: number, language: string) =>
-      `/partners/${id}/translations/${language}`,
-  },
-
   PROPERTIES: {
     PROPERTIES: "/properties",
     MY_PROPERTIES: "/properties/my-properties",
+    MY_STATS: "/properties/my-properties/stats",
     PROPERTY_BY_ID: (id: string) => `/properties/${id}`,
+    MANAGE: (id: string) => `/properties/${id}/manage`,
     ADMIN_ALL: "/properties/admin/all",
     ADMIN_BY_ID: (id: string) => `/properties/admin/${id}`,
     TRANSLATIONS: (id: string) => `/properties/${id}/translations`,
@@ -20,6 +12,8 @@ export const API_ENDPOINTS = {
       `/properties/${id}/translations/${language}`,
     GALLERY_IMAGE: (propertyId: string, imageId: number) =>
       `/properties/${propertyId}/images/${imageId}`,
+    GALLERY_ORDER: (propertyId: string) =>
+      `/properties/${propertyId}/images/order`,
   },
 
   AUTH: {
@@ -29,6 +23,8 @@ export const API_ENDPOINTS = {
     ME: "/auth/me",
     REFRESH_TOKEN: "/auth/refresh-token",
     GOOGLE: "/auth/google",
+    VERIFY_EMAIL: "/auth/verify-email",
+    RESEND_VERIFICATION: "/auth/resend-verification",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
   },

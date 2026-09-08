@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
+import { ROUTES } from "@/lib/constants/routes";
 
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 20 },
@@ -17,15 +18,7 @@ const fadeUp = (delay: number) => ({
 export default function AboutParallax() {
   const t = useTranslations("main");
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -106,8 +99,8 @@ export default function AboutParallax() {
                 </motion.p>
 
                 <motion.div {...fadeUp(0.32)}>
-                  <a
-                    href="/properties"
+                  <Link
+                    href={ROUTES.PROPERTIES}
                     className="group relative inline-flex items-center overflow-hidden rounded-full text-teal-950 font-semibold bg-amber-400 hover:bg-amber-300 shadow-lg shadow-amber-400/30 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-400/40 hover:-translate-y-1 active:scale-95
                       gap-4 px-8 py-4 text-base
                       md:px-12 md:py-5
@@ -124,7 +117,7 @@ export default function AboutParallax() {
                     >
                       <path d="M12.1,18V10.6H0V7.4H12.1V0L27.7,9Z" />
                     </svg>
-                  </a>
+                  </Link>
                 </motion.div>
               </div>
 
@@ -164,6 +157,7 @@ export default function AboutParallax() {
 
                     {/* Logo */}
                     <div className="flex justify-center mb-8 3xl:mb-10 4xl:mb-12 5xl:mb-14">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/Logo.png"
                         alt="Build Up Investment"

@@ -1,27 +1,41 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Plus, Building2, DollarSign, Calendar, MapPin } from "lucide-react";
-import { useMyProperties, useDeleteProperty } from "@/lib/hooks/useProperties";
+import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
+import {
+  Plus,
+  Building2,
+  CheckCircle2,
+  Clock,
+  EyeOff,
+  MapPin,
+  Pencil,
+  Trash2,
+  ExternalLink,
+  ImageIcon,
+} from "lucide-react";
+import {
+  useMyProperties,
+  useMyPropertyStats,
+  useDeleteProperty,
+} from "@/lib/hooks/useProperties";
 import { useCurrentUser } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Property } from "@/lib/types/properties";
-import { PropertyStatus } from "@/lib/types/properties";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Pagination } from "@/components/shared/Pagination";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_IMAGE_URL ?? "http://localhost:3000";
+import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { getErrorMessage } from "@/lib/api/api";
+import { ROUTES } from "@/lib/constants/routes";
+import {
+  PROPERTY_LANGUAGES,
+  PropertyStatus,
+  type Property,
+} from "@/lib/types/properties";
 
 const PROPERTIES_PER_PAGE = 9;
-
-function resolveImageUrl(imageUrl: string): string {
-  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://"))
-    return imageUrl;
-  return `${API_BASE}/${imageUrl.replace(/^\/+/, "")}`;
-}
 
 const STATUS_STYLES: Record<string, string> = {
   APPROVED: "bg-green-100 text-green-700 border-green-200",
@@ -36,57 +50,56 @@ const DEAL_TYPE_STYLES: Record<string, string> = {
   DAILY_RENT: "bg-pink-100 text-pink-700 border-pink-200",
 };
 
-function formatPropertyType(type: string): string {
-  return type
-    .split("_")
-    .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-    .join(" ");
-}
-
 interface PropertyCardProps {
   property: Property;
-  onEdit: (property: Property) => void;
   onDelete: (id: string) => void;
   isDeleting: boolean;
 }
 
-function PropertyCard({
-  property,
-  onEdit,
-  onDelete,
-  isDeleting,
-}: PropertyCardProps) {
+function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardProps) {
   const t = useTranslations("dashboard");
+  const tp = useTranslations("properties");
+  const tl = useTranslations("common.language");
+
   const title = property.translation?.title || t("untitledProperty");
   const location =
-    property.translation?.address ||
-    property.regionName ||
-    property.location ||
-    t("locationNotSpecified");
-  const imageUrl = property.galleryImages?.[0]?.imageUrl
-    ? resolveImageUrl(property.galleryImages[0].imageUrl)
-    : null;
+    [property.regionName, property.translation?.address ?? property.address]
+      .filter(Boolean)
+      .join(", ") || t("locationNotSpecified");
+  const cover = resolveImageUrl(property.galleryImages?.[0]?.imageUrl);
+  const missingLanguages = PROPERTY_LANGUAGES.filter(
+    (lang) =>
+      !property.translations?.some(
+        (tr) => tr.language === lang && tr.title.trim(),
+      ),
+  );
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:-translate-y-1">
-      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-          />
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col">
+      <Link
+        href={ROUTES.PROPERTY_EDIT(property.id)}
+        className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 block"
+      >
+        {cover ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={cover} alt={title} className="w-full h-full object-cover" />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <Building2 className="w-16 h-16 text-gray-300" />
+          <div className="flex flex-col items-center justify-center h-full text-gray-300 gap-1">
+            <ImageIcon className="w-12 h-12" />
           </div>
         )}
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
           <Badge
             className={`${STATUS_STYLES[property.status] ?? STATUS_STYLES.DRAFT} font-medium`}
           >
-            {t(`status.${property.status}`)}
+            {tp(`enums.status.${property.status}`)}
           </Badge>
+          {!property.public && (
+            <Badge className="bg-gray-800 text-white border-gray-900 font-medium">
+              <EyeOff className="w-3 h-3 mr-1" />
+              {t("private")}
+            </Badge>
+          )}
         </div>
         {property.hotSale && (
           <div className="absolute top-3 left-3">
@@ -95,9 +108,18 @@ function PropertyCard({
             </Badge>
           </div>
         )}
-      </div>
+        <div className="absolute bottom-2 left-3 bg-teal-950/80 text-amber-400 text-[11px] font-semibold px-2 py-0.5 rounded-md">
+          ID {property.externalId}
+        </div>
+        {property.galleryImages.length > 0 && (
+          <div className="absolute bottom-2 right-3 bg-teal-950/80 text-white text-[11px] px-2 py-0.5 rounded-md flex items-center gap-1">
+            <ImageIcon className="w-3 h-3" />
+            {property.galleryImages.length}
+          </div>
+        )}
+      </Link>
 
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-1">
         <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">
           {title}
         </h3>
@@ -108,63 +130,71 @@ function PropertyCard({
 
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           <Badge className={DEAL_TYPE_STYLES[property.dealType] ?? ""}>
-            {t(`dealType.${property.dealType}`)}
+            {tp(`enums.dealType.${property.dealType}`)}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {formatPropertyType(property.propertyType)}
+            {tp(`enums.propertyType.${property.propertyType}`)}
           </Badge>
           {property.totalArea && (
             <Badge variant="outline" className="text-xs">
-              {property.totalArea}m²
+              {property.totalArea} m²
             </Badge>
           )}
         </div>
 
-        {property.price != null && (
-          <div className="mb-4">
-            <span className="text-2xl font-bold text-blue-600">
-              ${property.price.toLocaleString()}
-            </span>
-          </div>
-        )}
+        <div className="mb-3">
+          <span className="text-2xl font-bold text-teal-900">
+            {property.price != null
+              ? `$${property.price.toLocaleString()}`
+              : tp("priceOnRequest")}
+          </span>
+        </div>
 
         {(property.rooms || property.bedrooms || property.bathrooms) && (
-          <div className="flex items-center gap-4 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
-            {property.rooms && (
-              <span>
-                {property.rooms} {t("rooms")}
-              </span>
-            )}
-            {property.bedrooms && (
-              <span>
-                {property.bedrooms} {t("beds")}
-              </span>
-            )}
-            {property.bathrooms && (
-              <span>
-                {property.bathrooms} {t("baths")}
-              </span>
-            )}
+          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+            {property.rooms ? (
+              <span>{property.rooms} {t("rooms")}</span>
+            ) : null}
+            {property.bedrooms ? (
+              <span>{property.bedrooms} {t("beds")}</span>
+            ) : null}
+            {property.bathrooms ? (
+              <span>{property.bathrooms} {t("baths")}</span>
+            ) : null}
           </div>
         )}
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(property)}
-            className="flex-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
-          >
-            {t("edit")}
+        {missingLanguages.length > 0 && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-3">
+            {t("missingTranslations", {
+              languages: missingLanguages.map((l) => tl(l)).join(", "),
+            })}
+          </p>
+        )}
+
+        <div className="flex gap-2 mt-auto pt-3 border-t border-gray-100">
+          <Button variant="outline" size="sm" asChild className="flex-1">
+            <Link href={ROUTES.PROPERTY_EDIT(property.id)}>
+              <Pencil className="w-3.5 h-3.5 mr-1.5" />
+              {t("edit")}
+            </Link>
           </Button>
+          {property.public && property.status === PropertyStatus.APPROVED && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={ROUTES.PROPERTY(property.id)} target="_blank" aria-label={t("view")}>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
             onClick={() => onDelete(property.id)}
             disabled={isDeleting}
-            className="flex-1 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+            className="hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+            aria-label={t("delete")}
           >
-            {isDeleting ? t("deleting") : t("delete")}
+            <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
 
@@ -182,35 +212,74 @@ function PropertyCard({
   );
 }
 
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: React.ElementType;
+  tone: "teal" | "green" | "yellow" | "gray";
+}) {
+  const tones = {
+    teal: ["bg-teal-100", "text-teal-700", "text-gray-900"],
+    green: ["bg-green-100", "text-green-600", "text-green-600"],
+    yellow: ["bg-yellow-100", "text-yellow-600", "text-yellow-600"],
+    gray: ["bg-gray-100", "text-gray-600", "text-gray-700"],
+  }[tone];
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <p className={`text-2xl font-bold mt-1 ${tones[2]}`}>{value}</p>
+        </div>
+        <div className={`${tones[0]} rounded-full p-3`}>
+          <Icon className={`w-6 h-6 ${tones[1]}`} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DashboardContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const t = useTranslations("dashboard");
+  const tf = useTranslations("dashboard.form");
 
   const { data: user } = useCurrentUser();
-  const page = parseInt(searchParams.get("page") ?? "1", 10);
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const flash = searchParams.get("created") ? tf("created") : null;
+
+  // Drop the ?created flag from the URL after the toast has been shown
+  useEffect(() => {
+    if (!searchParams.get("created")) return;
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("created");
+      router.replace(`${pathname}${params.size ? `?${params}` : ""}`);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [searchParams, pathname, router]);
 
   const {
     data: propertiesResponse,
     isLoading,
     error,
-  } = useMyProperties({ page, limit: PROPERTIES_PER_PAGE });
-  const { data: allPropertiesResponse } = useMyProperties({
-    page: 1,
-    limit: 1000,
-  });
+  } = useMyProperties({ page, limit: PROPERTIES_PER_PAGE, lang: locale });
+  const { data: stats } = useMyPropertyStats();
   const deleteProperty = useDeleteProperty();
 
   const properties = propertiesResponse?.data ?? [];
   const meta = propertiesResponse?.meta;
-  const allProperties = allPropertiesResponse?.data ?? [];
-  const approvedCount = allProperties.filter(
-    (p) => p.status === PropertyStatus.APPROVED,
-  ).length;
-  const pendingCount = allProperties.filter(
-    (p) => p.status === PropertyStatus.PENDING,
-  ).length;
+  const hiddenCount = properties.filter((p) => !p.public).length;
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -219,16 +288,14 @@ function DashboardContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleEdit = (property: Property) =>
-    router.push(`/dashboard/properties/${property.id}/edit`);
-
   const handleDelete = async (id: string) => {
     if (!window.confirm(t("deleteConfirm"))) return;
+    setActionError(null);
     try {
       await deleteProperty.mutateAsync(id);
       if (properties.length === 1 && page > 1) handlePageChange(page - 1);
-    } catch (err: any) {
-      alert(err.response?.data?.message ?? err.message ?? t("deleteFailed"));
+    } catch (err) {
+      setActionError(getErrorMessage(err, t("deleteFailed")));
     }
   };
 
@@ -250,79 +317,70 @@ function DashboardContent() {
               )}
             </div>
             <Button
-              onClick={() => router.push("/dashboard/properties/new")}
+              asChild
               size="lg"
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-teal-900 hover:bg-teal-800 shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              <Plus className="w-5 h-5 mr-2" />
-              {t("addProperty")}
+              <Link href={ROUTES.PROPERTY_NEW}>
+                <Plus className="w-5 h-5 mr-2" />
+                {t("addProperty")}
+              </Link>
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    {t("totalProperties")}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {meta?.total ?? 0}
-                  </p>
-                </div>
-                <div className="bg-blue-100 rounded-full p-3">
-                  <Building2 className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    {t("approved")}
-                  </p>
-                  <p className="text-2xl font-bold text-green-600 mt-1">
-                    {approvedCount}
-                  </p>
-                </div>
-                <div className="bg-green-100 rounded-full p-3">
-                  <DollarSign className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    {t("pendingReview")}
-                  </p>
-                  <p className="text-2xl font-bold text-yellow-600 mt-1">
-                    {pendingCount}
-                  </p>
-                </div>
-                <div className="bg-yellow-100 rounded-full p-3">
-                  <Calendar className="w-6 h-6 text-yellow-600" />
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label={t("totalProperties")}
+              value={stats?.total ?? meta?.total ?? 0}
+              icon={Building2}
+              tone="teal"
+            />
+            <StatCard
+              label={t("approved")}
+              value={stats?.approved ?? 0}
+              icon={CheckCircle2}
+              tone="green"
+            />
+            <StatCard
+              label={t("pendingReview")}
+              value={stats?.pending ?? 0}
+              icon={Clock}
+              tone="yellow"
+            />
+            <StatCard
+              label={t("hidden")}
+              value={hiddenCount}
+              icon={EyeOff}
+              tone="gray"
+            />
           </div>
         </div>
 
+        {flash && (
+          <Alert className="mb-6 border-green-200 bg-green-50 text-green-800">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">{flash}</AlertDescription>
+          </Alert>
+        )}
+        {actionError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{actionError}</AlertDescription>
+          </Alert>
+        )}
+
         {user && (
           <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-            <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center shrink-0">
-              <span className="text-blue-700 font-bold text-lg">
+            <div className="bg-teal-100 rounded-full w-12 h-12 flex items-center justify-center shrink-0">
+              <span className="text-teal-800 font-bold text-lg">
                 {user.firstname.charAt(0)}
                 {user.lastname.charAt(0)}
               </span>
             </div>
-            <div>
-              <p className="font-semibold text-gray-900">
+            <div className="min-w-0">
+              <p className="font-semibold text-gray-900 truncate">
                 {user.firstname} {user.lastname}
               </p>
-              <p className="text-sm text-gray-500">{user.email}</p>
+              <p className="text-sm text-gray-500 truncate">{user.email}</p>
               {user.phone && (
                 <p className="text-sm text-gray-500">{user.phone}</p>
               )}
@@ -332,7 +390,7 @@ function DashboardContent() {
 
         {isLoading ? (
           <div className="flex justify-center items-center py-24">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-800" />
           </div>
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
@@ -342,10 +400,9 @@ function DashboardContent() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {properties.map((property) => (
-                <PropertyCard
+                <DashboardPropertyCard
                   key={property.id}
                   property={property}
-                  onEdit={handleEdit}
                   onDelete={handleDelete}
                   isDeleting={deleteProperty.isPending}
                 />
@@ -373,13 +430,11 @@ function DashboardContent() {
                   {t("noProperties")}
                 </h3>
                 <p className="text-gray-500 mb-6">{t("noPropertiesHint")}</p>
-                <Button
-                  onClick={() => router.push("/dashboard/properties/new")}
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  {t("addFirstProperty")}
+                <Button asChild size="lg" className="bg-teal-900 hover:bg-teal-800">
+                  <Link href={ROUTES.PROPERTY_NEW}>
+                    <Plus className="w-5 h-5 mr-2" />
+                    {t("addFirstProperty")}
+                  </Link>
                 </Button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { api } from "../api/api";
 import { API_ENDPOINTS } from "../constants/api";
+import { API_BASE_URL } from "../constants/env";
 
 import type {
   User,
@@ -13,40 +14,34 @@ import type {
 
 export const authService = {
   signIn: (data: SignInDto) =>
-    api.post<AuthResponse>(API_ENDPOINTS.AUTH.SIGNIN, data, {
-      withCredentials: true,
-    }),
+    api.post<AuthResponse>(API_ENDPOINTS.AUTH.SIGNIN, data),
 
   signUp: (data: SignUpDto) =>
-    api.post<AuthResponse>(API_ENDPOINTS.AUTH.SIGNUP, data),
+    api.post<{ success: boolean; message: string; userId: string }>(
+      API_ENDPOINTS.AUTH.SIGNUP,
+      data,
+    ),
 
-  getCurrentUser: () =>
-    api.get<User>(API_ENDPOINTS.AUTH.ME, {
-      withCredentials: true,
-    }),
+  getCurrentUser: () => api.get<User>(API_ENDPOINTS.AUTH.ME),
 
   refreshToken: () =>
-    api.post<RefreshTokenResponse>(
-      API_ENDPOINTS.AUTH.REFRESH_TOKEN,
-      {},
-      {
-        withCredentials: true,
-      },
-    ),
+    api.post<RefreshTokenResponse>(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {}),
 
-  logout: () =>
-    api.post<{ message: string }>(
-      API_ENDPOINTS.AUTH.LOGOUT,
-      {},
-      {
-        withCredentials: true,
-      },
-    ),
+  logout: () => api.post<{ message: string }>(API_ENDPOINTS.AUTH.LOGOUT, {}),
 
   googleAuth: () => {
-    const baseURL = api.defaults.baseURL;
-    window.location.href = `${baseURL}${API_ENDPOINTS.AUTH.GOOGLE}`;
+    window.location.href = `${API_BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE}`;
   },
+
+  verifyEmail: (token: string) =>
+    api.get<{ message: string }>(API_ENDPOINTS.AUTH.VERIFY_EMAIL, {
+      params: { token },
+    }),
+
+  resendVerification: (email: string) =>
+    api.post<{ message: string }>(API_ENDPOINTS.AUTH.RESEND_VERIFICATION, {
+      email,
+    }),
 
   forgotPassword: (data: ForgotPasswordDto) =>
     api.post<{ message: string }>(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, data),

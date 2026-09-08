@@ -1,34 +1,35 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app
- 
-COPY package*.json ./
 
+COPY package*.json ./
 RUN npm ci
 
 COPY prisma ./prisma/
-
+COPY prisma.config.ts tsconfig*.json nest-cli.json ./
 RUN npx prisma generate
 
-COPY tsconfig*.json ./
 COPY . .
-
 RUN npm run build
 
- 
+
 FROM node:20-alpine
 
 WORKDIR /app
-
+ENV NODE_ENV=production
 
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-RUN npm ci --only=production
-
+# prisma CLI (migrate deploy at container start) + generated client
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
+
+# uploads volume mount point
+RUN mkdir -p /app/public/uploads
 
 EXPOSE 3000
 

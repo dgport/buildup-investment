@@ -2,7 +2,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { LANGUAGES } from '@/common/constants/language';
 
 interface TranslationSyncConfig {
-  entityId: number;
+  entityId: number | string;
   entityIdField: string;
   translationModel: any;
   existingTranslations: Array<{ language: string }>;
@@ -65,7 +65,7 @@ export class TranslationSyncUtil {
     entityModel: any,
     entityIdField: string,
     translationModel: any,
-    defaultFields: (entityId: number) => Record<string, any> = () => ({}),
+    defaultFields: (entityId: number | string) => Record<string, any> = () => ({}),
   ): Promise<{ totalEntities: number; totalCreated: number }> {
     const entities = await entityModel.findMany({
       include: { translations: true },

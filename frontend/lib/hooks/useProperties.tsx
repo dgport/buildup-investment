@@ -1,239 +1,197 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { queryClient } from '../tanstack/query-client'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   PropertiesResponse,
   Property,
   PropertyFilters,
+  PropertyStats,
   PropertyTranslation,
   UpsertPropertyTranslationDto,
   CreatePropertyDto,
-} from '../types/properties'
-import { propertiesService } from '../services/properties.service'
+  UpdatePropertyDto,
+} from "../types/properties";
+import { propertiesService } from "../services/properties.service";
 
-// Public properties (for frontend listing pages)
-export const useProperties = (filters?: PropertyFilters) => {
-  return useQuery<PropertiesResponse>({
-    queryKey: ['properties', 'public', filters],
-    queryFn: async () => {
-      const response = await propertiesService.getAll(filters)
-      return response.data
-    },
-  })
-}
+export const propertyKeys = {
+  all: ["properties"] as const,
+  public: (filters?: PropertyFilters) =>
+    ["properties", "public", filters] as const,
+  mine: (filters?: PropertyFilters) =>
+    ["properties", "my-properties", filters] as const,
+  myStats: ["properties", "my-stats"] as const,
+  admin: (filters?: PropertyFilters) =>
+    ["properties", "admin", filters] as const,
+  detail: (id: string, lang?: string) =>
+    ["properties", "detail", id, lang] as const,
+  manage: (id: string, lang?: string) =>
+    ["properties", "manage", id, lang] as const,
+  translations: (id: string) => ["properties", "translations", id] as const,
+};
 
-// User's own properties (ALWAYS filtered by userId on backend)
-export const useMyProperties = (filters?: PropertyFilters) => {
-  return useQuery<PropertiesResponse>({
-    queryKey: ['properties', 'my-properties', filters],
-    queryFn: async () => {
-      const response = await propertiesService.getMyProperties(filters)
-      return response.data
-    },
-  })
-}
+// ─── Queries ──────────────────────────────────────────────────────────────────
 
-// Admin view - all properties (requires ADMIN role)
-export const usePropertiesAdmin = (filters?: PropertyFilters) => {
-  return useQuery<PropertiesResponse>({
-    queryKey: ['properties', 'admin', filters],
-    queryFn: async () => {
-      const response = await propertiesService.getAllAdmin(filters)
-      return response.data
-    },
-  })
-}
+/** Public, approved listings. */
+export const useProperties = (filters?: PropertyFilters) =>
+  useQuery<PropertiesResponse>({
+    queryKey: propertyKeys.public(filters),
+    queryFn: async () => (await propertiesService.getAll(filters)).data,
+  });
 
-// Public property detail
-export const useProperty = (id: string, lang?: string) => {
-  return useQuery<Property>({
-    queryKey: ['properties', 'public', id, lang],
-    queryFn: async () => {
-      const response = await propertiesService.getById(id, lang)
-      return response.data
-    },
+/** The signed-in user's own listings (every status / visibility). */
+export const useMyProperties = (filters?: PropertyFilters) =>
+  useQuery<PropertiesResponse>({
+    queryKey: propertyKeys.mine(filters),
+    queryFn: async () => (await propertiesService.getMyProperties(filters)).data,
+  });
+
+export const useMyPropertyStats = () =>
+  useQuery<PropertyStats>({
+    queryKey: propertyKeys.myStats,
+    queryFn: async () => (await propertiesService.getMyStats()).data,
+  });
+
+/** Admin view – all properties (requires ADMIN role). */
+export const usePropertiesAdmin = (filters?: PropertyFilters) =>
+  useQuery<PropertiesResponse>({
+    queryKey: propertyKeys.admin(filters),
+    queryFn: async () => (await propertiesService.getAllAdmin(filters)).data,
+  });
+
+/** Public property detail. */
+export const useProperty = (id: string, lang?: string) =>
+  useQuery<Property>({
+    queryKey: propertyKeys.detail(id, lang),
+    queryFn: async () => (await propertiesService.getById(id, lang)).data,
     enabled: !!id,
-  })
-}
+    retry: false,
+  });
 
-// Admin property detail (includes private properties)
-export const usePropertyAdmin = (id: string, lang?: string) => {
-  return useQuery<Property>({
-    queryKey: ['properties', 'admin', id, lang],
-    queryFn: async () => {
-      const response = await propertiesService.getByIdAdmin(id, lang)
-      return response.data
-    },
+/** Owner/admin property detail for the edit screens. */
+export const usePropertyManage = (id: string, lang?: string) =>
+  useQuery<Property>({
+    queryKey: propertyKeys.manage(id, lang),
+    queryFn: async () => (await propertiesService.getForManage(id, lang)).data,
     enabled: !!id,
-  })
-}
+    retry: false,
+  });
 
-// Create property (auto-assigned to current user)
+export const usePropertyTranslations = (id: string) =>
+  useQuery<PropertyTranslation[]>({
+    queryKey: propertyKeys.translations(id),
+    queryFn: async () => (await propertiesService.getTranslations(id)).data,
+    enabled: !!id,
+  });
+
+// ─── Mutations ────────────────────────────────────────────────────────────────
+
+const useInvalidateProperty = () => {
+  const queryClient = useQueryClient();
+  return (id?: string) => {
+    queryClient.invalidateQueries({ queryKey: propertyKeys.all });
+    if (id) {
+      queryClient.invalidateQueries({ queryKey: ["properties", "detail", id] });
+      queryClient.invalidateQueries({ queryKey: ["properties", "manage", id] });
+      queryClient.invalidateQueries({
+        queryKey: propertyKeys.translations(id),
+      });
+    }
+  };
+};
+
 export const useCreateProperty = () => {
+  const invalidate = useInvalidateProperty();
   return useMutation({
     mutationFn: async ({
       data,
       images,
     }: {
-      data: CreatePropertyDto
-      images?: File[]
-    }) => {
-      const response = await propertiesService.createProperty(data, images)
-      return response.data
-    },
-    onSuccess: () => {
-      // Invalidate all property-related queries
-      queryClient.invalidateQueries({ queryKey: ['properties'] })
-    },
-  })
-}
+      data: CreatePropertyDto;
+      images?: File[];
+    }) => (await propertiesService.createProperty(data, images)).data,
+    onSuccess: () => invalidate(),
+  });
+};
 
-// Update property (ownership checked on backend)
 export const useUpdateProperty = () => {
+  const invalidate = useInvalidateProperty();
   return useMutation({
     mutationFn: async ({
       id,
       data,
       images,
     }: {
-      id: string
-      data: Partial<CreatePropertyDto>
-      images?: File[]
-    }) => {
-      const response = await propertiesService.updateProperty(id, data, images)
-      return response.data
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['properties'] })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'public', variables.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'admin', variables.id],
-      })
-    },
-  })
-}
+      id: string;
+      data: UpdatePropertyDto;
+      images?: File[];
+    }) => (await propertiesService.updateProperty(id, data, images)).data,
+    onSuccess: (_, variables) => invalidate(variables.id),
+  });
+};
 
-// Delete property (ownership checked on backend)
 export const useDeleteProperty = () => {
+  const invalidate = useInvalidateProperty();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await propertiesService.deleteProperty(id)
-      return response.data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['properties'] })
-    },
-  })
-}
+    mutationFn: async (id: string) =>
+      (await propertiesService.deleteProperty(id)).data,
+    onSuccess: () => invalidate(),
+  });
+};
 
-// Property translations (ownership checked on backend)
-export const usePropertyTranslations = (id: string) => {
-  return useQuery<PropertyTranslation[]>({
-    queryKey: ['properties', id, 'translations'],
-    queryFn: async () => {
-      const response = await propertiesService.getTranslations(id)
-      return response.data
-    },
-    enabled: !!id,
-  })
-}
-
-// Upsert translation (ownership checked on backend)
 export const useUpsertPropertyTranslation = () => {
+  const invalidate = useInvalidateProperty();
   return useMutation({
     mutationFn: async ({
       id,
       data,
     }: {
-      id: string
-      data: UpsertPropertyTranslationDto
-    }) => {
-      const response = await propertiesService.upsertTranslation(id, data)
-      return response.data
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['properties', variables.id, 'translations'],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'public', variables.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'admin', variables.id],
-      })
-    },
-  })
-}
+      id: string;
+      data: UpsertPropertyTranslationDto;
+    }) => (await propertiesService.upsertTranslation(id, data)).data,
+    onSuccess: (_, variables) => invalidate(variables.id),
+  });
+};
 
-// Delete translation (ownership checked on backend)
 export const useDeletePropertyTranslation = () => {
+  const invalidate = useInvalidateProperty();
   return useMutation({
-    mutationFn: async ({ id, language }: { id: string; language: string }) => {
-      const response = await propertiesService.deleteTranslation(id, language)
-      return response.data
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['properties', variables.id, 'translations'],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'public', variables.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'admin', variables.id],
-      })
-    },
-  })
-}
+    mutationFn: async ({ id, language }: { id: string; language: string }) =>
+      (await propertiesService.deleteTranslation(id, language)).data,
+    onSuccess: (_, variables) => invalidate(variables.id),
+  });
+};
 
-// Delete image (ownership checked on backend)
 export const useDeletePropertyImage = () => {
+  const invalidate = useInvalidateProperty();
   return useMutation({
     mutationFn: async ({
       propertyId,
       imageId,
     }: {
-      propertyId: string
-      imageId: number
-    }) => {
-      const response = await propertiesService.deleteGalleryImage(
-        propertyId,
-        imageId
-      )
-      return response.data
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'public', variables.propertyId],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'admin', variables.propertyId],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'my-properties'],
-      })
-    },
-  })
-}
+      propertyId: string;
+      imageId: number;
+    }) => (await propertiesService.deleteGalleryImage(propertyId, imageId)).data,
+    onSuccess: (_, variables) => invalidate(variables.propertyId),
+  });
+};
 
-// Add images to property (ownership checked on backend)
 export const useAddPropertyImages = () => {
+  const invalidate = useInvalidateProperty();
   return useMutation({
-    mutationFn: async ({ id, images }: { id: string; images: File[] }) => {
-      const response = await propertiesService.updateProperty(id, {}, images)
-      return response.data
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'public', variables.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'admin', variables.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['properties', 'my-properties'],
-      })
-    },
-  })
-}
+    mutationFn: async ({ id, images }: { id: string; images: File[] }) =>
+      (await propertiesService.updateProperty(id, {}, images)).data,
+    onSuccess: (_, variables) => invalidate(variables.id),
+  });
+};
+
+export const useReorderPropertyImages = () => {
+  const invalidate = useInvalidateProperty();
+  return useMutation({
+    mutationFn: async ({
+      propertyId,
+      imageIds,
+    }: {
+      propertyId: string;
+      imageIds: number[];
+    }) => (await propertiesService.reorderGalleryImages(propertyId, imageIds)).data,
+    onSuccess: (_, variables) => invalidate(variables.propertyId),
+  });
+};

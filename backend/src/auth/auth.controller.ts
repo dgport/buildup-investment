@@ -109,7 +109,7 @@ export class AuthController {
       const message = encodeURIComponent(
         error.message ?? 'Authentication failed',
       );
-      res.redirect(`${frontendUrl}/auth/error?message=${message}`);
+      res.redirect(`${frontendUrl}/google-auth-error?message=${message}`);
     }
   }
 

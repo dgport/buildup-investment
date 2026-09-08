@@ -1,5 +1,13 @@
 name: buildup-dev
 
+# Development stack: Postgres + API (hot reload). Run the Next.js frontend on
+# the host with `npm run dev` (frontend/.env.development points at :3000).
+#
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Postgres is published on host port 5434 (5432 is often taken by a local
+# PostgreSQL install). Inside the compose network the API uses postgres:5432.
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -10,11 +18,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: buildup
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d buildup"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,9 +33,14 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-      - "5555:5555"
     env_file:
       - ./backend/.env
+    environment:
+      # Overrides the localhost URL from backend/.env
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/buildup?schema=public
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: "3000"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -35,7 +48,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && npm run start:dev"
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed; npm run start:dev"
+
 volumes:
   postgres_data:
   uploads_data:

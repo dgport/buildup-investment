@@ -1,739 +1,304 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import {
   ArrowLeft,
   Save,
   Home,
   ImageIcon,
   Languages,
-  MapPin,
-  Flame,
-  Eye,
-  EyeOff,
+  ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
-import { usePropertyAdmin, useUpdateProperty } from "@/lib/hooks/useProperties";
+import {
+  usePropertyManage,
+  useUpdateProperty,
+} from "@/lib/hooks/useProperties";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getErrorMessage } from "@/lib/api/api";
+import { ROUTES } from "@/lib/constants/routes";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  PropertyType,
-  DealType,
-  HeatingType,
-  ParkingType,
-  HotWaterType,
-  Occupancy,
-  Region,
-  REGION_NAMES,
-  type UpdatePropertyDto,
+  type CreatePropertyDto,
   type Property,
+  type UpdatePropertyDto,
+  AMENITY_KEYS,
 } from "@/lib/types/properties";
+import {
+  AmenitiesSection,
+  BasicsSection,
+  DetailsSection,
+  LocationSection,
+  TextsSection,
+  type PropertyFormData,
+} from "../../_components/form/PropertyFormSections";
 import { PropertyImagesManager } from "../../_components/PropertyImagesManager";
 import { PropertyTranslationsManager } from "../../_components/PropertyTranslationsManager";
-import { PropertyLocationPicker } from "../../_components/PropertyLocationPicker";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const PROPERTY_TYPES = [
-  { value: PropertyType.APARTMENT, label: "Apartment" },
-  { value: PropertyType.VILLA, label: "Villa" },
-  { value: PropertyType.COMMERCIAL, label: "Commercial" },
-  { value: PropertyType.LAND, label: "Land" },
-  { value: PropertyType.HOTEL, label: "Hotel" },
-];
-
-const DEAL_TYPES = [
-  { value: DealType.SALE, label: "Sale" },
-  { value: DealType.RENT, label: "Rent" },
-  { value: DealType.DAILY_RENT, label: "Daily Rent" },
-];
-
-const HEATING_TYPES = [
-  { value: HeatingType.CENTRAL_HEATING, label: "Central Heating" },
-  { value: HeatingType.INDIVIDUAL, label: "Individual" },
-  { value: HeatingType.GAS, label: "Gas" },
-  { value: HeatingType.ELECTRIC, label: "Electric" },
-  { value: HeatingType.NONE, label: "None" },
-];
-
-const HOT_WATER_TYPES = [
-  { value: HotWaterType.CENTRAL_HEATING, label: "Central Heating" },
-  { value: HotWaterType.BOILER, label: "Boiler" },
-  { value: HotWaterType.SOLAR, label: "Solar" },
-  { value: HotWaterType.NONE, label: "None" },
-];
-
-const PARKING_TYPES = [
-  { value: ParkingType.PARKING_SPACE, label: "Parking Space" },
-  { value: ParkingType.GARAGE, label: "Garage" },
-  { value: ParkingType.OPEN_LOT, label: "Open Lot" },
-  { value: ParkingType.NONE, label: "None" },
-];
-
-const OCCUPANCY_OPTIONS = [
-  { value: Occupancy.ONE, label: "1 Person" },
-  { value: Occupancy.TWO, label: "2 People" },
-  { value: Occupancy.THREE, label: "3 People" },
-  { value: Occupancy.FOUR, label: "4 People" },
-  { value: Occupancy.FIVE, label: "5 People" },
-  { value: Occupancy.SIX, label: "6 People" },
-  { value: Occupancy.SEVEN, label: "7 People" },
-  { value: Occupancy.EIGHT, label: "8 People" },
-  { value: Occupancy.NINE, label: "9 People" },
-  { value: Occupancy.TEN_PLUS, label: "10+ People" },
-];
-
-const AMENITIES: { key: keyof UpdatePropertyDto; label: string }[] = [
-  { key: "hasConditioner", label: "Air Conditioner" },
-  { key: "hasFurniture", label: "Furniture" },
-  { key: "hasBed", label: "Bed" },
-  { key: "hasSofa", label: "Sofa" },
-  { key: "hasTable", label: "Table" },
-  { key: "hasChairs", label: "Chairs" },
-  { key: "hasStove", label: "Stove" },
-  { key: "hasRefrigerator", label: "Refrigerator" },
-  { key: "hasOven", label: "Oven" },
-  { key: "hasWashingMachine", label: "Washing Machine" },
-  { key: "hasKitchenAppliances", label: "Kitchen Appliances" },
-  { key: "hasBalcony", label: "Balcony" },
-  { key: "hasNaturalGas", label: "Natural Gas" },
-  { key: "hasInternet", label: "Internet" },
-  { key: "hasTV", label: "TV" },
-  { key: "hasSewerage", label: "Sewerage" },
-  { key: "isFenced", label: "Fenced" },
-  { key: "hasYardLighting", label: "Yard Lighting" },
-  { key: "hasGrill", label: "Grill" },
-  { key: "hasAlarm", label: "Alarm" },
-  { key: "hasVentilation", label: "Ventilation" },
-  { key: "hasWater", label: "Water" },
-  { key: "hasElectricity", label: "Electricity" },
-  { key: "hasGate", label: "Gate" },
-  { key: "isNonStandard", label: "Non-Standard Layout" },
-];
 
 type Tab = "details" | "images" | "translations";
 
-const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: "details", label: "Details", icon: Home },
-  { id: "images", label: "Images", icon: ImageIcon },
-  { id: "translations", label: "Translations", icon: Languages },
+const TABS: { id: Tab; icon: React.ElementType }[] = [
+  { id: "details", icon: Home },
+  { id: "images", icon: ImageIcon },
+  { id: "translations", icon: Languages },
 ];
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+/** Map the API object to the form shape (nulls → "" so fields are controlled). */
+function propertyToFormData(p: Property): PropertyFormData {
+  const translation = (lang: string) =>
+    p.translations?.find((t) => t.language === lang);
 
-function propertyToFormData(p: Property): UpdatePropertyDto {
+  const amenities = Object.fromEntries(
+    AMENITY_KEYS.map((key) => [key, p[key] === true]),
+  ) as Partial<CreatePropertyDto>;
+
   return {
     propertyType: p.propertyType,
     dealType: p.dealType,
-    region: p.region ?? undefined,
-    address: p.address ?? undefined,
-    location: p.location ?? undefined,
-    contactPhone: p.contactPhone ?? undefined,
+    titleKa: translation("ka")?.title ?? "",
+    titleEn: translation("en")?.title ?? "",
+    titleRu: translation("ru")?.title ?? "",
+    descriptionKa: translation("ka")?.description ?? "",
+    descriptionEn: translation("en")?.description ?? "",
+    descriptionRu: translation("ru")?.description ?? "",
+    region: p.region ?? "",
+    address: p.address ?? "",
+    location: p.location ?? "",
+    contactPhone: p.contactPhone === p.user?.phone ? "" : (p.contactPhone ?? ""),
     hotSale: p.hotSale,
     public: p.public,
-    price: p.price ?? undefined,
-    totalArea: p.totalArea ?? undefined,
-    rooms: p.rooms ?? undefined,
-    bedrooms: p.bedrooms ?? undefined,
-    bathrooms: p.bathrooms ?? undefined,
-    floors: p.floors ?? undefined,
-    floorsTotal: p.floorsTotal ?? undefined,
-    ceilingHeight: p.ceilingHeight ?? undefined,
+    price: p.price ?? "",
+    totalArea: p.totalArea ?? "",
+    rooms: p.rooms ?? "",
+    bedrooms: p.bedrooms ?? "",
+    bathrooms: p.bathrooms ?? "",
+    floors: p.floors ?? "",
+    floorsTotal: p.floorsTotal ?? "",
+    ceilingHeight: p.ceilingHeight ?? "",
+    balconyArea: p.balconyArea ?? "",
     isNonStandard: p.isNonStandard,
-    occupancy: p.occupancy ?? undefined,
-    heating: p.heating ?? undefined,
-    hotWater: p.hotWater ?? undefined,
-    parking: p.parking ?? undefined,
-    balconyArea: p.balconyArea ?? undefined,
-    hasConditioner: p.hasConditioner,
-    hasFurniture: p.hasFurniture,
-    hasBed: p.hasBed,
-    hasSofa: p.hasSofa,
-    hasTable: p.hasTable,
-    hasChairs: p.hasChairs,
-    hasStove: p.hasStove,
-    hasRefrigerator: p.hasRefrigerator,
-    hasOven: p.hasOven,
-    hasWashingMachine: p.hasWashingMachine,
-    hasKitchenAppliances: p.hasKitchenAppliances,
-    hasBalcony: p.hasBalcony,
-    hasNaturalGas: p.hasNaturalGas,
-    hasInternet: p.hasInternet,
-    hasTV: p.hasTV,
-    hasSewerage: p.hasSewerage,
-    isFenced: p.isFenced,
-    hasYardLighting: p.hasYardLighting,
-    hasGrill: p.hasGrill,
-    hasAlarm: p.hasAlarm,
-    hasVentilation: p.hasVentilation,
-    hasWater: p.hasWater,
-    hasElectricity: p.hasElectricity,
-    hasGate: p.hasGate,
+    occupancy: p.occupancy ?? "",
+    heating: p.heating ?? "",
+    hotWater: p.hotWater ?? "",
+    parking: p.parking ?? "",
+    ...amenities,
   };
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-interface EditPropertyPageProps {
-  params: { id: string };
+/** Only the fields that differ from the loaded property are sent. */
+function diffFormData(
+  original: PropertyFormData,
+  current: PropertyFormData,
+): UpdatePropertyDto {
+  const changed: Record<string, unknown> = {};
+  for (const key of Object.keys(current) as (keyof PropertyFormData)[]) {
+    if (original[key] !== current[key]) changed[key] = current[key];
+  }
+  return changed as UpdatePropertyDto;
 }
 
-export default function EditPropertyPage({ params }: EditPropertyPageProps) {
+const hasAnyTitle = (data: PropertyFormData) =>
+  [data.titleKa, data.titleEn, data.titleRu].some(
+    (v) => typeof v === "string" && v.trim().length > 0,
+  );
+
+export default function EditPropertyPage() {
+  const params = useParams<{ id: string }>();
+  const id = params.id;
   const router = useRouter();
-  const { data: property, isLoading } = usePropertyAdmin(params.id);
+  const locale = useLocale();
+  const t = useTranslations("dashboard.form");
+  const td = useTranslations("dashboard");
+  const tc = useTranslations("common.actions");
+
+  const { data: property, isLoading, error } = usePropertyManage(id, locale);
   const updateProperty = useUpdateProperty();
 
   const [tab, setTab] = useState<Tab>("details");
-  const [formData, setFormData] = useState<UpdatePropertyDto>({});
-  const [hasChanges, setHasChanges] = useState(false);
-  const [showMap, setShowMap] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [original, setOriginal] = useState<PropertyFormData | null>(null);
+  const [formData, setFormData] = useState<PropertyFormData>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
 
   useEffect(() => {
     if (property) {
-      setFormData(propertyToFormData(property));
-      setHasChanges(false);
+      const mapped = propertyToFormData(property);
+      setOriginal(mapped);
+      setFormData(mapped);
     }
   }, [property]);
 
-  const updateField = <K extends keyof UpdatePropertyDto>(
+  const changes = useMemo(
+    () => (original ? diffFormData(original, formData) : {}),
+    [original, formData],
+  );
+  const hasChanges = Object.keys(changes).length > 0;
+
+  const updateField = <K extends keyof CreatePropertyDto>(
     field: K,
-    value: UpdatePropertyDto[K],
+    value: CreatePropertyDto[K],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setHasChanges(true);
-  };
-
-  const getCoords = () => {
-    if (!formData.location) return null;
-    const [lat, lng] = formData.location.split(",").map(Number);
-    if (isNaN(lat) || isNaN(lng)) return null;
-    return { lat, lng };
-  };
-
-  const handleLocationSelect = (location: {
-    coordinates: [number, number];
-    address: string;
-  }) => {
-    updateField(
-      "location",
-      `${location.coordinates[1]},${location.coordinates[0]}`,
-    );
-    updateField("address", location.address);
-    setShowMap(false);
+    setSavedAt(null);
+    if (field.startsWith("title")) setErrors({});
   };
 
   const handleSubmit = async () => {
-    setError(null);
+    if (!hasAnyTitle(formData)) {
+      setErrors({ title: t("errors.titleRequired") });
+      return;
+    }
+    setSubmitError(null);
     try {
-      await updateProperty.mutateAsync({ id: params.id, data: formData });
-      setHasChanges(false);
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ??
-          err.message ??
-          "Failed to update property",
-      );
+      await updateProperty.mutateAsync({ id, data: changes });
+      setSavedAt(Date.now());
+    } catch (err) {
+      setSubmitError(getErrorMessage(err, t("updateFailed")));
     }
   };
 
-  const coords = getCoords();
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-800" />
       </div>
     );
   }
 
-  if (!property) {
+  if (error || !property) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Property not found</p>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-gray-600">{t("notFound")}</p>
+        <Button variant="outline" onClick={() => router.push(ROUTES.DASHBOARD)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {t("backToDashboard")}
+        </Button>
       </div>
     );
   }
+
+  const heading =
+    property.translation?.title || property.address || `#${property.externalId}`;
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-6"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to dashboard
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <div className="mb-8">
+          <button
+            type="button"
+            onClick={() => router.push(ROUTES.DASHBOARD)}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t("backToDashboard")}
+          </button>
 
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Edit Property
-                </h1>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {property.translation?.title ??
-                    property.address ??
-                    `#${property.externalId}`}
-                </p>
-              </div>
-              {hasChanges && tab === "details" && (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={updateProperty.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 shrink-0"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {updateProperty.isPending ? "Saving…" : "Save Changes"}
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {t("editTitle")}
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5 truncate">
+                {heading} · ID {property.externalId}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {property.public && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={ROUTES.PROPERTY(property.id)} target="_blank">
+                    <ExternalLink className="w-4 h-4 mr-1.5" />
+                    {td("view")}
+                  </Link>
                 </Button>
               )}
             </div>
           </div>
+        </div>
 
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200 mb-6 gap-1">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
-                  tab === id
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-900"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </button>
-            ))}
-          </div>
+        <div className="flex border-b border-gray-200 mb-6 gap-1 overflow-x-auto">
+          {TABS.map(({ id: tabId, icon: Icon }) => (
+            <button
+              key={tabId}
+              type="button"
+              onClick={() => {
+                setTab(tabId);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
+                tab === tabId
+                  ? "border-teal-800 text-teal-800"
+                  : "border-transparent text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {t(`tabs.${tabId}`)}
+              {tabId === "details" && hasChanges && (
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              )}
+            </button>
+          ))}
+        </div>
 
-          {/* Form card */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
-            {/* ── Details tab ── */}
-            {tab === "details" && (
-              <div className="space-y-8">
-                {/* Basic */}
-                <Section title="Basic Information">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FieldSelect
-                      label="Property Type"
-                      value={formData.propertyType ?? ""}
-                      onValueChange={(v) =>
-                        updateField("propertyType", v as PropertyType)
-                      }
-                      options={PROPERTY_TYPES}
-                    />
-                    <FieldSelect
-                      label="Deal Type"
-                      value={formData.dealType ?? ""}
-                      onValueChange={(v) =>
-                        updateField("dealType", v as DealType)
-                      }
-                      options={DEAL_TYPES}
-                    />
-                  </div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+          {tab === "details" && (
+            <div className="space-y-10">
+              <BasicsSection data={formData} onChange={updateField} errors={errors} />
+              <TextsSection data={formData} onChange={updateField} errors={errors} />
+              <LocationSection data={formData} onChange={updateField} />
+              <DetailsSection data={formData} onChange={updateField} />
+              <AmenitiesSection data={formData} onChange={updateField} />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FieldInput
-                      label="Price (USD)"
-                      type="number"
-                      value={formData.price ?? ""}
-                      onChange={(e) =>
-                        updateField(
-                          "price",
-                          e.target.value ? Number(e.target.value) : undefined,
-                        )
-                      }
-                      placeholder="150000"
-                    />
-                    <FieldInput
-                      label="Contact Phone"
-                      type="tel"
-                      value={formData.contactPhone ?? ""}
-                      onChange={(e) =>
-                        updateField("contactPhone", e.target.value || undefined)
-                      }
-                      placeholder="Leave empty to use default"
-                    />
-                  </div>
+              {(submitError || errors.title) && (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    {submitError ?? errors.title}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-                  <div className="flex gap-6 pt-2">
-                    <ToggleChip
-                      icon={<Flame className="w-4 h-4" />}
-                      label="Hot Sale"
-                      active={formData.hotSale === true}
-                      activeClass="bg-red-50 border-red-300 text-red-600"
-                      onChange={(v) => updateField("hotSale", v)}
-                    />
-                    <ToggleChip
-                      icon={
-                        formData.public ? (
-                          <Eye className="w-4 h-4" />
-                        ) : (
-                          <EyeOff className="w-4 h-4" />
-                        )
-                      }
-                      label={formData.public ? "Public" : "Private"}
-                      active={formData.public === true}
-                      activeClass="bg-green-50 border-green-300 text-green-600"
-                      onChange={(v) => updateField("public", v)}
-                    />
-                  </div>
-                </Section>
+              {savedAt && !hasChanges && (
+                <Alert className="border-green-200 bg-green-50 text-green-800">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    {t("saved")}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-                {/* Location */}
-                <Section title="Location">
-                  <FieldSelect
-                    label="Region"
-                    value={formData.region ?? ""}
-                    onValueChange={(v) => updateField("region", v as Region)}
-                    options={Object.entries(REGION_NAMES).map(
-                      ([value, label]) => ({
-                        value,
-                        label,
-                      }),
-                    )}
-                    placeholder="Select a region"
-                  />
-
-                  <div className="space-y-1.5">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Address &amp; Coordinates
-                    </Label>
-                    <div className="flex gap-2">
-                      <Input
-                        readOnly
-                        value={formData.address ?? ""}
-                        placeholder="Pick a location on the map"
-                        className="bg-gray-50"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowMap(true)}
-                        className="shrink-0"
-                      >
-                        <MapPin className="w-4 h-4 mr-2" />
-                        Pick
-                      </Button>
-                    </div>
-                    {coords && (
-                      <div className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-lg px-4 py-2.5">
-                        <p className="text-xs font-mono text-blue-700">
-                          {coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}
-                        </p>
-                        <button
-                          onClick={() => {
-                            updateField("location", undefined);
-                            updateField("address", undefined);
-                          }}
-                          className="text-xs text-blue-500 hover:text-blue-700"
-                        >
-                          Clear
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </Section>
-
-                {/* Property details */}
-                <Section title="Property Details">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                      {
-                        field: "totalArea" as const,
-                        label: "Area (m²)",
-                        placeholder: "120",
-                      },
-                      {
-                        field: "rooms" as const,
-                        label: "Rooms",
-                        placeholder: "3",
-                      },
-                      {
-                        field: "bedrooms" as const,
-                        label: "Bedrooms",
-                        placeholder: "2",
-                      },
-                      {
-                        field: "bathrooms" as const,
-                        label: "Bathrooms",
-                        placeholder: "1",
-                      },
-                      {
-                        field: "floors" as const,
-                        label: "Floor",
-                        placeholder: "5",
-                      },
-                      {
-                        field: "floorsTotal" as const,
-                        label: "Total Floors",
-                        placeholder: "10",
-                      },
-                      {
-                        field: "ceilingHeight" as const,
-                        label: "Ceiling (m)",
-                        placeholder: "3.0",
-                        step: "0.1",
-                      },
-                      {
-                        field: "balconyArea" as const,
-                        label: "Balcony (m²)",
-                        placeholder: "10",
-                        step: "0.1",
-                      },
-                    ].map(({ field, label, placeholder, step }) => (
-                      <FieldInput
-                        key={field}
-                        label={label}
-                        type="number"
-                        step={step}
-                        value={formData[field] ?? ""}
-                        onChange={(e) =>
-                          updateField(
-                            field,
-                            e.target.value ? Number(e.target.value) : undefined,
-                          )
-                        }
-                        placeholder={placeholder}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <FieldSelect
-                      label="Heating"
-                      value={formData.heating ?? ""}
-                      onValueChange={(v) =>
-                        updateField("heating", v as HeatingType)
-                      }
-                      options={HEATING_TYPES}
-                      placeholder="Select"
-                    />
-                    <FieldSelect
-                      label="Hot Water"
-                      value={formData.hotWater ?? ""}
-                      onValueChange={(v) =>
-                        updateField("hotWater", v as HotWaterType)
-                      }
-                      options={HOT_WATER_TYPES}
-                      placeholder="Select"
-                    />
-                    <FieldSelect
-                      label="Parking"
-                      value={formData.parking ?? ""}
-                      onValueChange={(v) =>
-                        updateField("parking", v as ParkingType)
-                      }
-                      options={PARKING_TYPES}
-                      placeholder="Select"
-                    />
-                  </div>
-
-                  <FieldSelect
-                    label="Max Occupancy"
-                    value={formData.occupancy ?? ""}
-                    onValueChange={(v) =>
-                      updateField("occupancy", v as Occupancy)
-                    }
-                    options={OCCUPANCY_OPTIONS}
-                    placeholder="Select occupancy"
-                  />
-                </Section>
-
-                {/* Amenities */}
-                <Section title="Amenities">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {AMENITIES.map(({ key, label }) => {
-                      const checked = (formData[key] as boolean) === true;
-                      return (
-                        <label
-                          key={key}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
-                            checked
-                              ? "bg-blue-50 border-blue-300 text-blue-900"
-                              : "bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-300"
-                          }`}
-                        >
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={(c) =>
-                              updateField(key, c === true)
-                            }
-                            className="shrink-0"
-                          />
-                          <span className="text-sm font-medium">{label}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </Section>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Footer actions */}
-                <div className="flex gap-3 pt-4 border-t border-gray-100">
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={updateProperty.isPending || !hasChanges}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {updateProperty.isPending ? "Saving…" : "Save Changes"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push("/dashboard")}
-                    className="px-6"
-                  >
-                    Cancel
-                  </Button>
-                </div>
+              <div className="sticky bottom-4 z-10 flex gap-3 pt-4 border-t border-gray-100 bg-white/95 backdrop-blur rounded-b-2xl">
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={updateProperty.isPending || !hasChanges}
+                  className="flex-1 bg-teal-900 hover:bg-teal-800"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {updateProperty.isPending ? t("saving") : t("saveChanges")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => original && setFormData(original)}
+                  disabled={!hasChanges}
+                  className="px-6"
+                >
+                  {tc("cancel")}
+                </Button>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ── Images tab ── */}
-            {tab === "images" && (
-              <PropertyImagesManager
-                propertyId={params.id}
-                onSuccess={() => {}}
-              />
-            )}
+          {tab === "images" && <PropertyImagesManager propertyId={id} />}
 
-            {/* ── Translations tab ── */}
-            {tab === "translations" && (
-              <PropertyTranslationsManager propertyId={params.id} />
-            )}
-          </div>
+          {tab === "translations" && (
+            <PropertyTranslationsManager propertyId={id} />
+          )}
         </div>
       </div>
-
-      {showMap && (
-        <PropertyLocationPicker
-          onLocationSelect={handleLocationSelect}
-          onClose={() => setShowMap(false)}
-          initialLocation={coords ?? null}
-        />
-      )}
-    </>
-  );
-}
-
-// ─── Shared UI ────────────────────────────────────────────────────────────────
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-4">
-      <h3 className="text-base font-semibold text-gray-900 pb-2 border-b border-gray-100">
-        {title}
-      </h3>
-      {children}
     </div>
-  );
-}
-
-function FieldInput({
-  label,
-  error,
-  ...props
-}: {
-  label: string;
-  error?: string;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-gray-700">{label}</Label>
-      <Input
-        {...props}
-        className={error ? "border-red-400 focus-visible:ring-red-400" : ""}
-      />
-      {error && <p className="text-xs text-red-500">{error}</p>}
-    </div>
-  );
-}
-
-function FieldSelect({
-  label,
-  options,
-  placeholder,
-  value,
-  onValueChange,
-}: {
-  label: string;
-  options: { value: string; label: string }[];
-  placeholder?: string;
-  value: string;
-  onValueChange: (value: string) => void;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-gray-700">{label}</Label>
-      <Select value={value || undefined} onValueChange={onValueChange}>
-        <SelectTrigger>
-          <SelectValue placeholder={placeholder ?? "Select an option"} />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
-function ToggleChip({
-  icon,
-  label,
-  active,
-  activeClass,
-  onChange,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active: boolean;
-  activeClass: string;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!active)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-        active
-          ? activeClass
-          : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300"
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
   );
 }

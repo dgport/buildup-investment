@@ -12,46 +12,38 @@ import {
   setAccessToken,
   removeAccessToken,
   getAccessToken,
+  isRemembered,
 } from "../utils/auth";
 
-// Create a simple store to track token changes
-let listeners: (() => void)[] = [];
+export const authKeys = {
+  currentUser: ["auth", "currentUser"] as const,
+};
 
-function emitTokenChange() {
-  listeners.forEach((listener) => listener());
-}
+// ─── Token presence store (re-renders consumers when the token changes) ──────
 
 function subscribeToToken(listener: () => void) {
-  listeners.push(listener);
+  window.addEventListener("auth:login", listener);
+  window.addEventListener("auth:logout", listener);
+  window.addEventListener("storage", listener);
   return () => {
-    listeners = listeners.filter((l) => l !== listener);
+    window.removeEventListener("auth:login", listener);
+    window.removeEventListener("auth:logout", listener);
+    window.removeEventListener("storage", listener);
   };
 }
 
-function getTokenSnapshot() {
-  return typeof window !== "undefined" ? !!getAccessToken() : false;
-}
+const getTokenSnapshot = () => !!getAccessToken();
+const getServerSnapshot = () => false;
 
-function getServerSnapshot() {
-  return false;
-}
+export const useHasToken = () =>
+  useSyncExternalStore(subscribeToToken, getTokenSnapshot, getServerSnapshot);
 
 export const useCurrentUser = () => {
-  const queryClient = useQueryClient();
-
-  // This will re-render the component when token changes
-  const hasToken = useSyncExternalStore(
-    subscribeToToken,
-    getTokenSnapshot,
-    getServerSnapshot,
-  );
+  const hasToken = useHasToken();
 
   return useQuery<User | null>({
-    queryKey: ["auth", "currentUser"],
-    queryFn: async () => {
-      const response = await authService.getCurrentUser();
-      return response.data;
-    },
+    queryKey: authKeys.currentUser,
+    queryFn: async () => (await authService.getCurrentUser()).data,
     enabled: hasToken,
     retry: false,
     staleTime: 5 * 60 * 1000,
@@ -69,71 +61,49 @@ export const useSignIn = () => {
     },
     onSuccess: (data) => {
       setAccessToken(data.accessToken, data.rememberMe || false);
-      queryClient.setQueryData(["auth", "currentUser"], data.user);
-      emitTokenChange(); // Notify subscribers
+      queryClient.setQueryData(authKeys.currentUser, data.user);
     },
   });
 };
 
-export const useSignUp = () => {
-  return useMutation({
-    mutationFn: async (data: SignUpDto) => {
-      const response = await authService.signUp(data);
-      return response.data;
-    },
+export const useSignUp = () =>
+  useMutation({
+    mutationFn: async (data: SignUpDto) => (await authService.signUp(data)).data,
   });
-};
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      const response = await authService.logout();
-      return response.data;
-    },
-    onSuccess: () => {
-      // 1. Clear the physical token
+    mutationFn: async () => (await authService.logout()).data,
+    onSettled: () => {
+      // Clear locally even if the server call failed (expired session etc.)
       removeAccessToken();
-
-      // 2. Notify all subscribers that token changed (this triggers re-renders)
-      emitTokenChange();
-
-      // 3. Clear and invalidate queries
-      queryClient.setQueryData(["auth", "currentUser"], null);
+      queryClient.setQueryData(authKeys.currentUser, null);
       queryClient.removeQueries({ queryKey: ["auth"] });
+      queryClient.removeQueries({ queryKey: ["properties", "my-properties"] });
+      queryClient.removeQueries({ queryKey: ["properties", "my-stats"] });
+      queryClient.removeQueries({ queryKey: ["properties", "manage"] });
     },
   });
 };
 
-export const useRefreshToken = () => {
-  return useMutation({
-    mutationFn: async () => {
-      const response = await authService.refreshToken();
-      return response.data;
-    },
+export const useRefreshToken = () =>
+  useMutation({
+    mutationFn: async () => (await authService.refreshToken()).data,
     onSuccess: (data) => {
-      const wasInLocalStorage = !!localStorage.getItem("accessToken");
-      setAccessToken(data.accessToken, wasInLocalStorage);
-      emitTokenChange();
+      setAccessToken(data.accessToken, isRemembered());
     },
   });
-};
 
-export const useForgotPassword = () => {
-  return useMutation({
-    mutationFn: async (data: ForgotPasswordDto) => {
-      const response = await authService.forgotPassword(data);
-      return response.data;
-    },
+export const useForgotPassword = () =>
+  useMutation({
+    mutationFn: async (data: ForgotPasswordDto) =>
+      (await authService.forgotPassword(data)).data,
   });
-};
 
-export const useResetPassword = () => {
-  return useMutation({
-    mutationFn: async (data: ResetPasswordDto) => {
-      const response = await authService.resetPassword(data);
-      return response.data;
-    },
+export const useResetPassword = () =>
+  useMutation({
+    mutationFn: async (data: ResetPasswordDto) =>
+      (await authService.resetPassword(data)).data,
   });
-};

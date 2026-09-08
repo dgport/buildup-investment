@@ -1,21 +1,22 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ROUTES } from "@/lib/constants/routes";
 
-export default function GoogleAuthError() {
+function GoogleAuthErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("auth");
   const errorMessage = searchParams.get("message") || t("authFailed");
 
   useEffect(() => {
-    const timer = setTimeout(() => router.push("/signin"), 3000);
+    const timer = setTimeout(() => router.replace(ROUTES.SIGNIN), 4000);
     return () => clearTimeout(timer);
-  }, [router, errorMessage]);
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
@@ -30,19 +31,21 @@ export default function GoogleAuthError() {
             <div className="h-16 w-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
               <AlertCircle className="h-10 w-10 text-red-400" />
             </div>
-            <h2 className="text-2xl font-bold text-amber-400">
-              {t("authFailed")}
-            </h2>
-            <p className="text-amber-100/70">
-              {decodeURIComponent(errorMessage)}
-            </p>
-            <p className="text-sm text-amber-100/50">
-              {t("redirectingSignIn")}
-            </p>
+            <h2 className="text-2xl font-bold text-amber-400">{t("authFailed")}</h2>
+            <p className="text-amber-100/70">{errorMessage}</p>
+            <p className="text-sm text-amber-100/50">{t("redirectingSignIn")}</p>
             <Loader2 className="h-6 w-6 animate-spin mx-auto text-amber-400/60" />
           </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function GoogleAuthError() {
+  return (
+    <Suspense>
+      <GoogleAuthErrorContent />
+    </Suspense>
   );
 }

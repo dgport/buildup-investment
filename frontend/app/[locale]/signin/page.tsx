@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
@@ -20,6 +20,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Loader2, AlertCircle, Info } from "lucide-react";
 import { useSignIn } from "@/lib/hooks/useAuth";
 import { authService } from "@/lib/services/auth.service";
+import { getErrorMessage } from "@/lib/api/api";
+import { ROUTES } from "@/lib/constants/routes";
 
 const GoogleIcon = () => (
   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -42,8 +44,9 @@ const GoogleIcon = () => (
   </svg>
 );
 
-export default function SigninPage() {
+function SigninForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("auth");
   const signInMutation = useSignIn();
 
@@ -78,9 +81,12 @@ export default function SigninPage() {
     signInMutation.mutate(
       { ...formData, rememberMe },
       {
-        onSuccess: () => router.push("/dashboard"),
-        onError: (error: any) => {
-          const msg = error?.response?.data?.message || "";
+        onSuccess: () => {
+          const next = searchParams.get("next");
+          router.push(next && next.startsWith("/") ? next : ROUTES.DASHBOARD);
+        },
+        onError: (error: unknown) => {
+          const msg = getErrorMessage(error, "");
           if (msg.includes("Google") || msg.includes("add a password")) {
             setGoogleAccountEmail(formData.email);
           }
@@ -138,7 +144,7 @@ export default function SigninPage() {
                     size="sm"
                     onClick={() =>
                       router.push(
-                        `/forgot-password?email=${encodeURIComponent(googleAccountEmail)}`,
+                        `${ROUTES.FORGOT_PASSWORD}?email=${encodeURIComponent(googleAccountEmail)}`,
                       )
                     }
                     className="w-full border-amber-400/30 text-amber-100 hover:bg-amber-400/10 hover:text-amber-300"
@@ -154,8 +160,7 @@ export default function SigninPage() {
             <Alert className="bg-red-500/10 border-red-500/30">
               <AlertCircle className="h-4 w-4 text-red-400" />
               <AlertDescription className="text-red-300">
-                {(signInMutation.error as any)?.response?.data?.message ||
-                  t("invalidCredentials")}
+                {getErrorMessage(signInMutation.error, t("invalidCredentials"))}
               </AlertDescription>
             </Alert>
           )}
@@ -188,7 +193,7 @@ export default function SigninPage() {
                   {t("password")}
                 </Label>
                 <Link
-                  href="/forgot-password"
+                  href={ROUTES.FORGOT_PASSWORD}
                   className="text-sm text-amber-400 hover:text-amber-300 hover:underline"
                 >
                   {t("forgotPassword")}
@@ -280,30 +285,22 @@ export default function SigninPage() {
           <div className="text-sm text-amber-100/60 text-center">
             {t("noAccount")}{" "}
             <Link
-              href="/signup"
+              href={ROUTES.SIGNUP}
               className="text-amber-400 hover:text-amber-300 hover:underline font-medium"
             >
               {t("signup")}
             </Link>
           </div>
-          <div className="text-xs text-amber-100/40 text-center">
-            {t("agreeToTerms")}{" "}
-            <Link
-              href="/terms"
-              className="text-amber-400/80 hover:text-amber-400 hover:underline"
-            >
-              {t("terms")}
-            </Link>{" "}
-            {t("and")}{" "}
-            <Link
-              href="/privacy"
-              className="text-amber-400/80 hover:text-amber-400 hover:underline"
-            >
-              {t("privacy")}
-            </Link>
-          </div>
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function SigninPage() {
+  return (
+    <Suspense>
+      <SigninForm />
+    </Suspense>
   );
 }

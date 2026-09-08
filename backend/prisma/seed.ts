@@ -45,8 +45,29 @@ async function seedRegionTranslations(): Promise<void> {
   console.log(`✅ Seeded ${translations.length} region translations`);
 }
 
+/**
+ * Site-wide fallback phone shown on listings whose owner has no phone.
+ * Set DEFAULT_CONTACT_PHONE in .env to override (re-run the seed to apply).
+ */
+async function seedSiteSettings(): Promise<void> {
+  const phone = process.env.DEFAULT_CONTACT_PHONE;
+  if (!phone) return;
+
+  await prisma.siteSettings.upsert({
+    where: { key: 'default_contact_phone' },
+    update: { value: phone },
+    create: {
+      key: 'default_contact_phone',
+      value: phone,
+      description: 'Fallback contact phone for listings without one',
+    },
+  });
+  console.log('✅ Seeded default_contact_phone');
+}
+
 async function main(): Promise<void> {
   await seedRegionTranslations();
+  await seedSiteSettings();
 }
 
 main()

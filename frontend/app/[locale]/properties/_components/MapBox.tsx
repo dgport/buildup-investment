@@ -1,14 +1,16 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { Layers } from "lucide-react";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/constants/env";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
 interface MapboxMapProps {
   latitude: number;
   longitude: number;
-  title?: string;
   zoom?: number;
   enable3D?: boolean;
   defaultView?: "2d" | "3d";
@@ -16,6 +18,7 @@ interface MapboxMapProps {
   bearing3D?: number;
   markerColor?: string;
   className?: string;
+  labels?: { view2d: string; view3d: string };
 }
 
 export default function MapboxMap({
@@ -26,8 +29,9 @@ export default function MapboxMap({
   defaultView = "3d",
   pitch3D = 60,
   bearing3D = -20,
-  markerColor = "#ff6b35",
-  className = "w-full h-[400px] sm:h-[500px]",
+  markerColor = "#d97706",
+  className = "w-full h-full",
+  labels = { view2d: "2D", view3d: "3D" },
 }: MapboxMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -36,7 +40,8 @@ export default function MapboxMap({
   const [is3D, setIs3D] = useState(defaultView === "3d");
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
+    if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN)
+      return;
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -50,10 +55,7 @@ export default function MapboxMap({
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
     mapRef.current = map;
 
-    markerRef.current = new mapboxgl.Marker({
-      color: markerColor,
-      scale: 1.2,
-    })
+    markerRef.current = new mapboxgl.Marker({ color: markerColor, scale: 1.2 })
       .setLngLat([longitude, latitude])
       .addTo(map);
 
@@ -61,7 +63,9 @@ export default function MapboxMap({
       const labelLayerId = map
         .getStyle()
         .layers?.find(
-          (l) => l.type === "symbol" && l.layout?.["text-field"],
+          (l) =>
+            l.type === "symbol" &&
+            (l.layout as Record<string, unknown> | undefined)?.["text-field"],
         )?.id;
 
       if (!map.getLayer("3d-buildings")) {
@@ -91,29 +95,31 @@ export default function MapboxMap({
       markerRef.current = null;
       mapRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!mapRef.current) return;
-
-    mapRef.current.easeTo({
+    mapRef.current?.easeTo({
       pitch: is3D ? pitch3D : 0,
       bearing: is3D ? bearing3D : 0,
       duration: 800,
     });
   }, [is3D, pitch3D, bearing3D]);
 
+  if (!MAPBOX_ACCESS_TOKEN) return null;
+
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <div ref={mapContainerRef} className={className} />
 
       {enable3D && (
         <button
+          type="button"
           onClick={() => setIs3D((prev) => !prev)}
-          className="absolute top-4 right-4 bg-white/95 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium hover:bg-white transition-colors z-10"
+          className="absolute top-4 left-4 bg-white/95 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium hover:bg-white transition-colors z-10"
         >
           <Layers size={16} />
-          {is3D ? "2D View" : "3D View"}
+          {is3D ? labels.view2d : labels.view3d}
         </button>
       )}
     </div>

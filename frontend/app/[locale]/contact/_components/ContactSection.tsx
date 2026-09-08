@@ -1,10 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Facebook, Mail, Phone, MapPin, ArrowRight, Send } from "lucide-react";
+import { Facebook, Mail, Phone, MapPin, ArrowRight, Send, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "next-intl";
+import { WEB3FORMS_ACCESS_KEY } from "@/lib/constants/env";
+import {
+  CONTACT_EMAIL,
+  CONTACT_FACEBOOK,
+  CONTACT_MAPS_URL,
+  CONTACT_PHONE,
+} from "@/lib/constants/contact";
+
+type SubmitState = "idle" | "sending" | "success" | "error";
 
 const ContactSection = () => {
   const t = useTranslations("contact");
@@ -15,8 +24,7 @@ const ContactSection = () => {
     phone: "",
     message: "",
   });
-  const [result, setResult] = useState("");
-  const [sending, setSending] = useState(false);
+  const [state, setState] = useState<SubmitState>("idle");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -27,20 +35,62 @@ const ContactSection = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSending(true);
-    setResult("sending");
-    setTimeout(() => {
-      setSending(false);
-      setResult("success");
+    setState("sending");
+
+    try {
+      if (!WEB3FORMS_ACCESS_KEY) throw new Error("Contact form is not configured");
+
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `BuildUp contact form: ${formData.fullName}`,
+          from_name: "buildup.ge",
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message);
+
+      setState("success");
       setFormData({ fullName: "", email: "", phone: "", message: "" });
-      setTimeout(() => setResult(""), 5000);
-    }, 1500);
+      setTimeout(() => setState("idle"), 6000);
+    } catch {
+      setState("error");
+    }
   };
 
+  const contactCards = [
+    {
+      icon: MapPin,
+      label: t("locationLabel"),
+      content: t("locationValue"),
+      href: CONTACT_MAPS_URL,
+      color: "amber",
+    },
+    {
+      icon: Phone,
+      label: t("phoneLabel"),
+      content: CONTACT_PHONE,
+      href: `tel:${CONTACT_PHONE.replace(/\s/g, "")}`,
+      color: "teal",
+    },
+    {
+      icon: Mail,
+      label: t("emailLabel"),
+      content: CONTACT_EMAIL,
+      href: `mailto:${CONTACT_EMAIL}`,
+      color: "amber",
+    },
+  ];
+
   return (
-    <section className="min-h-screen bg-[#f3f5f4] pt-32 pb-20 px-6 md:px-12 lg:px-20">
+    <section className="min-h-screen bg-[#f3f5f4] pt-12 pb-20 px-6 md:px-12 lg:px-20">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-16">
           <div className="flex items-center gap-3 mb-5">
             <div className="h-px w-10 bg-amber-400" />
@@ -57,7 +107,6 @@ const ContactSection = () => {
         </div>
 
         <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-start">
-          {/* Form */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <div className="bg-white rounded-3xl shadow-sm border border-teal-100 p-8 md:p-10">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -71,6 +120,7 @@ const ContactSection = () => {
                     value={formData.fullName}
                     onChange={handleChange}
                     required
+                    maxLength={100}
                     placeholder={t("fullNamePlaceholder")}
                     className="border-teal-200 focus:border-amber-400 focus:ring-amber-400/20 rounded-xl h-12 text-teal-950 placeholder:text-teal-400"
                   />
@@ -100,7 +150,7 @@ const ContactSection = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="+995 (000) 00-00-00"
+                      placeholder="+995 5XX XX XX XX"
                       className="border-teal-200 focus:border-amber-400 focus:ring-amber-400/20 rounded-xl h-12 text-teal-950 placeholder:text-teal-400"
                     />
                   </div>
@@ -116,6 +166,7 @@ const ContactSection = () => {
                     onChange={handleChange}
                     rows={6}
                     required
+                    maxLength={3000}
                     placeholder={t("messagePlaceholder")}
                     className="border-teal-200 focus:border-amber-400 focus:ring-amber-400/20 rounded-xl text-teal-950 placeholder:text-teal-400 resize-none"
                   />
@@ -123,56 +174,36 @@ const ContactSection = () => {
 
                 <button
                   type="submit"
-                  disabled={sending}
+                  disabled={state === "sending"}
                   className="group w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-amber-400 hover:bg-amber-300 disabled:opacity-60 text-teal-950 font-bold text-sm uppercase tracking-widest rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-amber-400/30"
                 >
                   <Send className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  {sending ? t("sending") : t("send")}
+                  {state === "sending" ? t("sending") : t("send")}
                 </button>
 
-                {result === "success" && (
+                {state === "success" && (
                   <div className="flex items-center gap-2 text-teal-700 bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm font-medium">
                     <div className="w-2 h-2 rounded-full bg-teal-500" />
                     {t("successMessage")}
+                  </div>
+                )}
+                {state === "error" && (
+                  <div className="flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-medium">
+                    <AlertCircle className="w-4 h-4" />
+                    {t("errorMessage")}
                   </div>
                 )}
               </form>
             </div>
           </div>
 
-          {/* Info sidebar */}
           <div className="lg:col-span-2 order-1 lg:order-2 space-y-5">
-            {/* Contact cards */}
-            {[
-              {
-                icon: MapPin,
-                label: t("locationLabel"),
-                content: t("locationValue"),
-                href: "https://maps.google.com",
-                color: "amber",
-              },
-              {
-                icon: Phone,
-                label: t("phoneLabel"),
-                content: "+995 000 00 00 00",
-                href: "tel:+995000000000",
-                color: "teal",
-              },
-              {
-                icon: Mail,
-                label: t("emailLabel"),
-                content: "digitalport@gmail.com",
-                href: "mailto:digitalport@gmail.com",
-                color: "amber",
-              },
-            ].map(({ icon: Icon, label, content, href, color }) => (
+            {contactCards.map(({ icon: Icon, label, content, href, color }) => (
               <a
                 key={label}
                 href={href}
                 target={href.startsWith("http") ? "_blank" : undefined}
-                rel={
-                  href.startsWith("http") ? "noopener noreferrer" : undefined
-                }
+                rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
                 className="group flex items-start gap-4 p-5 bg-white rounded-2xl border border-teal-100 hover:border-amber-300 shadow-sm hover:shadow-md transition-all duration-300"
               >
                 <div
@@ -198,16 +229,16 @@ const ContactSection = () => {
               </a>
             ))}
 
-            {/* Social */}
             <div className="p-5 bg-white rounded-2xl border border-teal-100">
               <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-4">
                 {t("connectLabel")}
               </p>
               <div className="flex gap-3">
                 <a
-                  href="https://facebook.com"
+                  href={CONTACT_FACEBOOK}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Facebook"
                   className="w-11 h-11 bg-teal-50 hover:bg-amber-50 border border-teal-100 hover:border-amber-300 rounded-xl flex items-center justify-center text-teal-700 hover:text-amber-600 transition-all duration-300"
                 >
                   <Facebook className="w-5 h-5" />
@@ -215,7 +246,6 @@ const ContactSection = () => {
               </div>
             </div>
 
-            {/* Decorative accent */}
             <div className="hidden lg:block pt-4">
               <div className="h-1 w-20 bg-gradient-to-r from-teal-400 to-amber-400 rounded-full" />
               <div className="h-1 w-10 bg-gradient-to-r from-teal-400 to-amber-400 rounded-full mt-2 opacity-40" />

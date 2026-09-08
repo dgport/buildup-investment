@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 
 type Clients = {
   name: string;
@@ -44,6 +44,7 @@ const Logo = ({
           {name}
         </span>
       ) : (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={logo}
           alt={name}
@@ -56,11 +57,7 @@ const Logo = ({
 
 export default function ClientsSection() {
   const t = useTranslations("main");
-  const [isTouch, setIsTouch] = useState(true);
-
-  useEffect(() => {
-    setIsTouch(!window.matchMedia("(hover: hover)").matches);
-  }, []);
+  const isTouch = !useMediaQuery("(hover: hover)", false);
 
   return (
     <section

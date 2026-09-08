@@ -1,24 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getRequestConfig } from "next-intl/server";
+import { hasLocale } from "next-intl";
 import { routing } from "./routing";
 
+const NAMESPACES = [
+  "common",
+  "main",
+  "contact",
+  "properties",
+  "dashboard",
+  "meta",
+  "auth",
+] as const;
+
 export default getRequestConfig(async ({ requestLocale }) => {
-  let locale = await requestLocale;
+  const requested = await requestLocale;
+  const locale = hasLocale(routing.locales, requested)
+    ? requested
+    : routing.defaultLocale;
 
-  if (!locale || !routing.locales.includes(locale as any)) {
-    locale = routing.defaultLocale;
-  }
-
-  const messages = {
-    main: (await import(`../messages/${locale}/main.json`)).default,
-    contact: (await import(`../messages/${locale}/contact.json`)).default,
-    properties: (await import(`../messages/${locale}/properties.json`)).default,
-    meta: (await import(`../messages/${locale}/meta.json`)).default,
-    auth: (await import(`../messages/${locale}/auth.json`)).default,
-  };
+  const entries = await Promise.all(
+    NAMESPACES.map(async (ns) => [
+      ns,
+      (await import(`../messages/${locale}/${ns}.json`)).default,
+    ]),
+  );
 
   return {
     locale,
-    messages,
+    messages: Object.fromEntries(entries),
   };
 });

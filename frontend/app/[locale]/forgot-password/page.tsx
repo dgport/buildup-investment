@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useForgotPassword } from "@/lib/hooks/useAuth";
+import { getErrorMessage } from "@/lib/api/api";
 
 const ForgotPasswordForm = () => {
   const router = useRouter();
@@ -78,8 +79,7 @@ const ForgotPasswordForm = () => {
           >
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {(forgotPasswordMutation.error as any)?.response?.data?.message ||
-                t("resetEmailFailed")}
+              {getErrorMessage(forgotPasswordMutation.error, t("resetEmailFailed"))}
             </AlertDescription>
           </Alert>
         )}

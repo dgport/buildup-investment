@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { Property } from "@/lib/types/properties";
 import {
   Square,
@@ -12,57 +13,61 @@ import {
 } from "lucide-react";
 
 export function PropertyDetailsSection({ property }: { property: Property }) {
-  const hasDetails = Boolean(
-    property.totalArea ||
-    property.rooms ||
-    property.bedrooms ||
-    property.bathrooms ||
-    property.floors ||
-    property.floorsTotal ||
-    property.ceilingHeight ||
-    property.balconyArea,
-  );
-
-  if (!hasDetails) return null;
+  const t = useTranslations("properties");
 
   const items = [
     {
       icon: Square,
-      label: "Total Area",
+      label: t("fields.totalArea"),
       value: property.totalArea ? `${property.totalArea} m²` : null,
     },
-    { icon: Home, label: "Rooms", value: property.rooms },
-    { icon: Bed, label: "Bedrooms", value: property.bedrooms },
-    { icon: Bath, label: "Bathrooms", value: property.bathrooms },
-    { icon: Layers, label: "Floor", value: property.floors },
-    { icon: ArrowUpDown, label: "Total Floors", value: property.floorsTotal },
+    { icon: Home, label: t("fields.rooms"), value: property.rooms },
+    { icon: Bed, label: t("fields.bedrooms"), value: property.bedrooms },
+    { icon: Bath, label: t("fields.bathrooms"), value: property.bathrooms },
+    {
+      icon: Layers,
+      label: t("fields.floor"),
+      value:
+        property.floors != null
+          ? property.floorsTotal
+            ? `${property.floors} / ${property.floorsTotal}`
+            : property.floors
+          : null,
+    },
+    {
+      icon: ArrowUpDown,
+      label: t("fields.floorsTotal"),
+      value: property.floors == null ? property.floorsTotal : null,
+    },
     {
       icon: Ruler,
-      label: "Ceiling Height",
+      label: t("fields.ceilingHeight"),
       value: property.ceilingHeight ? `${property.ceilingHeight} m` : null,
     },
     {
       icon: Square,
-      label: "Balcony Area",
+      label: t("fields.balconyArea"),
       value: property.balconyArea ? `${property.balconyArea} m²` : null,
     },
-  ].filter((item) => item.value != null);
+  ].filter((item) => item.value != null && item.value !== 0);
+
+  if (!items.length) return null;
 
   return (
-    <div className="bg-white rounded-xl p-4 md:p-5 shadow-sm">
-      <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3">
-        Property Details
+    <div className="bg-white rounded-2xl p-6 border border-teal-100">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3">
+        {t("detailsTitle")}
       </h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         {items.map(({ icon: Icon, label, value }) => (
           <div
             key={label}
-            className="flex items-center gap-1.5 md:gap-2 p-2 md:p-2.5 bg-gray-50 rounded-lg"
+            className="flex items-center gap-2 p-2.5 bg-teal-50/50 rounded-lg"
           >
-            <Icon className="w-4 h-4 text-gray-600 shrink-0" />
+            <Icon className="w-4 h-4 text-teal-600 shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] md:text-xs text-gray-500">{label}</p>
-              <p className="text-xs md:text-sm font-semibold">{value}</p>
+              <p className="text-[11px] text-teal-700/70">{label}</p>
+              <p className="text-sm font-semibold text-teal-950">{value}</p>
             </div>
           </div>
         ))}

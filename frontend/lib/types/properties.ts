@@ -63,14 +63,9 @@ export enum Region {
   UREKI = "UREKI",
 }
 
-export const REGION_NAMES: Record<string, string> = {
-  BATUMI: "Batumi",
-  KOBULETI: "Kobuleti",
-  CHAKVI: "Chakvi",
-  MAKHINJAURI: "Makhinjauri",
-  GONIO: "Gonio",
-  UREKI: "Ureki",
-};
+/** Languages the API stores translations in (site UI only offers ka/en). */
+export const PROPERTY_LANGUAGES = ["ka", "en", "ru"] as const;
+export type PropertyLanguage = (typeof PROPERTY_LANGUAGES)[number];
 
 export interface PropertyTranslation {
   id: number;
@@ -93,11 +88,43 @@ export interface PropertyUser {
   id: string;
   firstname: string;
   lastname: string;
-  email: string;
   phone: string | null;
+  /** Only present in owner/admin responses */
+  email?: string;
 }
 
-export interface Property {
+/** Boolean feature flags of a property (amenities / utilities). */
+export const AMENITY_KEYS = [
+  "hasConditioner",
+  "hasFurniture",
+  "hasBed",
+  "hasSofa",
+  "hasTable",
+  "hasChairs",
+  "hasStove",
+  "hasRefrigerator",
+  "hasOven",
+  "hasWashingMachine",
+  "hasKitchenAppliances",
+  "hasBalcony",
+  "hasNaturalGas",
+  "hasInternet",
+  "hasTV",
+  "hasSewerage",
+  "isFenced",
+  "hasYardLighting",
+  "hasGrill",
+  "hasAlarm",
+  "hasVentilation",
+  "hasWater",
+  "hasElectricity",
+  "hasGate",
+] as const;
+export type AmenityKey = (typeof AMENITY_KEYS)[number];
+
+export type PropertyAmenities = Record<AmenityKey, boolean>;
+
+export interface Property extends PropertyAmenities {
   id: string;
   externalId: string;
   propertyType: PropertyType;
@@ -113,7 +140,8 @@ export interface Property {
   contactPhone: string | null;
   userId: string | null;
   user: PropertyUser | null;
-  rejectionReason: string | null;
+  /** Only present in owner/admin responses */
+  rejectionReason?: string | null;
   totalArea: number | null;
   rooms: number | null;
   bedrooms: number | null;
@@ -127,85 +155,48 @@ export interface Property {
   hotWater: HotWaterType | null;
   parking: ParkingType | null;
   balconyArea: number | null;
-  hasConditioner: boolean;
-  hasFurniture: boolean;
-  hasBed: boolean;
-  hasSofa: boolean;
-  hasTable: boolean;
-  hasChairs: boolean;
-  hasStove: boolean;
-  hasRefrigerator: boolean;
-  hasOven: boolean;
-  hasWashingMachine: boolean;
-  hasKitchenAppliances: boolean;
-  hasBalcony: boolean;
-  hasNaturalGas: boolean;
-  hasInternet: boolean;
-  hasTV: boolean;
-  hasSewerage: boolean;
-  isFenced: boolean;
-  hasYardLighting: boolean;
-  hasGrill: boolean;
-  hasAlarm: boolean;
-  hasVentilation: boolean;
-  hasWater: boolean;
-  hasElectricity: boolean;
-  hasGate: boolean;
+  /** Best translation for the requested language */
   translation: PropertyTranslation | null;
+  /** Every language – only present in owner/admin responses */
+  translations?: PropertyTranslation[];
   galleryImages: PropertyGalleryImage[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreatePropertyDto {
+/**
+ * Multipart payload for POST /properties and PATCH /properties/:id.
+ * On update an empty string clears a nullable field; `undefined` leaves it.
+ */
+export interface CreatePropertyDto extends Partial<PropertyAmenities> {
   propertyType: PropertyType;
   dealType: DealType;
-  title: string;
-  description?: string;
+  titleKa?: string;
+  titleEn?: string;
+  titleRu?: string;
+  descriptionKa?: string;
+  descriptionEn?: string;
+  descriptionRu?: string;
   location?: string;
-  region?: Region;
+  region?: Region | "";
   address?: string;
   contactPhone?: string;
   hotSale?: boolean;
   public?: boolean;
-  price?: number;
-  totalArea?: number;
-  rooms?: number;
-  bedrooms?: number;
-  bathrooms?: number;
-  floors?: number;
-  floorsTotal?: number;
-  ceilingHeight?: number;
+  price?: number | "";
+  totalArea?: number | "";
+  rooms?: number | "";
+  bedrooms?: number | "";
+  bathrooms?: number | "";
+  floors?: number | "";
+  floorsTotal?: number | "";
+  ceilingHeight?: number | "";
+  balconyArea?: number | "";
   isNonStandard?: boolean;
-  occupancy?: Occupancy;
-  heating?: HeatingType;
-  hotWater?: HotWaterType;
-  parking?: ParkingType;
-  balconyArea?: number;
-  hasConditioner?: boolean;
-  hasFurniture?: boolean;
-  hasBed?: boolean;
-  hasSofa?: boolean;
-  hasTable?: boolean;
-  hasChairs?: boolean;
-  hasStove?: boolean;
-  hasRefrigerator?: boolean;
-  hasOven?: boolean;
-  hasWashingMachine?: boolean;
-  hasKitchenAppliances?: boolean;
-  hasBalcony?: boolean;
-  hasNaturalGas?: boolean;
-  hasInternet?: boolean;
-  hasTV?: boolean;
-  hasSewerage?: boolean;
-  isFenced?: boolean;
-  hasYardLighting?: boolean;
-  hasGrill?: boolean;
-  hasAlarm?: boolean;
-  hasVentilation?: boolean;
-  hasWater?: boolean;
-  hasElectricity?: boolean;
-  hasGate?: boolean;
+  occupancy?: Occupancy | "";
+  heating?: HeatingType | "";
+  hotWater?: HotWaterType | "";
+  parking?: ParkingType | "";
 }
 
 export type UpdatePropertyDto = Partial<CreatePropertyDto>;
@@ -222,7 +213,7 @@ export interface PropertyFilters {
   page?: number;
   limit?: number;
   externalId?: string;
-  region?: Region;
+  region?: Region | string;
   propertyType?: PropertyType | string;
   dealType?: DealType | string;
   priceFrom?: number;
@@ -231,6 +222,7 @@ export interface PropertyFilters {
   areaTo?: number;
   rooms?: number;
   bedrooms?: number;
+  hotSale?: boolean;
 }
 
 export interface PropertiesResponse {
@@ -243,4 +235,12 @@ export interface PropertiesResponse {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
   };
+}
+
+export interface PropertyStats {
+  total: number;
+  approved: number;
+  pending: number;
+  rejected: number;
+  draft: number;
 }

@@ -15,3 +15,6 @@ uploads/
 !.env.example
 # Local Netlify folder
 .netlify
+
+# Claude Code per-machine permissions
+.claude/settings.local.json

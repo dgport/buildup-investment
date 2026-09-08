@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { ROUTES } from "@/lib/constants/routes";
 import { useEffect, useRef, useState } from "react";
 
 export default function CoverSection() {
@@ -82,8 +84,11 @@ export default function CoverSection() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mt-5 sm:mt-12 w-full sm:w-auto px-4 sm:px-0">
-          <Button className="px-8 sm:px-12 py-4 sm:py-6 bg-amber-400 hover:bg-amber-300 text-teal-950 font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-amber-400/20 text-sm sm:text-lg">
-            {t("cta")}
+          <Button
+            asChild
+            className="px-8 sm:px-12 py-4 sm:py-6 bg-amber-400 hover:bg-amber-300 text-teal-950 font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg shadow-amber-400/20 text-sm sm:text-lg"
+          >
+            <Link href={ROUTES.PROPERTIES}>{t("cta")}</Link>
           </Button>
         </div>
       </div>

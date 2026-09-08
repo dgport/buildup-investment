@@ -1,42 +1,46 @@
+export type UserRole = "REGULAR" | "ADMIN";
+
 export interface User {
-  id: number
-  email: string
-  firstname: string
-  lastname: string
-  phone?: string
-  role?: string
-  avatar?: string
-  createdAt?: string
-  updatedAt?: string
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  phone?: string | null;
+  role?: UserRole;
+  avatar?: string | null;
+  isVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SignInDto {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 export interface SignUpDto {
-  firstname: string
-  lastname: string
-  email: string
-  password: string
-  phone?: string
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  phone?: string;
 }
 
 export interface AuthResponse {
-  accessToken: string
-  user: User
+  accessToken: string;
+  user: User;
 }
 
 export interface RefreshTokenResponse {
-  accessToken: string
+  accessToken: string;
+  user?: User;
 }
 
 export interface ForgotPasswordDto {
-  email: string
+  email: string;
 }
 
 export interface ResetPasswordDto {
-  token: string
-  password: string
+  token: string;
+  password: string;
 }

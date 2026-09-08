@@ -19,6 +19,8 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useSignUp } from "@/lib/hooks/useAuth";
 import { authService } from "@/lib/services/auth.service";
+import { getErrorMessage } from "@/lib/api/api";
+import { ROUTES } from "@/lib/constants/routes";
 
 interface FormData {
   firstname: string;
@@ -97,8 +99,9 @@ export default function SignupPage() {
 
   const handleSubmit = () => {
     if (!validate()) return;
-    signUpMutation.mutate(formData, {
-      onSuccess: () => setTimeout(() => router.push("/signin"), 3000),
+    const payload = { ...formData, phone: formData.phone.trim() || undefined };
+    signUpMutation.mutate(payload, {
+      onSuccess: () => setTimeout(() => router.push(ROUTES.SIGNIN), 6000),
     });
   };
 
@@ -127,8 +130,7 @@ export default function SignupPage() {
             <Alert className="bg-red-500/20 border-red-500/30">
               <AlertCircle className="h-4 w-4 text-red-400" />
               <AlertDescription className="text-red-300">
-                {(signUpMutation.error as any)?.response?.data?.message ??
-                  t("genericError")}
+                {getErrorMessage(signUpMutation.error, t("genericError"))}
               </AlertDescription>
             </Alert>
           )}
@@ -137,7 +139,8 @@ export default function SignupPage() {
             <Alert className="bg-green-500/20 border-green-500/30">
               <CheckCircle2 className="h-4 w-4 text-green-400" />
               <AlertDescription className="text-green-300">
-                {t("accountCreated")}
+                <p className="font-semibold">{t("signupSuccessTitle")}</p>
+                <p>{t("signupSuccessHint", { email: formData.email })}</p>
               </AlertDescription>
             </Alert>
           )}
@@ -241,12 +244,13 @@ export default function SignupPage() {
                 id="phone"
                 name="phone"
                 type="tel"
-                placeholder="+1 (555) 000-0000"
+                placeholder={t("phonePlaceholder")}
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={isPending}
                 className="bg-teal-900/50 border-amber-400/20 text-white placeholder:text-amber-100/30 focus:border-amber-400 focus:ring-amber-400/20"
               />
+              <p className="text-xs text-amber-100/40">{t("phoneHint")}</p>
             </div>
 
             <Button
@@ -292,7 +296,7 @@ export default function SignupPage() {
           <p className="text-sm text-amber-100/60">
             {t("haveAccount")}{" "}
             <Link
-              href="/signin"
+              href={ROUTES.SIGNIN}
               className="text-amber-400 hover:text-amber-300 hover:underline font-medium transition-colors"
             >
               {t("signin")}

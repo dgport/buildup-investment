@@ -3,16 +3,24 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { TranslationSyncUtil } from '@/common/utils/translation-sync.util';
-import { LANGUAGES } from '@/common/constants/language';
-import { Region, UserRole, PropertyStatus } from '@prisma/client';
+import { LANGUAGES, Language } from '@/common/constants/language';
+import {
+  Region,
+  UserRole,
+  PropertyStatus,
+  PropertyType,
+  DealType,
+  Prisma,
+} from '@prisma/client';
 
-interface FindAllParams {
+export interface FindAllParams {
   lang?: string;
   page?: number;
   limit?: number;
@@ -27,10 +35,80 @@ interface FindAllParams {
   areaTo?: number;
   rooms?: number;
   bedrooms?: number;
+  hotSale?: boolean;
   includePrivate?: boolean;
   onlyApproved?: boolean;
   userId?: string;
 }
+
+const MAX_PAGE_SIZE = 100;
+
+/** Fields that can be cleared with an empty value (nullable in the schema). */
+const NULLABLE_TEXT_FIELDS = ['location', 'address', 'contactPhone'] as const;
+const NULLABLE_ENUM_FIELDS = [
+  'region',
+  'occupancy',
+  'heating',
+  'hotWater',
+  'parking',
+] as const;
+const INT_FIELDS = [
+  'price',
+  'totalArea',
+  'rooms',
+  'bedrooms',
+  'bathrooms',
+  'floors',
+  'floorsTotal',
+] as const;
+const FLOAT_FIELDS = ['ceilingHeight', 'balconyArea'] as const;
+const BOOLEAN_FIELDS = [
+  'hotSale',
+  'public',
+  'isNonStandard',
+  'hasConditioner',
+  'hasFurniture',
+  'hasBed',
+  'hasSofa',
+  'hasTable',
+  'hasChairs',
+  'hasStove',
+  'hasRefrigerator',
+  'hasOven',
+  'hasWashingMachine',
+  'hasKitchenAppliances',
+  'hasBalcony',
+  'hasNaturalGas',
+  'hasInternet',
+  'hasTV',
+  'hasSewerage',
+  'isFenced',
+  'hasYardLighting',
+  'hasGrill',
+  'hasAlarm',
+  'hasVentilation',
+  'hasWater',
+  'hasElectricity',
+  'hasGate',
+] as const;
+
+const PROPERTY_INCLUDE = {
+  translations: true,
+  galleryImages: { orderBy: { order: 'asc' as const } },
+  user: {
+    select: {
+      id: true,
+      firstname: true,
+      lastname: true,
+      phone: true,
+      email: true,
+    },
+  },
+} satisfies Prisma.PropertyInclude;
+
+type PropertyWithRelations = Prisma.PropertyGetPayload<{
+  include: typeof PROPERTY_INCLUDE;
+}>;
 
 @Injectable()
 export class PropertiesService {
@@ -46,6 +124,13 @@ export class PropertiesService {
       });
       if (!existing) return externalId;
     }
+  }
+
+  private normalizeLang(lang?: string): Language {
+    const value = (lang ?? 'en').toLowerCase().slice(0, 2);
+    return (LANGUAGES as readonly string[]).includes(value)
+      ? (value as Language)
+      : 'en';
   }
 
   private async getRegionTranslation(region: Region | null, lang: string) {
@@ -65,11 +150,11 @@ export class PropertiesService {
     return translation;
   }
 
-  private async getDefaultContactPhone(): Promise<string> {
+  private async getDefaultContactPhone(): Promise<string | null> {
     const setting = await this.prismaService.siteSettings.findUnique({
       where: { key: 'default_contact_phone' },
     });
-    return setting?.value ?? '+995 XXX XXX XXX';
+    return setting?.value ?? process.env.DEFAULT_CONTACT_PHONE ?? null;
   }
 
   private async checkPropertyOwnership(
@@ -97,15 +182,26 @@ export class PropertiesService {
 
   /**
    * Map a raw Prisma property record to the standard API response shape.
-   * Extracted to avoid duplicating ~50 field assignments in findAll and findOne.
+   * `includePrivateDetails` adds owner-only data (rejection reason, owner
+   * e-mail). Public responses never expose the owner's e-mail address.
    */
   private mapProperty(
-    property: any,
-    translation: any,
+    property: PropertyWithRelations,
+    translation: PropertyWithRelations['translations'][number] | undefined,
     regionName: string | null,
-    defaultPhone: string,
-    includeRejectionReason = false,
+    defaultPhone: string | null,
+    includePrivateDetails = false,
   ) {
+    const owner = property.user
+      ? {
+          id: property.user.id,
+          firstname: property.user.firstname,
+          lastname: property.user.lastname,
+          phone: property.user.phone,
+          ...(includePrivateDetails && { email: property.user.email }),
+        }
+      : null;
+
     return {
       id: property.id,
       externalId: property.externalId,
@@ -119,10 +215,12 @@ export class PropertiesService {
       hotSale: property.hotSale,
       public: property.public,
       status: property.status,
-      contactPhone: property.contactPhone ?? defaultPhone,
+      // Listing phone → owner's profile phone → site-wide default
+      contactPhone:
+        property.contactPhone ?? property.user?.phone ?? defaultPhone,
       userId: property.userId,
-      user: property.user,
-      ...(includeRejectionReason && {
+      user: owner,
+      ...(includePrivateDetails && {
         rejectionReason: property.rejectionReason,
       }),
       createdAt: property.createdAt,
@@ -165,25 +263,82 @@ export class PropertiesService {
       hasElectricity: property.hasElectricity,
       hasGate: property.hasGate,
       translation: translation ?? null,
+      // All languages, so owners can see what is still missing
+      ...(includePrivateDetails && { translations: property.translations }),
       galleryImages: property.galleryImages,
     };
   }
 
-  /** Pick the best available translation for a given language. */
-  private selectTranslation(translations: any[], lang: string) {
+  /**
+   * Pick the best available translation: requested language → English →
+   * any language that has a title. A translation row with an empty title is
+   * treated as missing.
+   */
+  private selectTranslation(
+    translations: PropertyWithRelations['translations'],
+    lang: string,
+  ) {
+    const hasTitle = (t: { title: string }) => t.title?.trim().length > 0;
     return (
-      translations.find((t) => t.language === lang && t.title?.trim()) ??
-      translations.find((t) => t.language === 'en' && t.title)
+      translations.find((t) => t.language === lang && hasTitle(t)) ??
+      translations.find((t) => t.language === 'en' && hasTitle(t)) ??
+      translations.find(hasTitle)
     );
+  }
+
+  private buildTranslationRows(
+    propertyId: string,
+    dto: CreatePropertyDto,
+  ): {
+    propertyId: string;
+    language: Language;
+    title: string;
+    description: string | null;
+  }[] {
+    const titles: Record<Language, string | null | undefined> = {
+      en: dto.titleEn ?? dto.title,
+      ka: dto.titleKa,
+      ru: dto.titleRu,
+    };
+    const descriptions: Record<Language, string | null | undefined> = {
+      en: dto.descriptionEn ?? dto.description,
+      ka: dto.descriptionKa,
+      ru: dto.descriptionRu,
+    };
+
+    return LANGUAGES.map((language) => ({
+      propertyId,
+      language,
+      title: titles[language]?.trim() ?? '',
+      description: descriptions[language]?.trim() || null,
+    }));
+  }
+
+  private hasAnyTitle(dto: CreatePropertyDto | UpdatePropertyDto): boolean {
+    return [dto.title, dto.titleEn, dto.titleKa, dto.titleRu].some(
+      (t) => typeof t === 'string' && t.trim().length > 0,
+    );
+  }
+
+  private hasTranslationInput(dto: UpdatePropertyDto): boolean {
+    return [
+      dto.title,
+      dto.titleEn,
+      dto.titleKa,
+      dto.titleRu,
+      dto.description,
+      dto.descriptionEn,
+      dto.descriptionKa,
+      dto.descriptionRu,
+    ].some((v) => v !== undefined);
   }
 
   // ─── Public API ───────────────────────────────────────────────────────────
 
   async findAll(params: FindAllParams = {}) {
     const {
-      lang = 'en',
-      page = 1,
-      limit = 10,
+      page: rawPage = 1,
+      limit: rawLimit = 10,
       externalId,
       location,
       region,
@@ -195,13 +350,20 @@ export class PropertiesService {
       areaTo,
       rooms,
       bedrooms,
+      hotSale,
       includePrivate = false,
       onlyApproved = true,
       userId,
     } = params;
 
+    const lang = this.normalizeLang(params.lang);
+    const page = Math.max(1, Number.isFinite(rawPage) ? rawPage : 1);
+    const limit = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(1, Number.isFinite(rawLimit) ? rawLimit : 10),
+    );
     const skip = (page - 1) * limit;
-    const where: any = {};
+    const where: Prisma.PropertyWhereInput = {};
 
     if (!includePrivate) where.public = true;
     if (onlyApproved) where.status = PropertyStatus.APPROVED;
@@ -209,9 +371,17 @@ export class PropertiesService {
     if (externalId)
       where.externalId = { contains: externalId, mode: 'insensitive' };
     if (location) where.location = location;
-    if (region) where.region = region;
-    if (propertyType) where.propertyType = propertyType;
-    if (dealType) where.dealType = dealType;
+    if (region && Object.values(Region).includes(region)) where.region = region;
+    if (
+      propertyType &&
+      Object.values(PropertyType).includes(propertyType as PropertyType)
+    ) {
+      where.propertyType = propertyType as PropertyType;
+    }
+    if (dealType && Object.values(DealType).includes(dealType as DealType)) {
+      where.dealType = dealType as DealType;
+    }
+    if (hotSale !== undefined) where.hotSale = hotSale;
 
     if (priceFrom !== undefined || priceTo !== undefined) {
       where.price = {};
@@ -225,8 +395,10 @@ export class PropertiesService {
       if (areaTo !== undefined) where.totalArea.lte = areaTo;
     }
 
-    if (rooms !== undefined) where.rooms = rooms;
-    if (bedrooms !== undefined) where.bedrooms = bedrooms;
+    // "5" in the filter UI means "5 or more"
+    if (rooms !== undefined) where.rooms = rooms >= 5 ? { gte: 5 } : rooms;
+    if (bedrooms !== undefined)
+      where.bedrooms = bedrooms >= 4 ? { gte: 4 } : bedrooms;
 
     const [total, properties] = await Promise.all([
       this.prismaService.property.count({ where }),
@@ -235,19 +407,7 @@ export class PropertiesService {
         take: limit,
         where,
         orderBy: [{ hotSale: 'desc' }, { createdAt: 'desc' }],
-        include: {
-          translations: true,
-          galleryImages: { orderBy: { order: 'asc' } },
-          user: {
-            select: {
-              id: true,
-              firstname: true,
-              lastname: true,
-              email: true,
-              phone: true,
-            },
-          },
-        },
+        include: PROPERTY_INCLUDE,
       }),
     ]);
 
@@ -267,7 +427,10 @@ export class PropertiesService {
         : [];
 
     // Build a map: region → best translation (prefer requested lang, fall back to 'en')
-    const regionTranslationMap = new Map<Region, any>();
+    const regionTranslationMap = new Map<
+      Region,
+      (typeof regionTranslations)[number]
+    >();
     for (const rt of regionTranslations) {
       const existing = regionTranslationMap.get(rt.region);
       if (!existing || (existing.language !== lang && rt.language === lang)) {
@@ -276,6 +439,7 @@ export class PropertiesService {
     }
 
     const defaultPhone = await this.getDefaultContactPhone();
+    const includePrivateDetails = Boolean(userId) || includePrivate;
 
     const data = properties.map((property) => {
       const regionTranslation = property.region
@@ -287,8 +451,11 @@ export class PropertiesService {
         this.selectTranslation(property.translations, lang),
         regionTranslation?.name ?? null,
         defaultPhone,
+        includePrivateDetails,
       );
     });
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
 
     return {
       data,
@@ -296,8 +463,8 @@ export class PropertiesService {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
-        hasNextPage: page < Math.ceil(total / limit),
+        totalPages,
+        hasNextPage: page < totalPages,
         hasPreviousPage: page > 1,
       },
     };
@@ -316,31 +483,43 @@ export class PropertiesService {
     });
   }
 
+  /** Per-status counts for the dashboard header. */
+  async getUserStats(userId: string) {
+    const grouped = await this.prismaService.property.groupBy({
+      by: ['status'],
+      where: { userId },
+      _count: { _all: true },
+    });
+
+    const byStatus = Object.fromEntries(
+      grouped.map((g) => [g.status, g._count._all]),
+    ) as Partial<Record<PropertyStatus, number>>;
+
+    const total = grouped.reduce((sum, g) => sum + g._count._all, 0);
+
+    return {
+      total,
+      approved: byStatus.APPROVED ?? 0,
+      pending: byStatus.PENDING ?? 0,
+      rejected: byStatus.REJECTED ?? 0,
+      draft: byStatus.DRAFT ?? 0,
+    };
+  }
+
   async findOne(
     id: string,
     lang = 'en',
     includePrivate = false,
     onlyApproved = true,
   ) {
-    const where: any = { id };
+    const normalizedLang = this.normalizeLang(lang);
+    const where: Prisma.PropertyWhereInput = { id };
     if (!includePrivate) where.public = true;
     if (onlyApproved) where.status = PropertyStatus.APPROVED;
 
     const property = await this.prismaService.property.findFirst({
       where,
-      include: {
-        translations: true,
-        galleryImages: { orderBy: { order: 'asc' } },
-        user: {
-          select: {
-            id: true,
-            firstname: true,
-            lastname: true,
-            email: true,
-            phone: true,
-          },
-        },
-      },
+      include: PROPERTY_INCLUDE,
     });
 
     if (!property) {
@@ -348,25 +527,42 @@ export class PropertiesService {
     }
 
     const [regionTranslation, defaultPhone] = await Promise.all([
-      this.getRegionTranslation(property.region, lang),
+      this.getRegionTranslation(property.region, normalizedLang),
       this.getDefaultContactPhone(),
     ]);
 
     return this.mapProperty(
       property,
-      this.selectTranslation(property.translations, lang),
+      this.selectTranslation(property.translations, normalizedLang),
       regionTranslation?.name ?? null,
       defaultPhone,
-      true, // include rejectionReason on single-property view
+      includePrivate,
     );
+  }
+
+  /** Owner (or admin) view of a property regardless of visibility/status. */
+  async findOneForOwner(
+    id: string,
+    userId: string,
+    userRole: UserRole,
+    lang = 'en',
+  ) {
+    await this.checkPropertyOwnership(id, userId, userRole);
+    return this.findOne(id, lang, true, false);
   }
 
   async createProperty(
     dto: CreatePropertyDto,
-    images?: Express.Multer.File[],
-    userId?: string,
-    userRole?: UserRole,
+    images: Express.Multer.File[] | undefined,
+    userId: string,
   ) {
+    if (!this.hasAnyTitle(dto)) {
+      await this.discardUploadedFiles(images);
+      throw new BadRequestException(
+        'A title is required in at least one language',
+      );
+    }
+
     const externalId = await this.generateUniqueExternalId();
 
     const property = await this.prismaService.property.create({
@@ -379,28 +575,23 @@ export class PropertiesService {
         address: dto.address ?? null,
         hotSale: dto.hotSale ?? false,
         public: dto.public ?? true,
-        userId: userId ?? null,
+        userId,
         status: PropertyStatus.APPROVED,
         contactPhone: dto.contactPhone ?? null,
-        price: dto.price != null ? parseInt(dto.price as any) : null,
-        totalArea:
-          dto.totalArea != null ? parseInt(dto.totalArea as any) : null,
-        rooms: dto.rooms != null ? parseInt(dto.rooms as any) : null,
-        bedrooms: dto.bedrooms != null ? parseInt(dto.bedrooms as any) : null,
-        bathrooms:
-          dto.bathrooms != null ? parseInt(dto.bathrooms as any) : null,
-        floors: dto.floors != null ? parseInt(dto.floors as any) : null,
-        floorsTotal:
-          dto.floorsTotal != null ? parseInt(dto.floorsTotal as any) : null,
-        ceilingHeight:
-          dto.ceilingHeight != null
-            ? parseFloat(dto.ceilingHeight as any)
-            : null,
+        price: dto.price ?? null,
+        totalArea: dto.totalArea ?? null,
+        rooms: dto.rooms ?? null,
+        bedrooms: dto.bedrooms ?? null,
+        bathrooms: dto.bathrooms ?? null,
+        floors: dto.floors ?? null,
+        floorsTotal: dto.floorsTotal ?? null,
+        ceilingHeight: dto.ceilingHeight ?? null,
+        balconyArea: dto.balconyArea ?? null,
         isNonStandard: dto.isNonStandard ?? false,
-        occupancy: dto.occupancy,
-        heating: dto.heating,
-        hotWater: dto.hotWater,
-        parking: dto.parking,
+        occupancy: dto.occupancy ?? null,
+        heating: dto.heating ?? null,
+        hotWater: dto.hotWater ?? null,
+        parking: dto.parking ?? null,
         hasConditioner: dto.hasConditioner ?? false,
         hasFurniture: dto.hasFurniture ?? false,
         hasBed: dto.hasBed ?? false,
@@ -413,8 +604,6 @@ export class PropertiesService {
         hasWashingMachine: dto.hasWashingMachine ?? false,
         hasKitchenAppliances: dto.hasKitchenAppliances ?? false,
         hasBalcony: dto.hasBalcony ?? false,
-        balconyArea:
-          dto.balconyArea != null ? parseFloat(dto.balconyArea as any) : null,
         hasNaturalGas: dto.hasNaturalGas ?? false,
         hasInternet: dto.hasInternet ?? false,
         hasTV: dto.hasTV ?? false,
@@ -431,12 +620,9 @@ export class PropertiesService {
     });
 
     await this.prismaService.propertyTranslations.createMany({
-      data: LANGUAGES.map((lang) => ({
-        propertyId: property.id,
-        language: lang,
-        title: lang === 'en' && dto.title ? dto.title : '',
-        address: lang === 'en' && dto.address ? dto.address : null,
-        description: lang === 'en' && dto.description ? dto.description : null,
+      data: this.buildTranslationRows(property.id, dto).map((row) => ({
+        ...row,
+        address: dto.address ?? null,
       })),
       skipDuplicates: true,
     });
@@ -451,113 +637,125 @@ export class PropertiesService {
   async updateProperty(
     id: string,
     dto: UpdatePropertyDto,
-    images?: Express.Multer.File[],
-    userId?: string,
-    userRole?: UserRole,
+    images: Express.Multer.File[] | undefined,
+    userId: string,
+    userRole: UserRole,
   ) {
-    if (userId && userRole) {
+    try {
       await this.checkPropertyOwnership(id, userId, userRole);
+    } catch (error) {
+      await this.discardUploadedFiles(images);
+      throw error;
     }
 
     const property = await this.prismaService.property.findUnique({
       where: { id },
     });
     if (!property) {
+      await this.discardUploadedFiles(images);
       throw new NotFoundException(`Property with ID "${id}" not found`);
     }
 
-    // Build update payload from only the fields that were actually provided
-    const updateData: any = {};
+    // Build the update payload from only the fields that were actually sent.
+    // The DTO transforms turn "" into `null`, which clears a nullable field;
+    // `undefined` means "leave untouched".
+    const updateData: Record<string, unknown> = {};
+    const raw = dto as Record<string, unknown>;
 
-    const numberFields = [
-      'price',
-      'totalArea',
-      'rooms',
-      'bedrooms',
-      'bathrooms',
-      'floors',
-      'floorsTotal',
-    ] as const;
-    const floatFields = ['ceilingHeight', 'balconyArea'] as const;
-    const directFields = [
-      'propertyType',
-      'dealType',
-      'location',
-      'region',
-      'address',
-      'hotSale',
-      'public',
-      'contactPhone',
-      'isNonStandard',
-      'occupancy',
-      'heating',
-      'hotWater',
-      'parking',
-      'hasConditioner',
-      'hasFurniture',
-      'hasBed',
-      'hasSofa',
-      'hasTable',
-      'hasChairs',
-      'hasStove',
-      'hasRefrigerator',
-      'hasOven',
-      'hasWashingMachine',
-      'hasKitchenAppliances',
-      'hasBalcony',
-      'hasNaturalGas',
-      'hasInternet',
-      'hasTV',
-      'hasSewerage',
-      'isFenced',
-      'hasYardLighting',
-      'hasGrill',
-      'hasAlarm',
-      'hasVentilation',
-      'hasWater',
-      'hasElectricity',
-      'hasGate',
-    ] as const;
+    if (dto.propertyType !== undefined)
+      updateData.propertyType = dto.propertyType;
+    if (dto.dealType !== undefined) updateData.dealType = dto.dealType;
 
-    for (const field of directFields) {
-      if (dto[field] !== undefined) {
-        updateData[field] = (dto[field] as any) || null;
-      }
+    for (const field of [
+      ...NULLABLE_TEXT_FIELDS,
+      ...NULLABLE_ENUM_FIELDS,
+      ...INT_FIELDS,
+      ...FLOAT_FIELDS,
+    ]) {
+      if (raw[field] !== undefined) updateData[field] = raw[field];
     }
-    for (const field of numberFields) {
-      if (dto[field] !== undefined) {
-        updateData[field] =
-          dto[field] != null ? parseInt(dto[field] as any) : null;
-      }
-    }
-    for (const field of floatFields) {
-      if (dto[field] !== undefined) {
-        updateData[field] =
-          dto[field] != null ? parseFloat(dto[field] as any) : null;
-      }
+    for (const field of BOOLEAN_FIELDS) {
+      if (typeof raw[field] === 'boolean') updateData[field] = raw[field];
     }
 
-    const updatedProperty = await this.prismaService.property.update({
+    await this.prismaService.property.update({
       where: { id },
-      data: updateData,
+      data: updateData as Prisma.PropertyUncheckedUpdateInput,
     });
 
-    if (images?.length) {
-      const existingCount = await this.prismaService.propertyGalleryImage.count(
-        {
-          where: { propertyId: id },
-        },
-      );
-      await this.saveGalleryImages(id, images, existingCount);
+    // Optional inline translation update (title*/description* fields)
+    if (this.hasTranslationInput(dto)) {
+      await this.applyTranslationFields(id, dto);
     }
 
-    return this.findOne(updatedProperty.id, 'en', true, false);
+    if (images?.length) {
+      const last = await this.prismaService.propertyGalleryImage.findFirst({
+        where: { propertyId: id },
+        orderBy: { order: 'desc' },
+        select: { order: true },
+      });
+      await this.saveGalleryImages(id, images, (last?.order ?? -1) + 1);
+    }
+
+    return this.findOne(id, 'en', true, false);
   }
 
-  async deleteProperty(id: string, userId?: string, userRole?: UserRole) {
-    if (userId && userRole) {
-      await this.checkPropertyOwnership(id, userId, userRole);
+  /**
+   * Inline titleXx / descriptionXx fields on update. `undefined` = untouched,
+   * `null` (sent as "") = cleared.
+   */
+  private async applyTranslationFields(
+    propertyId: string,
+    dto: UpdatePropertyDto,
+  ) {
+    const pick = <T>(specific: T | undefined, alias: T | undefined) =>
+      specific !== undefined ? specific : alias;
+
+    const titles: Record<Language, string | null | undefined> = {
+      en: pick(dto.titleEn, dto.title),
+      ka: dto.titleKa,
+      ru: dto.titleRu,
+    };
+    const descriptions: Record<Language, string | null | undefined> = {
+      en: pick(dto.descriptionEn, dto.description),
+      ka: dto.descriptionKa,
+      ru: dto.descriptionRu,
+    };
+
+    for (const lang of LANGUAGES) {
+      const title = titles[lang];
+      const description = descriptions[lang];
+      if (title === undefined && description === undefined) continue;
+
+      await this.prismaService.propertyTranslations.upsert({
+        where: { propertyId_language: { propertyId, language: lang } },
+        create: {
+          propertyId,
+          language: lang,
+          title: title ?? '',
+          description: description ?? null,
+        },
+        update: {
+          ...(title !== undefined && { title: title ?? '' }),
+          ...(description !== undefined && { description }),
+        },
+      });
     }
+
+    // Never leave a property without any title
+    const remaining = await this.prismaService.propertyTranslations.findMany({
+      where: { propertyId },
+      select: { title: true },
+    });
+    if (!remaining.some((t) => t.title.trim().length > 0)) {
+      throw new BadRequestException(
+        'A title is required in at least one language',
+      );
+    }
+  }
+
+  async deleteProperty(id: string, userId: string, userRole: UserRole) {
+    await this.checkPropertyOwnership(id, userId, userRole);
 
     const property = await this.prismaService.property.findUnique({
       where: { id },
@@ -568,25 +766,23 @@ export class PropertiesService {
       throw new NotFoundException(`Property with ID "${id}" not found`);
     }
 
+    await this.prismaService.property.delete({ where: { id } });
+
     await Promise.all(
       property.galleryImages.map((image) =>
         FileUtils.deleteFile(image.imageUrl),
       ),
     );
 
-    await this.prismaService.property.delete({ where: { id } });
-
     return { message: 'Property deleted successfully' };
   }
 
   async getTranslations(
     propertyId: string,
-    userId?: string,
-    userRole?: UserRole,
+    userId: string,
+    userRole: UserRole,
   ) {
-    if (userId && userRole) {
-      await this.checkPropertyOwnership(propertyId, userId, userRole);
-    }
+    await this.checkPropertyOwnership(propertyId, userId, userRole);
 
     const property = await this.prismaService.property.findUnique({
       where: { id: propertyId },
@@ -598,33 +794,35 @@ export class PropertiesService {
     }
 
     await TranslationSyncUtil.syncMissingTranslations(this.prismaService, {
-      entityId: propertyId as any,
+      entityId: propertyId,
       entityIdField: 'propertyId',
       translationModel: this.prismaService.propertyTranslations,
       existingTranslations: property.translations,
       defaultFields: { title: '', address: null, description: null },
     });
 
-    const updated = await this.prismaService.property.findUnique({
-      where: { id: propertyId },
-      include: { translations: { orderBy: { language: 'asc' } } },
+    const updated = await this.prismaService.propertyTranslations.findMany({
+      where: { propertyId },
     });
 
-    return updated!.translations;
+    // Stable, meaningful order: ka, en, ru
+    const order = new Map(LANGUAGES.map((l, i) => [l, i]));
+    return updated.sort(
+      (a, b) => (order.get(a.language as Language) ?? 99) -
+        (order.get(b.language as Language) ?? 99),
+    );
   }
 
   async upsertTranslation(
     propertyId: string,
     language: string,
     title: string,
-    address?: string,
-    description?: string,
-    userId?: string,
-    userRole?: UserRole,
+    address: string | undefined,
+    description: string | undefined,
+    userId: string,
+    userRole: UserRole,
   ) {
-    if (userId && userRole) {
-      await this.checkPropertyOwnership(propertyId, userId, userRole);
-    }
+    await this.checkPropertyOwnership(propertyId, userId, userRole);
 
     const property = await this.prismaService.property.findUnique({
       where: { id: propertyId },
@@ -636,14 +834,14 @@ export class PropertiesService {
     return this.prismaService.propertyTranslations.upsert({
       where: { propertyId_language: { propertyId, language } },
       update: {
-        title,
+        title: title.trim(),
         address: address ?? null,
         description: description ?? null,
       },
       create: {
         propertyId,
         language,
-        title,
+        title: title.trim(),
         address: address ?? null,
         description: description ?? null,
       },
@@ -653,16 +851,10 @@ export class PropertiesService {
   async deleteTranslation(
     propertyId: string,
     language: string,
-    userId?: string,
-    userRole?: UserRole,
+    userId: string,
+    userRole: UserRole,
   ) {
-    if (language === 'en') {
-      throw new ConflictException('Cannot delete English translation');
-    }
-
-    if (userId && userRole) {
-      await this.checkPropertyOwnership(propertyId, userId, userRole);
-    }
+    await this.checkPropertyOwnership(propertyId, userId, userRole);
 
     const translation =
       await this.prismaService.propertyTranslations.findUnique({
@@ -675,22 +867,32 @@ export class PropertiesService {
       );
     }
 
-    await this.prismaService.propertyTranslations.delete({
+    const others = await this.prismaService.propertyTranslations.findMany({
+      where: { propertyId, language: { not: language } },
+      select: { title: true },
+    });
+    if (!others.some((t) => t.title.trim().length > 0)) {
+      throw new ConflictException(
+        'Cannot delete the only translation that has a title',
+      );
+    }
+
+    // Keep the row (every language always exists) but clear its content
+    await this.prismaService.propertyTranslations.update({
       where: { propertyId_language: { propertyId, language } },
+      data: { title: '', address: null, description: null },
     });
 
-    return { message: 'Translation deleted successfully' };
+    return { message: 'Translation cleared successfully' };
   }
 
   async deleteGalleryImage(
     propertyId: string,
     imageId: number,
-    userId?: string,
-    userRole?: UserRole,
+    userId: string,
+    userRole: UserRole,
   ) {
-    if (userId && userRole) {
-      await this.checkPropertyOwnership(propertyId, userId, userRole);
-    }
+    await this.checkPropertyOwnership(propertyId, userId, userRole);
 
     const image = await this.prismaService.propertyGalleryImage.findUnique({
       where: { id: imageId },
@@ -700,12 +902,56 @@ export class PropertiesService {
       throw new NotFoundException(`Image with ID "${imageId}" not found`);
     }
 
-    await FileUtils.deleteFile(image.imageUrl);
     await this.prismaService.propertyGalleryImage.delete({
       where: { id: imageId },
     });
+    await FileUtils.deleteFile(image.imageUrl);
+    await this.compactImageOrder(propertyId);
 
     return { message: 'Image deleted successfully' };
+  }
+
+  /** Re-order gallery images; the first ID becomes the cover photo. */
+  async reorderGalleryImages(
+    propertyId: string,
+    imageIds: number[],
+    userId: string,
+    userRole: UserRole,
+  ) {
+    await this.checkPropertyOwnership(propertyId, userId, userRole);
+
+    const existing = await this.prismaService.propertyGalleryImage.findMany({
+      where: { propertyId },
+      select: { id: true },
+    });
+    const existingIds = new Set(existing.map((i) => i.id));
+
+    const unknown = imageIds.filter((id) => !existingIds.has(id));
+    if (unknown.length) {
+      throw new BadRequestException(
+        `Images do not belong to this property: ${unknown.join(', ')}`,
+      );
+    }
+
+    // Images not mentioned keep their relative order after the listed ones
+    const rest = existing
+      .map((i) => i.id)
+      .filter((id) => !imageIds.includes(id));
+    const finalOrder = [...imageIds, ...rest];
+
+    await this.prismaService.$transaction(
+      finalOrder.map((id, order) =>
+        this.prismaService.propertyGalleryImage.update({
+          where: { id },
+          data: { order },
+        }),
+      ),
+    );
+
+    return this.prismaService.propertyGalleryImage.findMany({
+      where: { propertyId },
+      orderBy: { order: 'asc' },
+    });
   }
 
   async syncAllTranslations() {
@@ -743,5 +989,39 @@ export class PropertiesService {
         })),
       });
     }
+  }
+
+  /** Keep `order` contiguous (0..n-1) after deletions. */
+  private async compactImageOrder(propertyId: string): Promise<void> {
+    const images = await this.prismaService.propertyGalleryImage.findMany({
+      where: { propertyId },
+      orderBy: { order: 'asc' },
+      select: { id: true, order: true },
+    });
+
+    const updates = images
+      .map((img, index) => ({ id: img.id, order: index, current: img.order }))
+      .filter((img) => img.current !== img.order);
+
+    if (updates.length) {
+      await this.prismaService.$transaction(
+        updates.map((u) =>
+          this.prismaService.propertyGalleryImage.update({
+            where: { id: u.id },
+            data: { order: u.order },
+          }),
+        ),
+      );
+    }
+  }
+
+  /** Multer has already written the files; remove them when the request fails. */
+  private async discardUploadedFiles(images?: Express.Multer.File[]) {
+    if (!images?.length) return;
+    await Promise.all(
+      images.map((image) =>
+        FileUtils.deleteFile(FileUtils.generateImageUrl(image, 'properties') ?? ''),
+      ),
+    );
   }
 }

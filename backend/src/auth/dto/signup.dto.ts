@@ -15,7 +15,8 @@ export class SignupRequest {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => value?.trim())
-  @Matches(/^[a-zA-Z\s'-]+$/, {
+  // \p{L} = any letter in any alphabet (Georgian, Cyrillic, Latin, …)
+  @Matches(/^[\p{L}\s'-]+$/u, {
     message:
       'First name can only contain letters, spaces, hyphens, and apostrophes',
   })
@@ -26,7 +27,7 @@ export class SignupRequest {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => value?.trim())
-  @Matches(/^[a-zA-Z\s'-]+$/, {
+  @Matches(/^[\p{L}\s'-]+$/u, {
     message:
       'Last name can only contain letters, spaces, hyphens, and apostrophes',
   })
@@ -61,6 +62,10 @@ export class SignupRequest {
   avatar?: string;
 
   @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' && value.trim() === '' ? undefined : value?.trim(),
+  )
   @IsString()
+  @MaxLength(40)
   phone?: string;
 }

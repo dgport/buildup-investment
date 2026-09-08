@@ -1,64 +1,73 @@
-import { api } from '../api/api'
-import { API_ENDPOINTS } from '../constants/api'
- 
+import { api } from "../api/api";
+import { API_ENDPOINTS } from "../constants/api";
+
 import type {
   PropertiesResponse,
   Property,
   PropertyFilters,
+  PropertyGalleryImage,
+  PropertyStats,
   PropertyTranslation,
   UpsertPropertyTranslationDto,
   CreatePropertyDto,
-} from '../types/properties'
+  UpdatePropertyDto,
+} from "../types/properties";
+
+const cleanFilters = (filters?: PropertyFilters) =>
+  filters
+    ? Object.fromEntries(
+        Object.entries(filters).filter(
+          ([, value]) => value !== undefined && value !== null && value !== "",
+        ),
+      )
+    : {};
+
+/**
+ * Build the multipart body. Booleans are always sent (so unchecking works),
+ * `undefined` fields are skipped and `""` is sent as-is (= clear on update).
+ */
+const buildFormData = (
+  data: Partial<CreatePropertyDto>,
+  images?: File[],
+): FormData => {
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    formData.append(key, typeof value === "boolean" ? String(value) : String(value));
+  });
+
+  images?.forEach((image) => formData.append("images", image));
+
+  return formData;
+};
 
 export const propertiesService = {
-  getAll: (filters?: PropertyFilters) => {
-    const cleanFilters = filters
-      ? Object.fromEntries(
-          Object.entries(filters).filter(
-            ([_, value]) =>
-              value !== undefined && value !== null && value !== ''
-          )
-        )
-      : {}
+  getAll: (filters?: PropertyFilters) =>
+    api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.PROPERTIES, {
+      params: cleanFilters(filters),
+    }),
 
-    return api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.PROPERTIES, {
-      params: cleanFilters,
-    })
-  },
+  getMyProperties: (filters?: PropertyFilters) =>
+    api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.MY_PROPERTIES, {
+      params: cleanFilters(filters),
+    }),
 
-  // Add this method for user's own properties
-  getMyProperties: (filters?: PropertyFilters) => {
-    const cleanFilters = filters
-      ? Object.fromEntries(
-          Object.entries(filters).filter(
-            ([_, value]) =>
-              value !== undefined && value !== null && value !== ''
-          )
-        )
-      : {}
+  getMyStats: () => api.get<PropertyStats>(API_ENDPOINTS.PROPERTIES.MY_STATS),
 
-    return api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.MY_PROPERTIES, {
-      params: cleanFilters,
-    })
-  },
-
-  getAllAdmin: (filters?: PropertyFilters) => {
-    const cleanFilters = filters
-      ? Object.fromEntries(
-          Object.entries(filters).filter(
-            ([_, value]) =>
-              value !== undefined && value !== null && value !== ''
-          )
-        )
-      : {}
-
-    return api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.ADMIN_ALL, {
-      params: cleanFilters,
-    })
-  },
+  getAllAdmin: (filters?: PropertyFilters) =>
+    api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.ADMIN_ALL, {
+      params: cleanFilters(filters),
+    }),
 
   getById: (id: string, lang?: string) =>
     api.get<Property>(API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id), {
+      params: lang ? { lang } : {},
+    }),
+
+  /** Owner/admin view – works for private or unapproved listings too. */
+  getForManage: (id: string, lang?: string) =>
+    api.get<Property>(API_ENDPOINTS.PROPERTIES.MANAGE(id), {
       params: lang ? { lang } : {},
     }),
 
@@ -67,69 +76,21 @@ export const propertiesService = {
       params: lang ? { lang } : {},
     }),
 
-  createProperty: (data: CreatePropertyDto, images?: File[]) => {
-    const formData = new FormData()
+  createProperty: (data: CreatePropertyDto, images?: File[]) =>
+    api.post<Property>(
+      API_ENDPOINTS.PROPERTIES.PROPERTIES,
+      buildFormData(data, images),
+    ),
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        if (typeof value === 'boolean') {
-          formData.append(key, value.toString())
-        } else {
-          formData.append(key, String(value))
-        }
-      }
-    })
-
-    if (images && images.length > 0) {
-      images.forEach(image => {
-        formData.append('images', image)
-      })
-    }
-
-    return api.post<Property>(API_ENDPOINTS.PROPERTIES.PROPERTIES, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-  },
-
-  updateProperty: (
-    id: string,
-    data: Partial<CreatePropertyDto>,
-    images?: File[]
-  ) => {
-    const formData = new FormData()
-
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (typeof value === 'boolean') {
-          formData.append(key, value.toString())
-        } else {
-          formData.append(key, String(value))
-        }
-      }
-    })
-
-    if (images && images.length > 0) {
-      images.forEach(image => {
-        formData.append('images', image)
-      })
-    }
-
-    return api.patch<Property>(
+  updateProperty: (id: string, data: UpdatePropertyDto, images?: File[]) =>
+    api.patch<Property>(
       API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id),
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    )
-  },
+      buildFormData(data, images),
+    ),
 
   deleteProperty: (id: string) =>
     api.delete<{ message: string }>(
-      API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id)
+      API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id),
     ),
 
   getTranslations: (id: string) =>
@@ -138,16 +99,22 @@ export const propertiesService = {
   upsertTranslation: (id: string, data: UpsertPropertyTranslationDto) =>
     api.patch<PropertyTranslation>(
       API_ENDPOINTS.PROPERTIES.TRANSLATIONS(id),
-      data
+      data,
     ),
 
   deleteTranslation: (id: string, language: string) =>
     api.delete<{ message: string }>(
-      API_ENDPOINTS.PROPERTIES.TRANSLATION_BY_LANGUAGE(id, language)
+      API_ENDPOINTS.PROPERTIES.TRANSLATION_BY_LANGUAGE(id, language),
     ),
 
   deleteGalleryImage: (propertyId: string, imageId: number) =>
     api.delete<{ message: string }>(
-      API_ENDPOINTS.PROPERTIES.GALLERY_IMAGE(propertyId, imageId)
+      API_ENDPOINTS.PROPERTIES.GALLERY_IMAGE(propertyId, imageId),
     ),
-}
+
+  reorderGalleryImages: (propertyId: string, imageIds: number[]) =>
+    api.patch<PropertyGalleryImage[]>(
+      API_ENDPOINTS.PROPERTIES.GALLERY_ORDER(propertyId),
+      { imageIds },
+    ),
+};

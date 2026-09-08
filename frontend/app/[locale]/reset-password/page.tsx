@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -25,6 +25,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useResetPassword } from "@/lib/hooks/useAuth";
+import { getErrorMessage } from "@/lib/api/api";
 
 const ResetPasswordForm = () => {
   const router = useRouter();
@@ -32,21 +33,15 @@ const ResetPasswordForm = () => {
   const t = useTranslations("auth");
   const resetPasswordMutation = useResetPassword();
 
+  const token = searchParams.get("token") ?? "";
+  const tokenValid = token.length > 0;
   const [formData, setFormData] = useState({
-    token: "",
     password: "",
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [tokenValid, setTokenValid] = useState(true);
-
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (!token) setTokenValid(false);
-    else setFormData((prev) => ({ ...prev, token }));
-  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -73,7 +68,7 @@ const ResetPasswordForm = () => {
   const handleSubmit = () => {
     if (!validateForm()) return;
     resetPasswordMutation.mutate(
-      { token: formData.token, password: formData.password },
+      { token, password: formData.password },
       { onSuccess: () => setTimeout(() => router.push("/signin"), 2000) },
     );
   };
@@ -118,8 +113,7 @@ const ResetPasswordForm = () => {
           >
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {(resetPasswordMutation.error as any)?.response?.data?.message ||
-                t("setPasswordFailed")}
+              {getErrorMessage(resetPasswordMutation.error, t("setPasswordFailed"))}
             </AlertDescription>
           </Alert>
         )}

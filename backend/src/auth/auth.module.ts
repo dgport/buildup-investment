@@ -14,6 +14,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ScheduledTasksService } from './services/sheduled-tasks.service';
 import { OptionalJwtAuthGuard } from './guards/optional-auth.guard';
+import { AdminGuard } from './guards/admin.guard';
 @Module({
   imports: [
     ConfigModule,
@@ -42,11 +43,13 @@ import { OptionalJwtAuthGuard } from './guards/optional-auth.guard';
     JwtStrategy,
     JwtAuthGuard,
     OptionalJwtAuthGuard,
+    AdminGuard,
   ],
   exports: [
     AuthService,
     JwtAuthGuard,
     OptionalJwtAuthGuard,
+    AdminGuard,
     JwtModule,
     PassportModule,
   ],
