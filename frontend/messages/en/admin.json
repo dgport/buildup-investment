@@ -126,7 +126,8 @@
       "plans": "Floor plans",
       "uploadPlans": "Upload floor plans",
       "noPlans": "No floor plan"
-    }
+    },
+    "subtitle": "Development complexes shown on /projects."
   },
   "developers": {
     "title": "Developers",
@@ -148,7 +149,8 @@
       "removeLogo": "Remove logo",
       "description": "Description"
     },
-    "projectsCount": "{count} projects"
+    "projectsCount": "{count} projects",
+    "subtitle": "Construction companies with logo, contacts and project links."
   },
   "leads": {
     "title": "Consultation requests",
@@ -169,7 +171,8 @@
       "note": "Note"
     },
     "notePlaceholder": "Internal note...",
-    "deleteConfirm": "Delete this request?"
+    "deleteConfirm": "Delete this request?",
+    "subtitle": "Consultation requests from project pages — call, update the status, leave a note."
   },
   "overview": {
     "title": "Overview",

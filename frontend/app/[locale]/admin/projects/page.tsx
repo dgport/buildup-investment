@@ -16,6 +16,7 @@ import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { useSearchParams } from "next/navigation";
+import { PageHeader, StatusPill } from "../_components/AdminUi";
 
 export default function AdminProjectsPage() {
   const t = useTranslations("admin");
@@ -45,12 +46,15 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-teal-950">{t("projects.title")}</h1>
-        <Button asChild className="bg-teal-900 hover:bg-teal-800">
-          <Link href={ROUTES.ADMIN_PROJECT_NEW}><Plus className="w-4 h-4 mr-2" />{t("projects.new")}</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title={t("projects.title")}
+        subtitle={t("projects.subtitle")}
+        action={
+          <Button asChild className="bg-teal-900 hover:bg-teal-800">
+            <Link href={ROUTES.ADMIN_PROJECT_NEW}><Plus className="w-4 h-4 mr-2" />{t("projects.new")}</Link>
+          </Button>
+        }
+      />
 
       <div className="relative max-w-sm">
         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -99,7 +103,7 @@ export default function AdminProjectsPage() {
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-teal-900">{p.developer.name}</td>
-                      <td className="px-4 py-3"><span className="text-xs font-medium bg-teal-50 text-teal-800 rounded-md px-2 py-1">{tp(`status.${p.status}`)}</span></td>
+                      <td className="px-4 py-3"><StatusPill status={p.status === "COMPLETED" ? "APPROVED" : p.status === "UNDER_CONSTRUCTION" ? "CONTACTED" : "DRAFT"} label={tp(`status.${p.status}`)} /></td>
                       <td className="px-4 py-3 font-semibold text-teal-950">{p.pricePerSqmFrom ? formatUsd(p.pricePerSqmFrom) : t("common.none")}</td>
                       <td className="px-4 py-3">{p.deliveryYear ? (p.deliveryQuarter ? `Q${p.deliveryQuarter} ` : "") + p.deliveryYear : t("common.none")}</td>
                       <td className="px-4 py-3">{p.leadsCount ?? 0}</td>

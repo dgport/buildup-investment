@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { useSearchParams } from "next/navigation";
+import { FilterChips, PageHeader } from "../_components/AdminUi";
 
 const STATUS_STYLES: Record<string, string> = {
   NEW: "bg-amber-100 text-amber-800 border-amber-200",
@@ -36,23 +37,17 @@ export default function AdminLeadsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold text-teal-950">{t("leads.title")}</h1>
+      <PageHeader title={t("leads.title")} subtitle={t("leads.subtitle")} />
 
-      <div className="flex flex-wrap gap-2">
-        {["", ...Object.values(LeadStatus)].map((s) => (
-          <button
-            key={s || "all"}
-            type="button"
-            onClick={() => setStatus(s)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium border transition ${status === s ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-teal-200 hover:border-teal-400"}`}
-          >
-            {s ? t(`leads.status.${s as LeadStatus}`) : t("leads.all")}
-            <span className="ml-1.5 text-xs opacity-70">
-              {s ? (counts[s as LeadStatus] ?? 0) : Object.values(counts).reduce((a, b) => a + (b ?? 0), 0)}
-            </span>
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        value={status}
+        onChange={setStatus}
+        options={["", ...Object.values(LeadStatus)].map((s) => ({
+          value: s,
+          label: s ? t(`leads.status.${s as LeadStatus}`) : t("leads.all"),
+          count: s ? (counts[s as LeadStatus] ?? 0) : Object.values(counts).reduce((a, b) => a + (b ?? 0), 0),
+        }))}
+      />
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {isLoading ? (

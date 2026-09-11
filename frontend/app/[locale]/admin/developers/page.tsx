@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ExternalLink, ImageIcon, Pencil, Plus, Save, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "../_components/AdminUi";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -111,12 +112,15 @@ export default function AdminDevelopersPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-teal-950">{t("developers.title")}</h1>
-        <Button onClick={() => { setEditing({ dev: null, form: EMPTY }); setLang("ka"); setError(null); }} className="bg-teal-900 hover:bg-teal-800">
-          <Plus className="w-4 h-4 mr-2" />{t("developers.new")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("developers.title")}
+        subtitle={t("developers.subtitle")}
+        action={
+          <Button onClick={() => { setEditing({ dev: null, form: EMPTY }); setLang("ka"); setError(null); }} className="bg-teal-900 hover:bg-teal-800">
+            <Plus className="w-4 h-4 mr-2" />{t("developers.new")}
+          </Button>
+        }
+      />
 
       {listError && <Alert variant="destructive"><AlertDescription>{listError}</AlertDescription></Alert>}
 
