@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
+const FIELD =
+  "h-11 rounded-xl border-slate-200 bg-slate-50 text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15";
+
 export function SectionTitle({
   children,
   hint,
@@ -21,10 +24,21 @@ export function SectionTitle({
   hint?: string;
 }) {
   return (
-    <div className="pb-2 border-b border-gray-100">
-      <h2 className="text-lg font-semibold text-gray-900">{children}</h2>
-      {hint && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
+    <div className="flex items-start gap-3">
+      <span className="mt-1 h-6 w-1 rounded-full bg-amber-400 shrink-0" />
+      <div>
+        <h2 className="text-lg font-bold text-teal-950 leading-tight">{children}</h2>
+        {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
+      </div>
     </div>
+  );
+}
+
+function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+  return (
+    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800/80">
+      {label} {required && <span className="text-amber-500">*</span>}
+    </Label>
   );
 }
 
@@ -41,14 +55,8 @@ export function FieldInput({
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-gray-700">
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
-      <Input
-        {...props}
-        aria-invalid={!!error}
-        className={cn("bg-white", className)}
-      />
+      <FieldLabel label={label} required={required} />
+      <Input {...props} aria-invalid={!!error} className={cn(FIELD, className)} />
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
@@ -67,13 +75,14 @@ export function FieldTextarea({
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-gray-700">
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
+      <FieldLabel label={label} required={required} />
       <Textarea
         {...props}
         aria-invalid={!!error}
-        className={cn("bg-white resize-none", className)}
+        className={cn(
+          "rounded-xl border-slate-200 bg-slate-50 text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 resize-none",
+          className,
+        )}
       />
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
@@ -108,16 +117,14 @@ export function FieldSelect({
   const NONE = "__none__";
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-gray-700">
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
+      <FieldLabel label={label} required={required} />
       <Select
         value={value || (clearLabel ? NONE : undefined)}
         onValueChange={(v) => onValueChange(v === NONE ? "" : v)}
       >
         <SelectTrigger
           aria-invalid={!!error}
-          className={cn("bg-white w-full", error && "border-red-400")}
+          className={cn(FIELD, "w-full", error && "border-red-400")}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
@@ -157,10 +164,8 @@ export function ToggleChip({
       type="button"
       onClick={() => onChange(!active)}
       aria-pressed={active}
-      className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-        active
-          ? activeClass
-          : "bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300"
+      className={`flex items-center gap-2 px-4 h-10 rounded-xl border text-sm font-semibold transition-all ${
+        active ? activeClass : "bg-slate-50 border-slate-200 text-slate-500 hover:border-teal-300 hover:bg-white"
       }`}
     >
       {icon}

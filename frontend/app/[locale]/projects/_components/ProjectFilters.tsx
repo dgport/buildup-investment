@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, X, SlidersHorizontal } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -20,8 +19,6 @@ import { useDevelopers } from "@/lib/hooks/useProjects";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 
 const ALL = "all";
-const MAX_SQM = 5000;
-const STEP_SQM = 100;
 const YEARS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() + i);
 
 interface State {
@@ -30,10 +27,24 @@ interface State {
   developer: string;
   status: string;
   rooms: string;
-  sqmFrom: number;
-  sqmTo: number;
+  sqmFrom: string;
+  sqmTo: string;
   year: string;
 }
+
+const KEYS = ["search", "region", "developer", "status", "rooms", "sqmFrom", "sqmTo", "year"] as const;
+type Key = (typeof KEYS)[number];
+const PARAM: Record<Key, string> = {
+  search: "search",
+  region: "region",
+  developer: "developer",
+  status: "status",
+  rooms: "rooms",
+  sqmFrom: "pricePerSqmFrom",
+  sqmTo: "pricePerSqmTo",
+  year: "deliveryYear",
+};
+const SELECTS: Key[] = ["region", "developer", "status", "rooms", "year"];
 
 const read = (p: URLSearchParams): State => ({
   search: p.get("search") ?? "",
@@ -41,22 +52,17 @@ const read = (p: URLSearchParams): State => ({
   developer: p.get("developer") ?? ALL,
   status: p.get("status") ?? ALL,
   rooms: p.get("rooms") ?? ALL,
-  sqmFrom: Number(p.get("pricePerSqmFrom") ?? 0) || 0,
-  sqmTo: Number(p.get("pricePerSqmTo") ?? MAX_SQM) || MAX_SQM,
+  sqmFrom: p.get("pricePerSqmFrom") ?? "",
+  sqmTo: p.get("pricePerSqmTo") ?? "",
   year: p.get("deliveryYear") ?? ALL,
 });
 
-const EMPTY: State = {
-  search: "",
-  region: ALL,
-  developer: ALL,
-  status: ALL,
-  rooms: ALL,
-  sqmFrom: 0,
-  sqmTo: MAX_SQM,
-  year: ALL,
-};
+const isSet = (key: Key, value: string) => (SELECTS.includes(key) ? value !== ALL : value.trim() !== "");
+const digits = (v: string) => v.replace(/[^\d]/g, "");
+const control =
+  "h-11 w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-sm text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 [&>span]:truncate";
 
+/** Inline toolbar + "more" sheet + removable chips, matching the listings page. */
 export function ProjectFilters() {
   const t = useTranslations("projects");
   const tp = useTranslations("properties");
@@ -68,210 +74,219 @@ export function ProjectFilters() {
 
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<State>(() => read(searchParams));
-  // Re-sync when the URL changes (back button, clear) – adjust state during render
+  // Re-sync when the URL changes (back button, chips) – adjust state during render
   const [syncedParams, setSyncedParams] = useState(searchParams);
   if (syncedParams !== searchParams) {
     setSyncedParams(searchParams);
     setState(read(searchParams));
   }
+  const applied = read(searchParams);
+  const set = (key: Key, value: string) => setState((s) => ({ ...s, [key]: value }));
 
-  const active = [
-    state.search.trim() !== "",
-    state.region !== ALL,
-    state.developer !== ALL,
-    state.status !== ALL,
-    state.rooms !== ALL,
-    state.sqmFrom > 0,
-    state.sqmTo < MAX_SQM,
-    state.year !== ALL,
-  ].filter(Boolean).length;
-
-  const apply = () => {
+  const push = (next: State) => {
     const params = new URLSearchParams();
     params.set("page", "1");
     const sort = searchParams.get("sort");
     if (sort) params.set("sort", sort);
-    if (state.search.trim()) params.set("search", state.search.trim());
-    if (state.region !== ALL) params.set("region", state.region);
-    if (state.developer !== ALL) params.set("developer", state.developer);
-    if (state.status !== ALL) params.set("status", state.status);
-    if (state.rooms !== ALL) params.set("rooms", state.rooms);
-    if (state.sqmFrom > 0) params.set("pricePerSqmFrom", String(state.sqmFrom));
-    if (state.sqmTo < MAX_SQM) params.set("pricePerSqmTo", String(state.sqmTo));
-    if (state.year !== ALL) params.set("deliveryYear", state.year);
+    for (const key of KEYS) {
+      const value = next[key].trim();
+      if (isSet(key, value)) params.set(PARAM[key], value);
+    }
     router.push(`${pathname}?${params.toString()}`);
     setOpen(false);
   };
-
+  const apply = () => push(state);
   const clear = () => {
-    setState(EMPTY);
-    router.push(`${pathname}?page=1`);
-    setOpen(false);
+    const empty = read(new URLSearchParams());
+    setState(empty);
+    push(empty);
   };
+  const removeChip = (key: Key) => push({ ...applied, [key]: SELECTS.includes(key) ? ALL : "" });
 
-  const selectCls = "h-10 w-full border-teal-200 rounded-lg text-sm bg-white";
+  const moreCount = (["rooms", "year", "sqmFrom", "sqmTo"] as Key[]).filter((k) => isSet(k, state[k])).length;
+  const chips = KEYS.filter((k) => isSet(k, applied[k]));
+  const chipLabel = (key: Key, value: string) => {
+    switch (key) {
+      case "search":
+        return `„${value}“`;
+      case "region":
+        return tp(`enums.region.${value as Region}`);
+      case "developer":
+        return developers.find((d) => d.slug === value)?.name ?? value;
+      case "status":
+        return t(`status.${value as ProjectStatus}`);
+      case "rooms":
+        return roomsLabel(t, Number(value));
+      case "sqmFrom":
+        return `$${Number(value).toLocaleString()}+ / m²`;
+      case "sqmTo":
+        return `≤ $${Number(value).toLocaleString()} / m²`;
+      case "year":
+        return `${t("filters.deliveryYear")}: ${value}`;
+    }
+  };
+  const onEnter = (e: React.KeyboardEvent) => e.key === "Enter" && apply();
 
   return (
-    <div className="flex items-center gap-3">
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <button className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-teal-200 bg-white hover:bg-teal-50 hover:border-teal-400 transition-all text-teal-900 font-medium text-sm shadow-sm">
-            <SlidersHorizontal className="w-4 h-4 text-teal-700" />
-            <span>{t("filters.title")}</span>
-            {active > 0 && (
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-teal-950 text-xs font-bold leading-none">
-                {active}
-              </span>
-            )}
-          </button>
-        </SheetTrigger>
+    <div className="space-y-3">
+      <div className="rounded-2xl bg-white p-2 shadow-2xl shadow-black/25 ring-1 ring-white/10">
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] gap-2 items-stretch">
+          <div className="col-span-2 md:col-span-4 xl:col-span-1 relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Input
+              value={state.search}
+              onChange={(e) => set("search", e.target.value)}
+              onKeyDown={onEnter}
+              placeholder={t("filters.searchPlaceholder")}
+              aria-label={t("filters.search")}
+              className={`${control} pl-10`}
+            />
+          </div>
 
-        <SheetContent side="left" className="w-full sm:w-[480px] flex flex-col p-0 border-r border-teal-100">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-teal-100 bg-teal-950">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 bg-amber-400 rounded-lg">
-                <SlidersHorizontal className="w-4 h-4 text-teal-950" />
-              </div>
-              <SheetTitle className="text-white font-semibold text-base m-0">
-                {t("filters.heading")}
-              </SheetTitle>
-            </div>
-            {active > 0 && (
-              <button onClick={clear} className="flex items-center gap-1.5 text-xs text-teal-300 hover:text-amber-400 font-medium">
-                <X className="w-3.5 h-3.5" />
-                {t("filters.clear")}
+          <Select value={state.region} onValueChange={(v) => set("region", v)}>
+            <SelectTrigger className={control} aria-label={t("filters.region")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{t("filters.allRegions")}</SelectItem>
+              {Object.values(Region).map((r) => (
+                <SelectItem key={r} value={r}>{tp(`enums.region.${r}`)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={state.status} onValueChange={(v) => set("status", v)}>
+            <SelectTrigger className={control} aria-label={t("filters.status")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{t("filters.allStatuses")}</SelectItem>
+              {Object.values(ProjectStatus).map((s) => (
+                <SelectItem key={s} value={s}>{t(`status.${s}`)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={state.developer} onValueChange={(v) => set("developer", v)}>
+            <SelectTrigger className={control} aria-label={t("filters.developer")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{t("filters.allDevelopers")}</SelectItem>
+              {developers.map((d) => (
+                <SelectItem key={d.id} value={d.slug}>{d.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                className="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-teal-900 hover:bg-slate-50 inline-flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <SlidersHorizontal className="w-4 h-4 text-teal-700" />
+                {t("filters.more")}
+                {moreCount > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-amber-400 text-teal-950 text-[11px] font-bold flex items-center justify-center">
+                    {moreCount}
+                  </span>
+                )}
               </button>
-            )}
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-            <Field label={t("filters.search")}>
-              <Input
-                value={state.search}
-                onChange={(e) => setState({ ...state, search: e.target.value })}
-                onKeyDown={(e) => e.key === "Enter" && apply()}
-                placeholder={t("filters.searchPlaceholder")}
-                className="h-10 border-teal-200 rounded-lg text-sm"
-              />
-            </Field>
-
-            <Field label={t("filters.region")}>
-              <Select value={state.region} onValueChange={(v) => setState({ ...state, region: v })}>
-                <SelectTrigger className={selectCls}><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL}>{t("filters.allRegions")}</SelectItem>
-                  {Object.values(Region).map((r) => (
-                    <SelectItem key={r} value={r}>{tp(`enums.region.${r}`)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field label={t("filters.developer")}>
-              <Select value={state.developer} onValueChange={(v) => setState({ ...state, developer: v })}>
-                <SelectTrigger className={selectCls}><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL}>{t("filters.allDevelopers")}</SelectItem>
-                  {developers.map((d) => (
-                    <SelectItem key={d.id} value={d.slug}>{d.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field label={t("filters.status")}>
-              <Select value={state.status} onValueChange={(v) => setState({ ...state, status: v })}>
-                <SelectTrigger className={selectCls}><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL}>{t("filters.allStatuses")}</SelectItem>
-                  {Object.values(ProjectStatus).map((s) => (
-                    <SelectItem key={s} value={s}>{t(`status.${s}`)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Field label={t("filters.rooms")}>
-                <Select value={state.rooms} onValueChange={(v) => setState({ ...state, rooms: v })}>
-                  <SelectTrigger className={selectCls}><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={ALL}>{t("filters.anyRooms")}</SelectItem>
-                    {[0, 1, 2, 3, 4].map((r) => (
-                      <SelectItem key={r} value={String(r)}>{roomsLabel(t, r)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label={t("filters.deliveryYear")}>
-                <Select value={state.year} onValueChange={(v) => setState({ ...state, year: v })}>
-                  <SelectTrigger className={selectCls}><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={ALL}>{t("filters.anyYear")}</SelectItem>
-                    {YEARS.map((y) => (
-                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>{t("filters.pricePerSqm")}</Label>
-                <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
-                  {state.sqmFrom > 0 || state.sqmTo < MAX_SQM
-                    ? `$${state.sqmFrom.toLocaleString()} – $${state.sqmTo.toLocaleString()}`
-                    : t("filters.any")}
-                </span>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:w-[420px] flex flex-col p-0">
+              <div className="px-6 py-5 border-b border-slate-100 bg-teal-950">
+                <SheetTitle className="text-white font-semibold text-base m-0">{t("filters.heading")}</SheetTitle>
               </div>
-              <Slider
-                min={0}
-                max={MAX_SQM}
-                step={STEP_SQM}
-                value={[state.sqmFrom, state.sqmTo]}
-                onValueChange={([from, to]) => setState({ ...state, sqmFrom: from, sqmTo: to })}
-                className="[&_[role=slider]]:bg-teal-900 [&_[role=slider]]:border-teal-900 [&_.range]:bg-teal-700"
-              />
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>$0</span>
-                <span>${MAX_SQM.toLocaleString()}+</span>
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+                <Field label={t("filters.rooms")}>
+                  <div className="flex flex-wrap gap-2">
+                    {[ALL, "0", "1", "2", "3", "4"].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => set("rooms", r)}
+                        className={`h-10 px-3.5 rounded-xl border text-sm font-semibold transition ${
+                          state.rooms === r ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-slate-200 hover:border-teal-400"
+                        }`}
+                      >
+                        {r === ALL ? t("filters.anyRooms") : roomsLabel(t, Number(r))}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label={t("filters.deliveryYear")}>
+                  <div className="flex flex-wrap gap-2">
+                    {[ALL, ...YEARS.map(String)].map((y) => (
+                      <button
+                        key={y}
+                        type="button"
+                        onClick={() => set("year", y)}
+                        className={`h-10 px-3.5 rounded-xl border text-sm font-semibold transition ${
+                          state.year === y ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-slate-200 hover:border-teal-400"
+                        }`}
+                      >
+                        {y === ALL ? t("filters.anyYear") : y}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label={t("filters.pricePerSqm")}>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input inputMode="numeric" value={state.sqmFrom} onChange={(e) => set("sqmFrom", digits(e.target.value))} onKeyDown={onEnter} placeholder={t("filters.priceFrom")} className="h-11 rounded-xl bg-slate-50" />
+                    <Input inputMode="numeric" value={state.sqmTo} onChange={(e) => set("sqmTo", digits(e.target.value))} onKeyDown={onEnter} placeholder={t("filters.priceTo")} className="h-11 rounded-xl bg-slate-50" />
+                  </div>
+                </Field>
               </div>
-            </div>
-          </div>
+              <div className="px-6 py-4 border-t border-slate-100 flex gap-2">
+                <button type="button" onClick={clear} className="h-11 px-4 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                  {t("filters.clear")}
+                </button>
+                <button type="button" onClick={apply} className="flex-1 h-11 rounded-xl bg-teal-900 hover:bg-teal-800 text-white font-semibold text-sm inline-flex items-center justify-center gap-2">
+                  <Search className="w-4 h-4" />
+                  {t("filters.apply")}
+                </button>
+              </div>
+            </SheetContent>
+          </Sheet>
 
-          <div className="px-6 py-4 border-t border-teal-100 bg-white">
+          <button
+            type="button"
+            onClick={apply}
+            className="col-span-2 md:col-span-2 xl:col-span-1 h-11 rounded-xl bg-amber-400 hover:bg-amber-300 text-teal-950 font-bold text-sm px-5 inline-flex items-center justify-center gap-2 transition active:scale-[0.98]"
+          >
+            <Search className="w-4 h-4" />
+            {t("filters.go")}
+          </button>
+        </div>
+      </div>
+
+      {chips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 px-1">
+          {chips.map((key) => (
             <button
-              onClick={apply}
-              className="w-full h-11 rounded-xl bg-teal-900 hover:bg-teal-800 text-white font-semibold text-sm flex items-center justify-center gap-2 transition"
+              key={key}
+              type="button"
+              onClick={() => removeChip(key)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
             >
-              <Search className="w-4 h-4" />
-              {t("filters.apply")}
+              {chipLabel(key, applied[key])}
+              <X className="w-3 h-3 opacity-70" />
             </button>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {active > 0 && (
-        <button onClick={clear} className="inline-flex items-center gap-1.5 text-sm text-teal-700 hover:text-red-600 transition-colors">
-          <X className="w-4 h-4" />
-          {t("filters.clear")}
-        </button>
+          ))}
+          <button type="button" onClick={clear} className="text-xs font-semibold text-amber-300 hover:text-amber-200 px-2">
+            {t("filters.clear")}
+          </button>
+        </div>
       )}
     </div>
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="text-xs font-semibold uppercase tracking-wide text-teal-700">{children}</label>
-  );
-}
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
+    <div className="space-y-2">
+      <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-teal-800/80">{label}</label>
       {children}
     </div>
   );

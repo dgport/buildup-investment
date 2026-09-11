@@ -42,7 +42,11 @@
     "anyYear": "Any",
     "apply": "Apply filters",
     "clear": "Clear",
-    "any": "Any"
+    "any": "Any",
+    "more": "More",
+    "go": "Search",
+    "priceFrom": "From $",
+    "priceTo": "To $"
   },
   "status": {
     "PLANNED": "Sales started",
@@ -165,5 +169,6 @@
   "home": {
     "title": "New projects",
     "seeAll": "All projects"
-  }
+  },
+  "eyebrow": "New developments"
 }

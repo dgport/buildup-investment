@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Building2, LayoutGrid, Map as MapIcon, SearchX } from "lucide-react";
+import { LayoutGrid, Map as MapIcon, SearchX } from "lucide-react";
 import { useProjects } from "@/lib/hooks/useProjects";
 import { Pagination } from "@/components/shared/Pagination";
 import ProjectCard from "@/components/shared/ProjectCard";
@@ -70,32 +70,39 @@ export function ProjectsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <div className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-28 py-10">
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-teal-900 rounded-xl p-2">
-              <Building2 className="w-5 h-5 text-amber-400" />
+    <div className="min-h-screen bg-slate-50">
+      <section className="relative bg-teal-950 text-white overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none opacity-60"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse 60% 70% at 85% 0%, rgba(245,158,11,0.18), transparent 60%), radial-gradient(ellipse 50% 60% at 0% 100%, rgba(20,184,166,0.15), transparent 60%)",
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 pt-10 pb-8">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-amber-300/90 font-semibold mb-1.5">{t("eyebrow")}</p>
+              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{t("title")}</h1>
+              <p className="text-teal-100/70 mt-2 max-w-2xl">{t("subtitle")}</p>
             </div>
-            <h1 className="text-3xl font-bold text-teal-950">{t("title")}</h1>
+            <p className="text-sm text-teal-100/70">{meta ? t("count", { count: meta.total }) : "\u00a0"}</p>
           </div>
-          <p className="text-teal-800/70 ml-14">{t("subtitle")}</p>
-          {meta && (
-            <p className="text-sm text-gray-500 ml-14 mt-1">
-              {t("count", { count: meta.total })}
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 mb-8">
           <ProjectFilters />
+        </div>
+      </section>
 
-          <div className="flex items-center gap-2 ml-auto">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <p className="text-sm text-slate-500">{meta ? t("count", { count: meta.total }) : ""}</p>
+
+          <div className="flex items-center gap-2">
             <Select
               value={filters.sort ?? "featured"}
               onValueChange={(v) => setParam("sort", v === "featured" ? undefined : v)}
             >
-              <SelectTrigger className="h-10 w-[190px] border-teal-200 rounded-xl text-sm bg-white">
+              <SelectTrigger className="h-10 w-[190px] border-slate-200 rounded-xl text-sm bg-white">
                 <SelectValue placeholder={t("sort")} />
               </SelectTrigger>
               <SelectContent>
@@ -107,7 +114,7 @@ export function ProjectsContent() {
               </SelectContent>
             </Select>
 
-            <div className="inline-flex rounded-xl border border-teal-200 bg-white p-0.5">
+            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-0.5">
               <button
                 type="button"
                 onClick={() => setView("list")}

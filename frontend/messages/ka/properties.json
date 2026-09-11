@@ -165,5 +165,17 @@
     "price_asc": "ფასი: ზრდადი",
     "price_desc": "ფასი: კლებადი",
     "area_desc": "ფართი: დიდი"
+  },
+  "eyebrow": "კატალოგი",
+  "filters": {
+    "search": "ძებნა",
+    "more": "მეტი",
+    "moreTitle": "დამატებითი ფილტრები",
+    "dealAll": "ყველა",
+    "priceFrom": "ფასი-დან",
+    "priceTo": "ფასი-მდე",
+    "areaFrom": "ფართი-დან (მ²)",
+    "areaTo": "ფართი-მდე (მ²)",
+    "currency": "ვალუტა"
   }
 }

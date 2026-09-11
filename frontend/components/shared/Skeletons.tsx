@@ -3,18 +3,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 /** Placeholder matching PropertyCard / ProjectCard proportions. */
 export function CardSkeleton({ tall = false }: { tall?: boolean }) {
   return (
-    <div className="card overflow-hidden">
-      <Skeleton className={tall ? "h-56 rounded-none" : "h-48 rounded-none"} />
-      <div className="p-4 space-y-3">
-        <div className="flex justify-between">
-          <Skeleton className="h-6 w-28" />
-          <Skeleton className="h-6 w-16" />
-        </div>
+    <div className="rounded-[22px] bg-white p-2.5 border border-teal-950/[0.07] shadow-card">
+      <Skeleton className={`rounded-2xl w-full ${tall ? "aspect-[4/3]" : "h-48"}`} />
+      <div className="px-2 pt-3.5 pb-1.5 space-y-3">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-3 w-1/2" />
-        <div className="flex gap-2 pt-2">
-          <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-5 w-20" />
+        <div className="flex gap-3 pt-1">
+          <Skeleton className="h-4 w-14" />
+          <Skeleton className="h-4 w-14" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <div className="flex justify-between pt-3 border-t border-dashed border-teal-900/10">
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-3 w-16" />
         </div>
       </div>
     </div>

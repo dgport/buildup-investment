@@ -37,9 +37,9 @@ export default function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
       href={ROUTES.PROJECT(project.slug)}
-      className="group card card-hover block overflow-hidden h-full"
+      className="group flex flex-col h-full rounded-[22px] bg-white p-2.5 border border-teal-950/[0.07] shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
     >
-      <div className="relative h-56 bg-teal-950/5 overflow-hidden">
+      <div className="relative h-56 rounded-2xl bg-teal-950/5 overflow-hidden">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -92,7 +92,7 @@ export default function ProjectCard({ project }: { project: Project }) {
         </div>
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="px-2 pt-3.5 pb-1.5 space-y-3 flex-1">
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-teal-700/70 font-semibold">
@@ -116,7 +116,7 @@ export default function ProjectCard({ project }: { project: Project }) {
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-teal-800 pt-3 border-t border-teal-900/10">
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-teal-800 pt-3 border-t border-dashed border-teal-900/15">
           {delivery && (
             <span className="flex items-center gap-1">
               <CalendarClock className="w-3.5 h-3.5 text-amber-500" />

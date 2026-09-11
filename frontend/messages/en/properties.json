@@ -165,5 +165,17 @@
     "price_asc": "Price: low to high",
     "price_desc": "Price: high to low",
     "area_desc": "Area: largest"
+  },
+  "eyebrow": "Catalogue",
+  "filters": {
+    "search": "Search",
+    "more": "More",
+    "moreTitle": "More filters",
+    "dealAll": "All",
+    "priceFrom": "Min price",
+    "priceTo": "Max price",
+    "areaFrom": "Min area (m²)",
+    "areaTo": "Max area (m²)",
+    "currency": "Currency"
   }
 }
