@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { useSearchParams } from "next/navigation";
+import { formatDateTime } from "@/lib/utils/format";
 import { FilterChips, PageHeader } from "../_components/AdminUi";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -91,7 +92,7 @@ function LeadRow({
   return (
     <div className="p-4 grid grid-cols-1 lg:grid-cols-[150px_1fr_1fr_1fr_auto] gap-3 items-start">
       <div className="text-xs text-gray-500">
-        {new Date(lead.createdAt).toLocaleString(locale === "ka" ? "ka-GE" : "en-GB")}
+        {formatDateTime(lead.createdAt, locale)}
         <div className="mt-1 uppercase tracking-wide text-[10px]">{lead.locale}</div>
       </div>
       <div className="min-w-0">

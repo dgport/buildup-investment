@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatDate as formatDateBase, formatDateTime } from "@/lib/utils/format";
 
 /** Page title row used by every admin screen. */
 export function PageHeader({
@@ -143,7 +144,5 @@ export function initials(...names: (string | null | undefined)[]) {
 }
 
 export function formatDate(value: string | Date, locale: string, withTime = false) {
-  const d = new Date(value);
-  const loc = locale === "ka" ? "ka-GE" : "en-GB";
-  return withTime ? d.toLocaleString(loc, { dateStyle: "medium", timeStyle: "short" }) : d.toLocaleDateString(loc, { dateStyle: "medium" });
+  return withTime ? formatDateTime(value, locale) : formatDateBase(value, locale, "medium");
 }

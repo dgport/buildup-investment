@@ -11,6 +11,7 @@ import {
   CONTACT_FACEBOOK,
   CONTACT_MAPS_URL,
   CONTACT_PHONE,
+  HAS_CONTACT_PHONE,
 } from "@/lib/constants/contact";
 
 type SubmitState = "idle" | "sending" | "success" | "error";
@@ -72,13 +73,17 @@ const ContactSection = () => {
       href: CONTACT_MAPS_URL,
       color: "amber",
     },
-    {
-      icon: Phone,
-      label: t("phoneLabel"),
-      content: CONTACT_PHONE,
-      href: `tel:${CONTACT_PHONE.replace(/\s/g, "")}`,
-      color: "teal",
-    },
+    ...(HAS_CONTACT_PHONE
+      ? [
+          {
+            icon: Phone,
+            label: t("phoneLabel"),
+            content: CONTACT_PHONE,
+            href: `tel:${CONTACT_PHONE.replace(/\s/g, "")}`,
+            color: "teal" as const,
+          },
+        ]
+      : []),
     {
       icon: Mail,
       label: t("emailLabel"),

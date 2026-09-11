@@ -29,6 +29,7 @@ import { DetailSkeleton } from "@/components/shared/Skeletons";
 import { MobileContactBar } from "@/components/shared/MobileContactBar";
 import { SimilarProperties } from "./SimilarProperties";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/utils/format";
 
 import { ConditionUtilitiesSection } from "./ConditionUtilitesSection";
 import { AmenitiesFeaturesSection } from "./AmenitiesFeatureSection";
@@ -352,9 +353,7 @@ export function PropertyDetailContent() {
 
                   <InfoRow label={t("detailListedOn")}>
                     <span className="text-sm font-semibold text-teal-950">
-                      {new Date(property.createdAt).toLocaleDateString(
-                        locale === "ka" ? "ka-GE" : "en-GB",
-                      )}
+                      {formatDate(property.createdAt, locale)}
                     </span>
                   </InfoRow>
 

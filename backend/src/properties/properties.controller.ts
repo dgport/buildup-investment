@@ -213,7 +213,12 @@ export class PropertiesController {
     @Body() dto: CreatePropertyDto,
     @UploadedFiles() images?: Express.Multer.File[],
   ) {
-    return this.propertiesService.createProperty(dto, images, user.id);
+    return this.propertiesService.createProperty(
+      dto,
+      images,
+      user.id,
+      user.role,
+    );
   }
 
   @Patch(':id')

@@ -1,3 +1,40 @@
+const KA_MONTHS = [
+  "იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი",
+  "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი",
+];
+const KA_MONTHS_SHORT = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
+
+/**
+ * Locale-aware date: "8 სექტემბერი, 2026" / "8 September 2026".
+ * Georgian is formatted by hand because many browsers ship without ka ICU
+ * data and silently fall back to US English.
+ */
+export const formatDate = (
+  value: string | Date,
+  locale: string,
+  style: "long" | "medium" | "short" = "long",
+): string => {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  if (locale === "ka") {
+    const day = d.getDate();
+    const year = d.getFullYear();
+    if (style === "short") return `${day} ${KA_MONTHS_SHORT[d.getMonth()]}`;
+    if (style === "medium") return `${day} ${KA_MONTHS_SHORT[d.getMonth()]}, ${year}`;
+    return `${day} ${KA_MONTHS[d.getMonth()]}, ${year}`;
+  }
+  if (style === "short") return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return d.toLocaleDateString("en-GB", { dateStyle: style });
+};
+
+/** Date + time, e.g. "8 სექ, 2026 · 14:28" / "8 Sept 2026 · 14:28". */
+export const formatDateTime = (value: string | Date, locale: string): string => {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return `${formatDate(d, locale, "medium")} · ${time}`;
+};
+
 /** "$1,250" style USD formatting (no decimals). */
 export const formatUsd = (value: number | null | undefined): string =>
   value == null ? "" : `$${Math.round(value).toLocaleString("en-US")}`;

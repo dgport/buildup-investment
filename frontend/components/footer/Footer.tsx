@@ -6,7 +6,7 @@ import { Phone, Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ROUTES } from "@/lib/constants/routes";
-import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/constants/contact";
+import { CONTACT_EMAIL, CONTACT_PHONE, HAS_CONTACT_PHONE } from "@/lib/constants/contact";
 
 export default function Footer() {
   const t = useTranslations("common");
@@ -96,6 +96,7 @@ export default function Footer() {
               {t("footer.getInTouch")}
             </h3>
             <div className="space-y-3">
+              {HAS_CONTACT_PHONE && (
               <a
                 href={`tel:${CONTACT_PHONE.replace(/\s/g, "")}`}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-amber-400/10 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all duration-300 group"
@@ -108,6 +109,7 @@ export default function Footer() {
                 </span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-amber-400/0 group-hover:text-amber-400/60 ml-auto transition-all duration-300 -translate-x-1 group-hover:translate-x-0" />
               </a>
+              )}
 
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
@@ -140,13 +142,13 @@ export default function Footer() {
               © {new Date().getFullYear()} {t("brand")}. {t("footer.rights")}
             </p>
             <div className="flex items-center gap-6">
-              <span className="text-xs text-amber-100/30">
+              <Link href={ROUTES.PRIVACY} className="text-xs text-amber-100/40 hover:text-amber-300 transition-colors">
                 {t("footer.privacy")}
-              </span>
+              </Link>
               <div className="w-px h-3 bg-amber-400/20" />
-              <span className="text-xs text-amber-100/30">
+              <Link href={ROUTES.TERMS} className="text-xs text-amber-100/40 hover:text-amber-300 transition-colors">
                 {t("footer.terms")}
-              </span>
+              </Link>
             </div>
           </div>
         </div>

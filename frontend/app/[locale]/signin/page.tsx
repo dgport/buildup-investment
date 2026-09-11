@@ -160,7 +160,16 @@ function SigninForm() {
             <Alert className="bg-red-500/10 border-red-500/30">
               <AlertCircle className="h-4 w-4 text-red-400" />
               <AlertDescription className="text-red-300">
-                {getErrorMessage(signInMutation.error, t("invalidCredentials"))}
+                {/verif/i.test(getErrorMessage(signInMutation.error, "")) ? (
+                  <>
+                    {t("notVerified")}{" "}
+                    <Link href={ROUTES.VERIFY_EMAIL} className="underline font-semibold hover:text-amber-300">
+                      {t("goVerify")}
+                    </Link>
+                  </>
+                ) : (
+                  getErrorMessage(signInMutation.error, t("invalidCredentials"))
+                )}
               </AlertDescription>
             </Alert>
           )}

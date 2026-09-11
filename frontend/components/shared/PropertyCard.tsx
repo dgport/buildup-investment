@@ -18,6 +18,7 @@ import {
 import { useCurrency } from "@/lib/currency";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { ROUTES } from "@/lib/constants/routes";
+import { formatDate } from "@/lib/utils/format";
 import type { Property } from "@/lib/types/properties";
 
 interface PropertyCardProps {
@@ -63,10 +64,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
       : `${Math.round(property.price * exchangeRate).toLocaleString()} ₾`
     : t("priceOnRequest");
 
-  const date = new Date(property.createdAt).toLocaleDateString(locale === "ka" ? "ka-GE" : "en-GB", {
-    day: "2-digit",
-    month: "short",
-  });
+  const date = formatDate(property.createdAt, locale, "short");
 
   const location = [property.regionName, property.translation?.address ?? property.address]
     .filter(Boolean)

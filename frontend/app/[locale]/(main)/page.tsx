@@ -9,7 +9,7 @@ import ProjectsCarousel from "./_components/ProjectsCarousel";
 import ListPropertyCta from "./_components/ListPropertyCta";
 import { jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/constants/env";
-import { CONTACT_EMAIL, CONTACT_FACEBOOK, CONTACT_INSTAGRAM, CONTACT_PHONE } from "@/lib/constants/contact";
+import { CONTACT_EMAIL, CONTACT_FACEBOOK, CONTACT_INSTAGRAM, CONTACT_PHONE, HAS_CONTACT_PHONE } from "@/lib/constants/contact";
 
 /** Organization + WebSite structured data: brand panel, sitelinks search box. */
 function homeJsonLd(locale: string) {
@@ -23,7 +23,7 @@ function homeJsonLd(locale: string) {
       url: SITE_URL,
       logo: `${SITE_URL}/icons/icon-512.png`,
       image: `${SITE_URL}/og-image.jpg`,
-      telephone: CONTACT_PHONE.replace(/\s/g, ""),
+      ...(HAS_CONTACT_PHONE && { telephone: CONTACT_PHONE.replace(/\s/g, "") }),
       email: CONTACT_EMAIL,
       address: { "@type": "PostalAddress", addressLocality: "Batumi", addressCountry: "GE" },
       areaServed: { "@type": "Country", name: "Georgia" },

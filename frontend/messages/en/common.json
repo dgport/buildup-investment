@@ -60,5 +60,68 @@
     "retry": "Try again",
     "home": "Home page"
   },
-  "skipToContent": "Skip to content"
+  "skipToContent": "Skip to content",
+  "legal": {
+    "updated": "Last updated: 11 September 2026",
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "Build Up Investment respects your personal data. This page explains briefly what we collect and how we use it.",
+      "sections": [
+        {
+          "h": "What we collect",
+          "p": "When you create an account: first name, last name, e-mail and, optionally, a phone number. When you publish a listing: the property details, photos and the contact number that will be shown publicly. When you use the contact form or request a consultation: the name, phone, e-mail and message you enter."
+        },
+        {
+          "h": "How we use it",
+          "p": "To run your account, publish and moderate listings, contact you at your request and keep the service secure (for example limiting bots and spam). We do not send marketing e-mails without your consent."
+        },
+        {
+          "h": "Cookies",
+          "p": "Only essential cookies are used: your language choice and the sign-in session. There is no advertising tracking."
+        },
+        {
+          "h": "Third parties",
+          "p": "Google (sign in with Google), Mapbox (maps), Resend (e-mail delivery) and a public exchange-rate service. Each operates under its own privacy policy."
+        },
+        {
+          "h": "Retention and deletion",
+          "p": "Data is kept while your account is active. You can delete your listings and account at any time from your profile or by contacting us; data is removed within a reasonable period."
+        },
+        {
+          "h": "Your rights",
+          "p": "You may request access to, correction of, or deletion of your data. Write to the e-mail address on the contact page."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "intro": "By using the site you agree to the terms below. Please read them carefully.",
+      "sections": [
+        {
+          "h": "The service",
+          "p": "Build Up Investment is a real-estate platform: user listings, a catalogue of development projects and consultation requests. We are not a party to any transaction between buyer and seller."
+        },
+        {
+          "h": "Accounts",
+          "p": "A valid e-mail address is required to create an account. You are responsible for keeping your password safe and for activity carried out from your account."
+        },
+        {
+          "h": "Listings",
+          "p": "The person publishing a listing is responsible for its accuracy and for the rights to the photos. Fake, duplicate, offensive or unlawful content is prohibited. We may review, edit, hide or remove any listing without explanation."
+        },
+        {
+          "h": "Prices and information",
+          "p": "Prices, areas, delivery dates and exchange rates shown on the site are indicative and may change. Always confirm details with the owner or developer before any transaction."
+        },
+        {
+          "h": "Limitation of liability",
+          "p": "The platform is provided \"as is\". We are not liable for the accuracy of user-submitted information or for the outcome of transactions with third parties."
+        },
+        {
+          "h": "Changes",
+          "p": "These terms may be updated. Significant changes will be announced on the site; continued use of the service means you accept the updated terms."
+        }
+      ]
+    }
+  }
 }

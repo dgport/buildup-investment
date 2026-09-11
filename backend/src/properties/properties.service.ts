@@ -675,6 +675,7 @@ export class PropertiesService {
     dto: CreatePropertyDto,
     images: Express.Multer.File[] | undefined,
     userId: string,
+    userRole: UserRole = UserRole.REGULAR,
   ) {
     if (!this.hasAnyTitle(dto)) {
       await this.discardUploadedFiles(images);
@@ -696,7 +697,8 @@ export class PropertiesService {
         location: dto.location ?? null,
         region: dto.region ?? null,
         address: dto.address ?? null,
-        hotSale: dto.hotSale ?? false,
+        // Only admins can mark a listing VIP
+        hotSale: userRole === UserRole.ADMIN ? (dto.hotSale ?? false) : false,
         public: dto.public ?? true,
         userId,
         status: moderation ? PropertyStatus.PENDING : PropertyStatus.APPROVED,
@@ -815,6 +817,7 @@ export class PropertiesService {
       if (raw[field] !== undefined) updateData[field] = raw[field];
     }
     for (const field of BOOLEAN_FIELDS) {
+      if (field === 'hotSale' && userRole !== UserRole.ADMIN) continue;
       if (typeof raw[field] === 'boolean') updateData[field] = raw[field];
     }
 

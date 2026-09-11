@@ -26,6 +26,7 @@ import {
   ToggleChip,
 } from "./FormPrimitives";
 import { usePropertyOptions } from "./usePropertyOptions";
+import { useCurrentUser } from "@/lib/hooks/useAuth";
 import { PropertyLocationPicker } from "../PropertyLocationPicker";
 
 export type PropertyFormData = Partial<CreatePropertyDto>;
@@ -58,6 +59,8 @@ const toNumber = (raw: string): number | "" =>
 export function BasicsSection({ data, onChange, errors = {} }: SectionProps) {
   const t = useTranslations("dashboard.form");
   const options = usePropertyOptions();
+  const { data: user } = useCurrentUser();
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <div className="space-y-6">
@@ -109,13 +112,15 @@ export function BasicsSection({ data, onChange, errors = {} }: SectionProps) {
           {t("sections.visibility")}
         </Label>
         <div className="flex flex-wrap gap-3">
-          <ToggleChip
-            icon={<Flame className="w-4 h-4" />}
-            label={t("hotSale")}
-            active={data.hotSale === true}
-            activeClass="bg-red-50 border-red-300 text-red-600"
-            onChange={(v) => onChange("hotSale", v)}
-          />
+          {isAdmin && (
+            <ToggleChip
+              icon={<Flame className="w-4 h-4" />}
+              label={t("hotSale")}
+              active={data.hotSale === true}
+              activeClass="bg-red-50 border-red-300 text-red-600"
+              onChange={(v) => onChange("hotSale", v)}
+            />
+          )}
           <ToggleChip
             icon={
               data.public !== false ? (

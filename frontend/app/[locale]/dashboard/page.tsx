@@ -30,6 +30,7 @@ import { CardGridSkeleton } from "@/components/shared/Skeletons";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
+import { locales as SITE_LOCALES } from "@/i18n/routing";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { ROUTES } from "@/lib/constants/routes";
 import {
@@ -70,7 +71,7 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
       .filter(Boolean)
       .join(", ") || t("locationNotSpecified");
   const cover = resolveImageUrl(property.galleryImages?.[0]?.imageUrl);
-  const missingLanguages = PROPERTY_LANGUAGES.filter(
+  const missingLanguages = PROPERTY_LANGUAGES.filter((l) => (SITE_LOCALES as readonly string[]).includes(l)).filter(
     (lang) =>
       !property.translations?.some(
         (tr) => tr.language === lang && tr.title.trim(),
