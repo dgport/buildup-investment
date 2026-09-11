@@ -225,6 +225,14 @@ export interface PropertyFilters {
   hotSale?: boolean;
   sort?: "featured" | "newest" | "price_asc" | "price_desc" | "area_desc";
   excludeId?: string;
+  /** Admin list only */
+  status?: PropertyStatus | string;
+  search?: string;
+}
+
+export interface UpdatePropertyStatusDto {
+  status: PropertyStatus;
+  rejectionReason?: string | null;
 }
 
 export interface PropertiesResponse {

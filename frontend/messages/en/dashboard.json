@@ -158,5 +158,6 @@
     "confirm": "Confirm",
     "noToken": "Map unavailable: NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN is not configured."
   },
-  "deleted": "Listing deleted"
+  "deleted": "Listing deleted",
+  "pendingHint": "This listing is under review — it goes live once approved. You will get an e-mail with the result."
 }

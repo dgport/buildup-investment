@@ -201,6 +201,12 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
           </Button>
         </div>
 
+        {property.status === PropertyStatus.PENDING && (
+          <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+            {t("pendingHint")}
+          </p>
+        )}
+
         {property.status === PropertyStatus.REJECTED &&
           property.rejectionReason && (
             <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">

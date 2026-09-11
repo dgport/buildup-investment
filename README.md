@@ -9,7 +9,17 @@ Monorepo with two apps:
 
 Signed-in users publish their own listings (apartments, villas, land, commercial,
 hotels) with photos, a map pin and titles/descriptions in Georgian, English and
-Russian. Listings are public immediately; owners edit them from **My listings**.
+Russian. Owners edit them from **My listings**. By default listings go live
+immediately; switch on **listing moderation** in `/admin/settings` and new
+listings wait in the admin queue instead (owners are e-mailed when approved or
+rejected, and a rejected listing returns to the queue as soon as its owner edits
+it).
+
+**Admin panel** (`/admin`): overview with pending queue and latest leads,
+listing moderation (approve / reject with reason / VIP / delete), developer
+projects, developers, leads inbox, user management (role, block) and site
+settings (moderation switch, default contact phone). New leads and listings
+awaiting review are e-mailed to `ADMIN_NOTIFY_EMAIL` (falls back to `ADMIN_EMAIL`).
 
 **Developer projects** (new-build complexes) are curated by the admin from
 `/admin`: developers with logo and profile, projects with gallery, status and
@@ -112,7 +122,11 @@ npm run build
 | PATCH  | `/api/properties/:id/images/order`       | owner/admin | Reorder gallery (`imageIds`)             |
 | DELETE | `/api/properties/:id/images/:imageId`    | owner/admin | Delete one photo                         |
 | GET/PATCH | `/api/properties/:id/translations`    | owner/admin | Per-language title/address/description   |
-| GET    | `/api/properties/admin/all`              | admin       | Everything incl. hidden listings         |
+| GET    | `/api/properties/admin/all`              | admin       | Everything incl. hidden listings (`status`, `search`) |
+| PATCH  | `/api/properties/admin/:id/status`       | admin       | Approve / reject (`rejectionReason`) / re-queue |
+| GET    | `/api/admin/stats`                       | admin       | Dashboard counters, pending queue, latest leads |
+| GET/PATCH | `/api/admin/users[/:id]`              | admin       | List users; change `role` / `isActive`   |
+| GET/PATCH | `/api/admin/settings`                 | admin       | `default_contact_phone`, `listing_moderation` |
 | GET    | `/api/projects`, `/api/projects/map`     | –           | Published development projects / map pins |
 | GET    | `/api/projects/:idOrSlug`                | –           | Project with developer, unit types, related |
 | POST   | `/api/projects/:id/leads`                | –           | Consultation request (rate-limited)      |

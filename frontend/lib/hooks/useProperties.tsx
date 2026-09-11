@@ -8,6 +8,7 @@ import type {
   UpsertPropertyTranslationDto,
   CreatePropertyDto,
   UpdatePropertyDto,
+  UpdatePropertyStatusDto,
 } from "../types/properties";
 import { propertiesService } from "../services/properties.service";
 
@@ -54,7 +55,21 @@ export const usePropertiesAdmin = (filters?: PropertyFilters) =>
   useQuery<PropertiesResponse>({
     queryKey: propertyKeys.admin(filters),
     queryFn: async () => (await propertiesService.getAllAdmin(filters)).data,
+    placeholderData: (prev) => prev,
   });
+
+/** Admin moderation: approve / reject / re-queue. */
+export const useSetPropertyStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdatePropertyStatusDto }) =>
+      (await propertiesService.setStatusAdmin(id, data)).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: propertyKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+    },
+  });
+};
 
 /** Public property detail. */
 export const useProperty = (id: string, lang?: string) =>

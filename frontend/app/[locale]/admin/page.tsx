@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/constants/routes";
+import { AdminOverview } from "./_components/AdminOverview";
 
 export default function AdminIndex() {
-  redirect(ROUTES.ADMIN_PROJECTS);
+  return <AdminOverview />;
 }

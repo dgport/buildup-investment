@@ -34,11 +34,12 @@ import { UpsertPropertyTranslationDto } from './dto/UpsertPropertyTranslation.dt
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
 import { ReorderImagesDto } from './dto/ReorderImages.dto';
+import { UpdatePropertyStatusDto } from './dto/UpdatePropertyStatus.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { AdminGuard } from '@/auth/guards/admin.guard';
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { User } from '@/auth/types/user.type';
-import { DealType, PropertyType, Region } from '@prisma/client';
+import { DealType, PropertyStatus, PropertyType, Region } from '@prisma/client';
 
 const toInt = (value?: string): number | undefined => {
   if (value === undefined || value === null || value === '') return undefined;
@@ -90,7 +91,11 @@ const LIST_QUERY_DOCS = [
   { name: 'rooms', required: false, type: Number },
   { name: 'bedrooms', required: false, type: Number },
   { name: 'hotSale', required: false, type: Boolean },
-  { name: 'sort', required: false, enum: ['featured', 'newest', 'price_asc', 'price_desc', 'area_desc'] },
+  {
+    name: 'sort',
+    required: false,
+    enum: ['featured', 'newest', 'price_asc', 'price_desc', 'area_desc'],
+  },
   { name: 'excludeId', required: false },
 ] as const;
 
@@ -113,7 +118,10 @@ export class PropertiesController {
   @Get()
   @ApiOperation({ summary: 'Get all approved public properties with filters' })
   @ListQueryDocs()
-  @ApiResponse({ status: 200, description: 'Properties retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Properties retrieved successfully',
+  })
   async findAll(@Query() query: Record<string, string | undefined>) {
     return this.propertiesService.findAll({
       ...parseListQuery(query),
@@ -144,7 +152,9 @@ export class PropertiesController {
   @Get('my-properties/stats')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Per-status counts of the current user's properties" })
+  @ApiOperation({
+    summary: "Per-status counts of the current user's properties",
+  })
   @ApiResponse({ status: 200, description: 'Stats retrieved' })
   async getMyStats(@CurrentUser() user: User) {
     return this.propertiesService.getUserStats(user.id);
@@ -257,7 +267,9 @@ export class PropertiesController {
   @Get(':id/translations')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all translations for a property (owner or admin)' })
+  @ApiOperation({
+    summary: 'Get all translations for a property (owner or admin)',
+  })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiResponse({ status: 200, description: 'Translations retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -370,23 +382,51 @@ export class PropertiesController {
   @Get('admin/all')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get ALL properties including private ones (admin only)' })
+  @ApiOperation({
+    summary: 'Get ALL properties including private ones (admin only)',
+  })
   @ListQueryDocs()
   @ApiResponse({ status: 200, description: 'All properties retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Admin access required' })
   async findAllAdmin(@Query() query: Record<string, string | undefined>) {
+    const status = Object.values(PropertyStatus).includes(
+      query.status as PropertyStatus,
+    )
+      ? (query.status as PropertyStatus)
+      : undefined;
     return this.propertiesService.findAll({
       ...parseListQuery(query),
+      status,
+      search: query.search,
       includePrivate: true,
       onlyApproved: false,
     });
   }
 
+  @Patch('admin/:id/status')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Approve / reject / re-queue a listing (admin only)',
+  })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Status updated' })
+  @ApiResponse({ status: 403, description: 'Admin access required' })
+  @ApiResponse({ status: 404, description: 'Property not found' })
+  async setStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdatePropertyStatusDto,
+  ) {
+    return this.propertiesService.setStatus(id, dto);
+  }
+
   @Get('admin/:id')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get any property by ID including private ones (admin only)' })
+  @ApiOperation({
+    summary: 'Get any property by ID including private ones (admin only)',
+  })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiQuery({ name: 'lang', required: false, example: 'ka' })
   @ApiResponse({ status: 200, description: 'Property retrieved successfully' })

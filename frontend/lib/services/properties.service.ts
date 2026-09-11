@@ -11,6 +11,7 @@ import type {
   UpsertPropertyTranslationDto,
   CreatePropertyDto,
   UpdatePropertyDto,
+  UpdatePropertyStatusDto,
 } from "../types/properties";
 
 const cleanFilters = (filters?: PropertyFilters) =>
@@ -70,6 +71,9 @@ export const propertiesService = {
     api.get<Property>(API_ENDPOINTS.PROPERTIES.MANAGE(id), {
       params: lang ? { lang } : {},
     }),
+
+  setStatusAdmin: (id: string, data: UpdatePropertyStatusDto) =>
+    api.patch<Property>(API_ENDPOINTS.PROPERTIES.ADMIN_STATUS(id), data),
 
   getByIdAdmin: (id: string, lang?: string) =>
     api.get<Property>(API_ENDPOINTS.PROPERTIES.ADMIN_BY_ID(id), {

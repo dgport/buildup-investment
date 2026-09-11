@@ -6,6 +6,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { CreatePropertyDto } from './dto/CreateProperty.dto';
+import { UpdatePropertyStatusDto } from './dto/UpdatePropertyStatus.dto';
+import { EmailService } from '@/auth/services/email.service';
+import { ConfigService } from '@nestjs/config';
 import { UpdatePropertyDto } from './dto/UpdateProperty.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
@@ -43,6 +46,10 @@ export interface FindAllParams {
   includePrivate?: boolean;
   onlyApproved?: boolean;
   userId?: string;
+  /** Admin only: filter by moderation status (ignored when onlyApproved). */
+  status?: PropertyStatus;
+  /** Admin only: matches the external ID or any title. */
+  search?: string;
 }
 
 const MAX_PAGE_SIZE = 100;
@@ -116,7 +123,11 @@ type PropertyWithRelations = Prisma.PropertyGetPayload<{
 
 @Injectable()
 export class PropertiesService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly emailService: EmailService,
+    private readonly config: ConfigService,
+  ) {}
 
   // ─── Private Helpers ──────────────────────────────────────────────────────
 
@@ -152,6 +163,14 @@ export class PropertiesService {
     }
 
     return translation;
+  }
+
+  /** Site setting `listing_moderation` = "on" sends new listings to review. */
+  private async isModerationOn(): Promise<boolean> {
+    const setting = await this.prismaService.siteSettings.findUnique({
+      where: { key: 'listing_moderation' },
+    });
+    return setting?.value === 'on';
   }
 
   private async getDefaultContactPhone(): Promise<string | null> {
@@ -387,6 +406,19 @@ export class PropertiesService {
     }
     if (hotSale !== undefined) where.hotSale = hotSale;
     if (params.excludeId) where.id = { not: params.excludeId };
+    if (!onlyApproved && params.status) where.status = params.status;
+    if (params.search?.trim()) {
+      const q = params.search.trim();
+      where.OR = [
+        { externalId: { contains: q, mode: 'insensitive' } },
+        {
+          translations: {
+            some: { title: { contains: q, mode: 'insensitive' } },
+          },
+        },
+        { user: { email: { contains: q, mode: 'insensitive' } } },
+      ];
+    }
 
     if (priceFrom !== undefined || priceTo !== undefined) {
       where.price = {};
@@ -410,11 +442,20 @@ export class PropertiesService {
         case 'newest':
           return [{ createdAt: 'desc' }];
         case 'price_asc':
-          return [{ price: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }];
+          return [
+            { price: { sort: 'asc', nulls: 'last' } },
+            { createdAt: 'desc' },
+          ];
         case 'price_desc':
-          return [{ price: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }];
+          return [
+            { price: { sort: 'desc', nulls: 'last' } },
+            { createdAt: 'desc' },
+          ];
         case 'area_desc':
-          return [{ totalArea: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }];
+          return [
+            { totalArea: { sort: 'desc', nulls: 'last' } },
+            { createdAt: 'desc' },
+          ];
         default:
           return [{ hotSale: 'desc' }, { createdAt: 'desc' }];
       }
@@ -560,6 +601,65 @@ export class PropertiesService {
     );
   }
 
+  /**
+   * Admin moderation: approve / reject / send back to review. Notifies the
+   * owner by e-mail (best effort — a mail failure never fails the request).
+   */
+  async setStatus(id: string, dto: UpdatePropertyStatusDto) {
+    const property = await this.prismaService.property.findUnique({
+      where: { id },
+      include: {
+        user: { select: { email: true, firstname: true } },
+        translations: { select: { language: true, title: true } },
+      },
+    });
+    if (!property) {
+      throw new NotFoundException(`Property with ID "${id}" not found`);
+    }
+
+    const rejectionReason =
+      dto.status === PropertyStatus.REJECTED
+        ? (dto.rejectionReason ?? null)
+        : null;
+
+    await this.prismaService.property.update({
+      where: { id },
+      data: { status: dto.status, rejectionReason },
+    });
+
+    if (
+      property.status !== dto.status &&
+      property.user?.email &&
+      (dto.status === PropertyStatus.APPROVED ||
+        dto.status === PropertyStatus.REJECTED)
+    ) {
+      const rows = property.translations;
+      const title =
+        (
+          rows.find((t) => t.language === 'ka') ??
+          rows.find((t) => t.language === 'en') ??
+          rows[0]
+        )?.title ?? `#${property.externalId}`;
+      const frontend = this.config.get<string>('FRONTEND_URL') ?? '';
+      const url =
+        dto.status === PropertyStatus.APPROVED
+          ? `${frontend}/properties/${property.id}`
+          : `${frontend}/dashboard`;
+      void this.emailService
+        .sendListingStatusEmail(
+          property.user.email,
+          property.user.firstname,
+          title,
+          dto.status,
+          rejectionReason,
+          url,
+        )
+        .catch(() => undefined);
+    }
+
+    return this.findOne(id, 'en', true, false);
+  }
+
   /** Owner (or admin) view of a property regardless of visibility/status. */
   async findOneForOwner(
     id: string,
@@ -583,7 +683,10 @@ export class PropertiesService {
       );
     }
 
-    const externalId = await this.generateUniqueExternalId();
+    const [externalId, moderation] = await Promise.all([
+      this.generateUniqueExternalId(),
+      this.isModerationOn(),
+    ]);
 
     const property = await this.prismaService.property.create({
       data: {
@@ -596,7 +699,7 @@ export class PropertiesService {
         hotSale: dto.hotSale ?? false,
         public: dto.public ?? true,
         userId,
-        status: PropertyStatus.APPROVED,
+        status: moderation ? PropertyStatus.PENDING : PropertyStatus.APPROVED,
         contactPhone: dto.contactPhone ?? null,
         price: dto.price ?? null,
         totalArea: dto.totalArea ?? null,
@@ -651,6 +754,23 @@ export class PropertiesService {
       await this.saveGalleryImages(property.id, images, 0);
     }
 
+    if (moderation) {
+      const title =
+        dto.titleKa || dto.titleEn || dto.titleRu || `#${externalId}`;
+      void this.emailService
+        .sendAdminAlert(
+          `🕒 განცხადება ელოდება შემოწმებას — ${title}`,
+          [
+            { label: 'განცხადება', value: `${title} (#${externalId})` },
+            { label: 'ტიპი', value: `${dto.propertyType} · ${dto.dealType}` },
+            ...(dto.price ? [{ label: 'ფასი', value: `$${dto.price}` }] : []),
+          ],
+          'შემოწმება',
+          `${this.config.get<string>('FRONTEND_URL') ?? ''}/admin/listings?status=PENDING`,
+        )
+        .catch(() => undefined);
+    }
+
     return this.findOne(property.id, 'en', true, false);
   }
 
@@ -696,6 +816,18 @@ export class PropertiesService {
     }
     for (const field of BOOLEAN_FIELDS) {
       if (typeof raw[field] === 'boolean') updateData[field] = raw[field];
+    }
+
+    // An owner who fixes a rejected listing sends it back into review
+    // (or straight to approved when moderation is off).
+    if (
+      userRole !== UserRole.ADMIN &&
+      property.status === PropertyStatus.REJECTED
+    ) {
+      updateData.status = (await this.isModerationOn())
+        ? PropertyStatus.PENDING
+        : PropertyStatus.APPROVED;
+      updateData.rejectionReason = null;
     }
 
     await this.prismaService.property.update({
@@ -828,7 +960,8 @@ export class PropertiesService {
     // Stable, meaningful order: ka, en, ru
     const order = new Map(LANGUAGES.map((l, i) => [l, i]));
     return updated.sort(
-      (a, b) => (order.get(a.language as Language) ?? 99) -
+      (a, b) =>
+        (order.get(a.language as Language) ?? 99) -
         (order.get(b.language as Language) ?? 99),
     );
   }
@@ -1041,7 +1174,9 @@ export class PropertiesService {
     if (!images?.length) return;
     await Promise.all(
       images.map((image) =>
-        FileUtils.deleteFile(FileUtils.generateImageUrl(image, 'properties') ?? ''),
+        FileUtils.deleteFile(
+          FileUtils.generateImageUrl(image, 'properties') ?? '',
+        ),
       ),
     );
   }

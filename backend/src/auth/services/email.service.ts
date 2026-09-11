@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import {
+  adminAlertEmailTemplate,
+  listingStatusEmailTemplate,
   addPasswordEmailTemplate,
   resetPasswordEmailTemplate,
   verificationEmailTemplate,
@@ -12,10 +14,15 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly resend: Resend;
   private readonly from: string;
+  private readonly adminEmail: string | null;
 
   constructor(private readonly config: ConfigService) {
     this.resend = new Resend(config.getOrThrow<string>('RESEND_API_KEY'));
     this.from = config.get<string>('EMAIL_FROM') ?? 'onboarding@resend.dev';
+    this.adminEmail =
+      config.get<string>('ADMIN_NOTIFY_EMAIL') ??
+      config.get<string>('ADMIN_EMAIL') ??
+      null;
   }
 
   async sendVerificationEmail(
@@ -50,6 +57,43 @@ export class EmailService {
       email,
       '🔑 Add Password to Your Account - BuildUp',
       addPasswordEmailTemplate(firstname, url),
+    );
+  }
+
+  /** Owner notification after an admin approves or rejects a listing. */
+  async sendListingStatusEmail(
+    email: string,
+    firstname: string,
+    title: string,
+    status: 'APPROVED' | 'REJECTED',
+    reason: string | null,
+    url: string,
+  ): Promise<void> {
+    const approved = status === 'APPROVED';
+    await this.send(
+      email,
+      approved
+        ? `✅ თქვენი განცხადება გამოქვეყნდა — ${title}`
+        : `⚠️ განცხადება საჭიროებს შესწორებას — ${title}`,
+      listingStatusEmailTemplate(firstname, title, approved, reason, url),
+    );
+  }
+
+  /**
+   * Best-effort alert to the site admin (ADMIN_NOTIFY_EMAIL, falling back to
+   * ADMIN_EMAIL). Silently skipped when neither is configured.
+   */
+  async sendAdminAlert(
+    subject: string,
+    rows: { label: string; value: string }[],
+    actionLabel: string,
+    actionUrl: string,
+  ): Promise<void> {
+    if (!this.adminEmail) return;
+    await this.send(
+      this.adminEmail,
+      subject,
+      adminAlertEmailTemplate(subject, rows, actionLabel, actionUrl),
     );
   }
 

@@ -47,6 +47,7 @@ import { AdminGuard } from './guards/admin.guard';
   ],
   exports: [
     AuthService,
+    EmailService,
     JwtAuthGuard,
     OptionalJwtAuthGuard,
     AdminGuard,

@@ -186,7 +186,7 @@ function ProfileDropdown() {
               className="justify-start gap-3 w-full rounded-xl hover:bg-amber-400/10 hover:text-amber-300 transition-all text-sm py-2"
               asChild
             >
-              <Link href={ROUTES.ADMIN_PROJECTS}>
+              <Link href={ROUTES.ADMIN}>
                 <ShieldCheck className="h-4 w-4 text-amber-400/70" />
                 {t("admin")}
               </Link>
@@ -416,7 +416,7 @@ export default function Header() {
                   </Link>
                   {user.role === "ADMIN" && (
                     <Link
-                      href={ROUTES.ADMIN_PROJECTS}
+                      href={ROUTES.ADMIN}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-amber-100/70 hover:bg-white/[0.06] hover:text-amber-300 transition-all"
                     >
                       <ShieldCheck className="h-4 w-4 text-amber-400/70" />

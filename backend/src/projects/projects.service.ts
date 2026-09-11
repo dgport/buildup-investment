@@ -7,6 +7,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { LeadStatus, Prisma, ProjectStatus, Region } from '@prisma/client';
+import { EmailService } from '@/auth/services/email.service';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { LANGUAGES, Language } from '@/common/constants/language';
@@ -53,7 +55,10 @@ const PROJECT_INCLUDE = {
       _count: { select: { projects: { where: { published: true } } } },
     },
   },
-  unitTypes: { include: UNIT_TYPE_INCLUDE, orderBy: [{ sortOrder: 'asc' as const }, { rooms: 'asc' as const }] },
+  unitTypes: {
+    include: UNIT_TYPE_INCLUDE,
+    orderBy: [{ sortOrder: 'asc' as const }, { rooms: 'asc' as const }],
+  },
   _count: { select: { leads: true } },
 } satisfies Prisma.ProjectInclude;
 
@@ -70,6 +75,8 @@ export class ProjectsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly developers: DevelopersService,
+    private readonly emailService: EmailService,
+    private readonly config: ConfigService,
   ) {}
 
   // ─── Mapping ──────────────────────────────────────────────────────────────
@@ -182,7 +189,10 @@ export class ProjectsService {
     const where: Prisma.ProjectWhereInput = {};
 
     if (!params.includeUnpublished) where.published = true;
-    if (params.region && (Object.values(Region) as string[]).includes(params.region)) {
+    if (
+      params.region &&
+      (Object.values(Region) as string[]).includes(params.region)
+    ) {
       where.region = params.region as Region;
     }
     if (
@@ -200,13 +210,21 @@ export class ProjectsService {
     if (params.deliveryYear) where.deliveryYear = params.deliveryYear;
     if (params.rooms !== undefined) {
       where.unitTypes = {
-        some: params.rooms >= 4 ? { rooms: { gte: 4 } } : { rooms: params.rooms },
+        some:
+          params.rooms >= 4 ? { rooms: { gte: 4 } } : { rooms: params.rooms },
       };
     }
-    if (params.pricePerSqmFrom !== undefined || params.pricePerSqmTo !== undefined) {
+    if (
+      params.pricePerSqmFrom !== undefined ||
+      params.pricePerSqmTo !== undefined
+    ) {
       where.pricePerSqmFrom = {
-        ...(params.pricePerSqmFrom !== undefined && { gte: params.pricePerSqmFrom }),
-        ...(params.pricePerSqmTo !== undefined && { lte: params.pricePerSqmTo }),
+        ...(params.pricePerSqmFrom !== undefined && {
+          gte: params.pricePerSqmFrom,
+        }),
+        ...(params.pricePerSqmTo !== undefined && {
+          lte: params.pricePerSqmTo,
+        }),
       };
     }
     if (params.priceFrom !== undefined || params.priceTo !== undefined) {
@@ -218,7 +236,11 @@ export class ProjectsService {
     if (params.search?.trim()) {
       const q = params.search.trim();
       where.OR = [
-        { translations: { some: { title: { contains: q, mode: 'insensitive' } } } },
+        {
+          translations: {
+            some: { title: { contains: q, mode: 'insensitive' } },
+          },
+        },
         { developer: { name: { contains: q, mode: 'insensitive' } } },
         { slug: { contains: q, mode: 'insensitive' } },
       ];
@@ -238,7 +260,11 @@ export class ProjectsService {
             { deliveryQuarter: { sort: 'asc', nulls: 'last' } },
           ];
         default:
-          return [{ hotSale: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }];
+          return [
+            { hotSale: 'desc' },
+            { sortOrder: 'asc' },
+            { createdAt: 'desc' },
+          ];
       }
     })();
 
@@ -327,7 +353,11 @@ export class ProjectsService {
     });
     if (!row) throw new NotFoundException('Project not found');
 
-    const regionNames = await loadRegionNames(this.prisma, [row.region], normalized);
+    const regionNames = await loadRegionNames(
+      this.prisma,
+      [row.region],
+      normalized,
+    );
     const project = this.mapProject(
       row,
       normalized,
@@ -337,7 +367,11 @@ export class ProjectsService {
 
     // A few other published projects of the same developer
     const siblings = await this.prisma.project.findMany({
-      where: { developerId: row.developerId, published: true, id: { not: row.id } },
+      where: {
+        developerId: row.developerId,
+        published: true,
+        id: { not: row.id },
+      },
       include: PROJECT_INCLUDE,
       orderBy: [{ hotSale: 'desc' }, { sortOrder: 'asc' }],
       take: 4,
@@ -364,7 +398,9 @@ export class ProjectsService {
 
   async create(dto: CreateProjectDto) {
     if (!this.hasAnyTitle(dto)) {
-      throw new BadRequestException('A title is required in at least one language');
+      throw new BadRequestException(
+        'A title is required in at least one language',
+      );
     }
     const developer = await this.prisma.developer.findUnique({
       where: { id: dto.developerId },
@@ -485,7 +521,9 @@ export class ProjectsService {
       select: { title: true },
     });
     if (!titles.some((t) => t.title.trim())) {
-      throw new BadRequestException('A title is required in at least one language');
+      throw new BadRequestException(
+        'A title is required in at least one language',
+      );
     }
 
     return this.findOne(id, 'en', true);
@@ -499,7 +537,9 @@ export class ProjectsService {
     if (!project) throw new NotFoundException('Project not found');
 
     await this.prisma.project.delete({ where: { id } });
-    await Promise.all(project.images.map((i) => FileUtils.deleteFile(i.imageUrl)));
+    await Promise.all(
+      project.images.map((i) => FileUtils.deleteFile(i.imageUrl)),
+    );
     return { message: 'Project deleted' };
   }
 
@@ -511,9 +551,12 @@ export class ProjectsService {
     unitTypeId: string | null = null,
   ) {
     files = await FileUtils.keepOnlyRealImages(files);
-    if (!files.length) throw new BadRequestException('No valid image files received');
+    if (!files.length)
+      throw new BadRequestException('No valid image files received');
 
-    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+    });
     if (!project) {
       await this.discardFiles(files);
       throw new NotFoundException('Project not found');
@@ -538,7 +581,12 @@ export class ProjectsService {
       data: files
         .map((file) => FileUtils.generateImageUrl(file, PROJECT_FOLDER))
         .filter((url): url is string => !!url)
-        .map((imageUrl) => ({ projectId, unitTypeId, imageUrl, order: order++ })),
+        .map((imageUrl) => ({
+          projectId,
+          unitTypeId,
+          imageUrl,
+          order: order++,
+        })),
     });
 
     return this.prisma.projectImage.findMany({
@@ -547,7 +595,11 @@ export class ProjectsService {
     });
   }
 
-  async reorderImages(projectId: string, imageIds: number[], unitTypeId: string | null = null) {
+  async reorderImages(
+    projectId: string,
+    imageIds: number[],
+    unitTypeId: string | null = null,
+  ) {
     const existing = await this.prisma.projectImage.findMany({
       where: { projectId, unitTypeId },
       orderBy: { order: 'asc' },
@@ -558,7 +610,9 @@ export class ProjectsService {
     if (unknown.length) {
       throw new BadRequestException(`Unknown image ids: ${unknown.join(', ')}`);
     }
-    const rest = existing.map((i) => i.id).filter((id) => !imageIds.includes(id));
+    const rest = existing
+      .map((i) => i.id)
+      .filter((id) => !imageIds.includes(id));
     const finalOrder = [...imageIds, ...rest];
     await this.prisma.$transaction(
       finalOrder.map((id, order) =>
@@ -587,7 +641,10 @@ export class ProjectsService {
     });
     await this.prisma.$transaction(
       rest.map((img, order) =>
-        this.prisma.projectImage.update({ where: { id: img.id }, data: { order } }),
+        this.prisma.projectImage.update({
+          where: { id: img.id },
+          data: { order },
+        }),
       ),
     );
     return { message: 'Image deleted' };
@@ -596,7 +653,9 @@ export class ProjectsService {
   // ─── Admin: unit types ────────────────────────────────────────────────────
 
   async createUnitType(projectId: string, dto: CreateUnitTypeDto) {
-    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+    });
     if (!project) throw new NotFoundException('Project not found');
     this.validateUnitRanges(dto);
 
@@ -627,7 +686,11 @@ export class ProjectsService {
     return this.mapUnitType(unit, 'en', true);
   }
 
-  async updateUnitType(projectId: string, unitTypeId: string, dto: UpdateUnitTypeDto) {
+  async updateUnitType(
+    projectId: string,
+    unitTypeId: string,
+    dto: UpdateUnitTypeDto,
+  ) {
     const unit = await this.prisma.projectUnitType.findFirst({
       where: { id: unitTypeId, projectId },
     });
@@ -662,7 +725,12 @@ export class ProjectsService {
       if (title === undefined && description === undefined) continue;
       await this.prisma.projectUnitTypeTranslation.upsert({
         where: { unitTypeId_language: { unitTypeId, language } },
-        create: { unitTypeId, language, title: title ?? null, description: description ?? null },
+        create: {
+          unitTypeId,
+          language,
+          title: title ?? null,
+          description: description ?? null,
+        },
         update: {
           ...(title !== undefined && { title }),
           ...(description !== undefined && { description }),
@@ -690,7 +758,11 @@ export class ProjectsService {
 
   // ─── Leads ────────────────────────────────────────────────────────────────
 
-  async createLead(projectId: string, dto: CreateLeadDto, ip: string | undefined) {
+  async createLead(
+    projectId: string,
+    dto: CreateLeadDto,
+    ip: string | undefined,
+  ) {
     if (dto.website) {
       // Honeypot filled → pretend success, store nothing
       return { message: 'ok' };
@@ -699,6 +771,7 @@ export class ProjectsService {
 
     const project = await this.prisma.project.findFirst({
       where: { id: projectId, published: true },
+      include: { translations: { select: { language: true, title: true } } },
     });
     if (!project) throw new NotFoundException('Project not found');
 
@@ -721,14 +794,43 @@ export class ProjectsService {
         ipAddress: ip ?? null,
       },
     });
+
+    const projectTitle =
+      pickTranslation(project.translations, dto.locale ?? 'ka')?.title ??
+      project.slug;
+    void this.emailService
+      .sendAdminAlert(
+        `📩 ახალი მოთხოვნა — ${projectTitle}`,
+        [
+          { label: 'პროექტი', value: projectTitle },
+          { label: 'სახელი', value: dto.name },
+          { label: 'ტელეფონი', value: dto.phone },
+          ...(dto.email ? [{ label: 'ელ-ფოსტა', value: dto.email }] : []),
+          ...(dto.message
+            ? [{ label: 'შეტყობინება', value: dto.message }]
+            : []),
+        ],
+        'მოთხოვნების ნახვა',
+        `${this.config.get<string>('FRONTEND_URL') ?? ''}/admin/leads`,
+      )
+      .catch(() => undefined);
+
     return { id: lead.id, message: 'ok' };
   }
 
-  async findLeads(params: { page?: number; limit?: number; status?: string; projectId?: string }) {
+  async findLeads(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    projectId?: string;
+  }) {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, params.limit ?? 20));
     const where: Prisma.ProjectLeadWhereInput = {};
-    if (params.status && (Object.values(LeadStatus) as string[]).includes(params.status)) {
+    if (
+      params.status &&
+      (Object.values(LeadStatus) as string[]).includes(params.status)
+    ) {
       where.status = params.status as LeadStatus;
     }
     if (params.projectId) where.projectId = params.projectId;
@@ -744,10 +846,15 @@ export class ProjectsService {
           project: { select: { id: true, slug: true, translations: true } },
         },
       }),
-      this.prisma.projectLead.groupBy({ by: ['status'], _count: { _all: true } }),
+      this.prisma.projectLead.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      }),
     ]);
 
-    const unitTypeIds = rows.map((r) => r.unitTypeId).filter((v): v is string => !!v);
+    const unitTypeIds = rows
+      .map((r) => r.unitTypeId)
+      .filter((v): v is string => !!v);
     const units = unitTypeIds.length
       ? await this.prisma.projectUnitType.findMany({
           where: { id: { in: unitTypeIds } },
@@ -773,14 +880,24 @@ export class ProjectsService {
           project: {
             id: lead.project.id,
             slug: lead.project.slug,
-            title: pickTranslation(lead.project.translations, lead.locale, (t) => !!t.title)?.title ?? lead.project.slug,
+            title:
+              pickTranslation(
+                lead.project.translations,
+                lead.locale,
+                (t) => !!t.title,
+              )?.title ?? lead.project.slug,
           },
           unitType: unit
             ? {
                 id: unit.id,
                 rooms: unit.rooms,
                 areaFrom: unit.areaFrom,
-                title: pickTranslation(unit.translations, lead.locale, (t) => !!t.title)?.title ?? null,
+                title:
+                  pickTranslation(
+                    unit.translations,
+                    lead.locale,
+                    (t) => !!t.title,
+                  )?.title ?? null,
               }
             : null,
         };
@@ -792,7 +909,9 @@ export class ProjectsService {
         totalPages,
         hasNextPage: page < totalPages,
         hasPreviousPage: page > 1,
-        counts: Object.fromEntries(counts.map((c) => [c.status, c._count._all])),
+        counts: Object.fromEntries(
+          counts.map((c) => [c.status, c._count._all]),
+        ),
       },
     };
   }
@@ -820,7 +939,9 @@ export class ProjectsService {
 
   private normalizeLang(lang?: string): Language {
     const value = (lang ?? 'en').toLowerCase().slice(0, 2);
-    return (LANGUAGES as readonly string[]).includes(value) ? (value as Language) : 'en';
+    return (LANGUAGES as readonly string[]).includes(value)
+      ? (value as Language)
+      : 'en';
   }
 
   /** Reads e.g. dto.titleKa / dto.descriptionEn; undefined = not provided. */
@@ -840,15 +961,27 @@ export class ProjectsService {
   }
 
   private validateUnitRanges(dto: Partial<CreateUnitTypeDto>) {
-    if (dto.areaTo != null && dto.areaFrom != null && dto.areaTo < dto.areaFrom) {
+    if (
+      dto.areaTo != null &&
+      dto.areaFrom != null &&
+      dto.areaTo < dto.areaFrom
+    ) {
       throw new BadRequestException('areaTo must be ≥ areaFrom');
     }
-    if (dto.floorsTo != null && dto.floorsFrom != null && dto.floorsTo < dto.floorsFrom) {
+    if (
+      dto.floorsTo != null &&
+      dto.floorsFrom != null &&
+      dto.floorsTo < dto.floorsFrom
+    ) {
       throw new BadRequestException('floorsTo must be ≥ floorsFrom');
     }
   }
 
-  private async resolveSlug(requested: string | null, base: string, excludeId?: string) {
+  private async resolveSlug(
+    requested: string | null,
+    base: string,
+    excludeId?: string,
+  ) {
     const exists = async (slug: string) =>
       !!(await this.prisma.project.findFirst({
         where: { slug, ...(excludeId && { id: { not: excludeId } }) },
@@ -867,14 +1000,20 @@ export class ProjectsService {
   private async discardFiles(files?: Express.Multer.File[]) {
     if (!files?.length) return;
     await Promise.all(
-      files.map((f) => FileUtils.deleteFile(FileUtils.generateImageUrl(f, PROJECT_FOLDER) ?? '')),
+      files.map((f) =>
+        FileUtils.deleteFile(
+          FileUtils.generateImageUrl(f, PROJECT_FOLDER) ?? '',
+        ),
+      ),
     );
   }
 
   private checkLeadRateLimit(ip: string) {
     const now = Date.now();
     const windowMs = 10 * 60 * 1000;
-    const hits = (this.leadHits.get(ip) ?? []).filter((t) => now - t < windowMs);
+    const hits = (this.leadHits.get(ip) ?? []).filter(
+      (t) => now - t < windowMs,
+    );
     if (hits.length >= 5) {
       throw new HttpException(
         'Too many requests, please try again later',

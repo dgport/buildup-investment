@@ -5,7 +5,11 @@
     "projects": "Projects",
     "developers": "Developers",
     "leads": "Leads",
-    "backToSite": "Back to site"
+    "backToSite": "Back to site",
+    "overview": "Overview",
+    "listings": "Listings",
+    "users": "Users",
+    "settings": "Settings"
   },
   "common": {
     "save": "Save",
@@ -166,5 +170,91 @@
     },
     "notePlaceholder": "Internal note...",
     "deleteConfirm": "Delete this request?"
+  },
+  "overview": {
+    "title": "Overview",
+    "subtitle": "What is happening on the site right now — listings to review, new leads, key numbers.",
+    "listings": "published listings",
+    "listingsHint": "{pending} pending · {hot} VIP",
+    "leads": "new leads",
+    "leadsHint": "{total} in total",
+    "projects": "published projects",
+    "projectsHint": "{total} total · {developers} developers",
+    "users": "users",
+    "usersHint": "+{recent} in the last 30 days · {admins} admins",
+    "pendingTitle": "Listings awaiting review",
+    "pendingEmpty": "Nothing to review — everything has been checked.",
+    "leadsTitle": "Latest leads",
+    "seeAll": "See all",
+    "hotNote": "{count} listings are marked VIP and shown first."
+  },
+  "listings": {
+    "title": "Listings",
+    "subtitle": "Every user listing — review, VIP and removal.",
+    "empty": "No listings found",
+    "searchPlaceholder": "ID, title or e-mail...",
+    "columns": {
+      "listing": "Listing",
+      "owner": "Owner",
+      "price": "Price",
+      "status": "Status",
+      "created": "Created"
+    },
+    "approve": "Approve",
+    "reject": "Reject",
+    "requeue": "Send back to review",
+    "toggleHot": "Toggle VIP",
+    "approved": "Listing published — the owner was notified by e-mail",
+    "rejected": "Listing rejected — the reason was sent to the owner",
+    "rejectTitle": "Reject listing",
+    "rejectPlaceholder": "Tell the owner what needs fixing...",
+    "rejectHint": "The reason is shown in the owner's dashboard and e-mailed to them. After they edit the listing it returns to the review queue automatically.",
+    "rejectPresets": {
+      "photos": "Photos are low quality or do not match the property",
+      "price": "Price or area is missing",
+      "duplicate": "Duplicate listing",
+      "info": "Description is incomplete — add details"
+    },
+    "deleteConfirm": "Delete this listing with its photos? The owner will no longer see it."
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "{total} registered users",
+    "empty": "No users found",
+    "searchPlaceholder": "Name, e-mail or phone...",
+    "columns": {
+      "user": "User",
+      "contact": "Contact",
+      "role": "Role",
+      "listings": "Listings",
+      "joined": "Joined",
+      "active": "Active"
+    },
+    "roles": {
+      "ADMIN": "Admin",
+      "REGULAR": "User"
+    },
+    "verified": "Verified e-mail",
+    "you": "you",
+    "password": "Password",
+    "lastLogin": "Last login",
+    "blocked": "Blocked",
+    "promoteConfirm": "Give {name} admin rights? They will be able to manage everything.",
+    "deactivateConfirm": "Block {name}? They will no longer be able to sign in and their sessions will be closed."
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Site behaviour you can change without touching code.",
+    "moderation": {
+      "title": "Listing moderation",
+      "description": "When enabled, new user listings wait for review and appear on the site only after approval.",
+      "onHint": "Enabled — new listings are created as \"pending\". Owners get an e-mail when approved or rejected.",
+      "offHint": "Disabled — listings go live immediately. Rejecting and VIP are still available on the Listings page."
+    },
+    "phone": {
+      "title": "Default contact phone",
+      "description": "Shown on listings where neither the listing nor its owner has a phone number.",
+      "label": "Phone"
+    }
   }
 }

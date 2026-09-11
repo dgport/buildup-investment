@@ -117,3 +117,74 @@ export function addPasswordEmailTemplate(
     body,
   );
 }
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+export function listingStatusEmailTemplate(
+  firstname: string,
+  title: string,
+  approved: boolean,
+  reason: string | null,
+  url: string,
+): string {
+  const gradient = approved
+    ? 'linear-gradient(135deg,#134e4a 0%,#0f766e 100%)'
+    : 'linear-gradient(135deg,#7c2d12 0%,#b45309 100%)';
+  const header = `<h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:600;">${
+    approved ? '✅ განცხადება გამოქვეყნდა' : '⚠️ განცხადება უარყოფილია'
+  }</h1>`;
+  const body = `
+    <h2 style="margin:0 0 20px 0;color:#333333;font-size:22px;">გამარჯობა, ${escapeHtml(firstname)}</h2>
+    <p style="margin:0 0 16px 0;color:#666666;font-size:16px;line-height:1.6;">
+      თქვენი განცხადება <strong>„${escapeHtml(title)}"</strong> ${
+        approved
+          ? 'შემოწმდა და უკვე ჩანს საიტზე.'
+          : 'შემოწმდა, მაგრამ ამ ეტაპზე ვერ გამოქვეყნდება.'
+      }
+    </p>
+    ${
+      !approved && reason
+        ? `<div style="margin:20px 0;padding:16px;background-color:#fff7ed;border-left:4px solid #f59e0b;border-radius:4px;">
+      <p style="margin:0 0 6px 0;color:#9a3412;font-size:13px;font-weight:600;">მიზეზი</p>
+      <p style="margin:0;color:#7c2d12;font-size:14px;line-height:1.5;">${escapeHtml(reason)}</p>
+    </div>`
+        : ''
+    }
+    <p style="margin:0 0 20px 0;color:#666666;font-size:15px;line-height:1.6;">
+      ${
+        approved
+          ? 'შეგიძლიათ ნახოთ, გააზიაროთ ან ნებისმიერ დროს დაარედაქტიროთ პროფილიდან.'
+          : 'შეასწორეთ განცხადება პროფილიდან — შენახვის შემდეგ ის ავტომატურად დაბრუნდება განსახილველად.'
+      }
+    </p>
+    ${actionButton(url, gradient, approved ? 'განცხადების ნახვა' : 'პროფილში გადასვლა')}`;
+
+  return baseWrapper(gradient, header, body);
+}
+
+export function adminAlertEmailTemplate(
+  title: string,
+  rows: { label: string; value: string }[],
+  actionLabel: string,
+  actionUrl: string,
+): string {
+  const gradient = 'linear-gradient(135deg,#042f2e 0%,#134e4a 100%)';
+  const header = `<h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:600;">${escapeHtml(title)}</h1>`;
+  const table = rows
+    .map(
+      (r) => `<tr>
+        <td style="padding:8px 12px 8px 0;color:#64748b;font-size:13px;white-space:nowrap;vertical-align:top;">${escapeHtml(r.label)}</td>
+        <td style="padding:8px 0;color:#0f172a;font-size:14px;line-height:1.5;">${escapeHtml(r.value)}</td>
+      </tr>`,
+    )
+    .join('');
+  const body = `
+    <table role="presentation" style="border-collapse:collapse;width:100%;margin:0 0 10px 0;">${table}</table>
+    ${actionButton(actionUrl, gradient, actionLabel)}`;
+  return baseWrapper(gradient, header, body);
+}
