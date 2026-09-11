@@ -10,7 +10,7 @@ import { useDeleteProperty, usePropertiesAdmin, useSetPropertyStatus, useUpdateP
 import { useAdminStats } from "@/lib/hooks/useAdmin";
 import { PropertyStatus, type Property } from "@/lib/types/properties";
 import { ROUTES } from "@/lib/constants/routes";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { thumbnailUrl } from "@/lib/utils/image-utils";
 import { formatUsd } from "@/lib/utils/format";
 import { getErrorMessage } from "@/lib/api/api";
 import { Button } from "@/components/ui/button";
@@ -116,7 +116,7 @@ export default function AdminListingsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {rows.map((p) => {
-                  const cover = resolveImageUrl(p.galleryImages?.[0]?.imageUrl);
+                  const cover = thumbnailUrl(p.galleryImages?.[0]?.imageUrl);
                   const title = titleOf(p);
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/60 align-top">

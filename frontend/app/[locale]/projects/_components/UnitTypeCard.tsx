@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BedDouble, ChevronLeft, ChevronRight, ImageIcon, Layers, Ruler } from "lucide-react";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
-import { formatAreaRange, formatRange, formatUsd } from "@/lib/utils/format";
+import { formatAreaRange, formatRange } from "@/lib/utils/format";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import type { UnitType } from "@/lib/types/projects";
 
@@ -22,6 +23,8 @@ interface Props {
 
 export function UnitTypeCard({ unit, onAsk, onOpenImage }: Props) {
   const t = useTranslations("projects");
+  const { currency, exchangeRate } = useCurrency();
+  const money = (usd: number | null | undefined) => formatMoney(usd, currency, exchangeRate) ?? "";
   const tp = useTranslations("properties");
   const [index, setIndex] = useState(0);
   const images = unit.images
@@ -103,12 +106,12 @@ export function UnitTypeCard({ unit, onAsk, onOpenImage }: Props) {
           <div>
             {unit.pricePerSqm ? (
               <p className="text-xs text-teal-700/70">
-                <span className="font-semibold text-teal-900">{formatUsd(unit.pricePerSqm)}</span>{" "}
+                <span className="font-semibold text-teal-900">{money(unit.pricePerSqm)}</span>{" "}
                 {t("detail.unitPricePerSqm")}
               </p>
             ) : null}
             <p className="text-lg font-bold text-amber-600">
-              {unit.priceFrom ? t("priceFrom", { price: formatUsd(unit.priceFrom) }) : t("priceOnRequest")}
+              {unit.priceFrom ? t("priceFrom", { price: money(unit.priceFrom) }) : t("priceOnRequest")}
             </p>
           </div>
           {unit.availableCount != null && !soldOut && (

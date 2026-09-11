@@ -6,7 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { useLocale, useTranslations } from "next-intl";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/constants/env";
 import { useProjectsMap } from "@/lib/hooks/useProjects";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { thumbnailUrl } from "@/lib/utils/image-utils";
 import { formatUsd } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants/routes";
 import { parseLocation } from "@/app/[locale]/properties/_components/form/PropertyFormSections";
@@ -51,7 +51,7 @@ export function ProjectsMap() {
     for (const item of items) {
       const coords = parseLocation(item.location);
       if (!coords) continue;
-      const cover = resolveImageUrl(item.coverImage);
+      const cover = thumbnailUrl(item.coverImage);
       const price = item.pricePerSqmFrom
         ? t("priceFromSqm", { price: formatUsd(item.pricePerSqmFrom) })
         : t("priceOnRequest");

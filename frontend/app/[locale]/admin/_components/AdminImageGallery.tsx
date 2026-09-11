@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { GripVertical, ImageIcon, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { fallbackToFullImage, thumbnailUrl } from "@/lib/utils/image-utils";
 import type { ProjectImage } from "@/lib/types/projects";
 import { ImageDropzone, type PendingImage } from "@/app/[locale]/properties/_components/form/ImageDropzone";
 
@@ -96,7 +96,13 @@ export function AdminImageGallery({
             >
               <div className={compact ? "aspect-square" : "aspect-video"}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={resolveImageUrl(img.imageUrl) ?? ""} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={thumbnailUrl(img.imageUrl) ?? ""}
+                  alt=""
+                  loading="lazy"
+                  onError={(e) => fallbackToFullImage(e, img.imageUrl)}
+                  className="w-full h-full object-cover"
+                />
               </div>
               {index === 0 && coverLabel && (
                 <span className="absolute top-2 left-2 bg-teal-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">{coverLabel}</span>

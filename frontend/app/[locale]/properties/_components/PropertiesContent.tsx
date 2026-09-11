@@ -105,7 +105,7 @@ export function PropertiesContent() {
           </p>
           <div className="flex items-center gap-2">
             <div className="inline-flex rounded-xl border border-slate-200 bg-white p-0.5" role="group" aria-label={t("filters.currency")}>
-              {(["USD", "GEL"] as const).map((c) => (
+              {(["GEL", "USD"] as const).map((c) => (
                 <button
                   key={c}
                   type="button"
@@ -115,7 +115,7 @@ export function PropertiesContent() {
                     currency === c ? "bg-teal-900 text-white shadow" : "text-teal-800 hover:bg-slate-50"
                   }`}
                 >
-                  {c === "USD" ? "$ USD" : "₾ GEL"}
+                  {c === "GEL" ? "₾ GEL" : "$ USD"}
                 </button>
               ))}
             </div>

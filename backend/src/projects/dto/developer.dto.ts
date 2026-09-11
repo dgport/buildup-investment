@@ -24,7 +24,9 @@ export class CreateDeveloperDto {
   @MaxLength(120)
   name: string;
 
-  @ApiPropertyOptional({ description: 'URL slug; generated from name if omitted' })
+  @ApiPropertyOptional({
+    description: 'URL slug; generated from name if omitted',
+  })
   @IsOptional()
   @TrimToNull()
   @IsString()

@@ -142,10 +142,10 @@ export class PropertiesService {
   }
 
   private normalizeLang(lang?: string): Language {
-    const value = (lang ?? 'en').toLowerCase().slice(0, 2);
+    const value = (lang ?? 'ka').toLowerCase().slice(0, 2);
     return (LANGUAGES as readonly string[]).includes(value)
       ? (value as Language)
-      : 'en';
+      : 'ka';
   }
 
   private async getRegionTranslation(region: Region | null, lang: string) {
@@ -155,10 +155,10 @@ export class PropertiesService {
       where: { region, language: lang },
     });
 
-    // Fall back to English if the requested language is not found
-    if (!translation && lang !== 'en') {
+    // Fall back to Georgian (the primary language) when the requested one is missing
+    if (!translation && lang !== 'ka') {
       return this.prismaService.regionTranslations.findFirst({
-        where: { region, language: 'en' },
+        where: { region, language: 'ka' },
       });
     }
 
@@ -304,6 +304,8 @@ export class PropertiesService {
     const hasTitle = (t: { title: string }) => t.title?.trim().length > 0;
     return (
       translations.find((t) => t.language === lang && hasTitle(t)) ??
+      // Georgian is the site's primary language, English is the second fallback
+      translations.find((t) => t.language === 'ka' && hasTitle(t)) ??
       translations.find((t) => t.language === 'en' && hasTitle(t)) ??
       translations.find(hasTitle)
     );
@@ -569,7 +571,7 @@ export class PropertiesService {
 
   async findOne(
     id: string,
-    lang = 'en',
+    lang = 'ka',
     includePrivate = false,
     onlyApproved = true,
   ) {
@@ -665,7 +667,7 @@ export class PropertiesService {
     id: string,
     userId: string,
     userRole: UserRole,
-    lang = 'en',
+    lang = 'ka',
   ) {
     await this.checkPropertyOwnership(id, userId, userRole);
     return this.findOne(id, lang, true, false);
@@ -1127,7 +1129,9 @@ export class PropertiesService {
     images: Express.Multer.File[],
     startOrder: number,
   ): Promise<void> {
-    const realImages = await FileUtils.keepOnlyRealImages(images);
+    const realImages = await FileUtils.optimizeImages(
+      await FileUtils.keepOnlyRealImages(images),
+    );
     const imageData = realImages
       .map((image, index) => ({
         url: FileUtils.generateImageUrl(image, 'properties'),

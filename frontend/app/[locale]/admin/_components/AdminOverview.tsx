@@ -8,7 +8,7 @@ import { useAdminStats } from "@/lib/hooks/useAdmin";
 import { useSetPropertyStatus } from "@/lib/hooks/useProperties";
 import { PropertyStatus } from "@/lib/types/properties";
 import { ROUTES } from "@/lib/constants/routes";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { thumbnailUrl } from "@/lib/utils/image-utils";
 import { formatUsd } from "@/lib/utils/format";
 import { getErrorMessage } from "@/lib/api/api";
 import { Button } from "@/components/ui/button";
@@ -94,7 +94,7 @@ export function AdminOverview() {
               ) : (
                 <ul className="divide-y divide-gray-100">
                   {data.recentPending.map((p) => {
-                    const cover = resolveImageUrl(p.coverImage);
+                    const cover = thumbnailUrl(p.coverImage);
                     const title = p.title ?? `#${p.externalId}`;
                     return (
                       <li key={p.id} className="flex items-center gap-3 px-5 py-3">

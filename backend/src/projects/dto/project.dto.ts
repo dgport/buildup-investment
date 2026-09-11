@@ -28,7 +28,9 @@ export class CreateProjectDto {
   @IsString()
   developerId: string;
 
-  @ApiPropertyOptional({ description: 'URL slug; generated from the title if omitted' })
+  @ApiPropertyOptional({
+    description: 'URL slug; generated from the title if omitted',
+  })
   @IsOptional()
   @TrimToNull()
   @IsString()
@@ -219,7 +221,10 @@ export class CreateProjectDto {
   @IsOptional()
   @Transform(({ value }) =>
     typeof value === 'string'
-      ? value.split(',').map((v) => v.trim()).filter(Boolean)
+      ? value
+          .split(',')
+          .map((v) => v.trim())
+          .filter(Boolean)
       : value,
   )
   @IsArray()

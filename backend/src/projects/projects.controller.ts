@@ -45,7 +45,9 @@ const toInt = (v?: string) => {
   return Number.isNaN(n) ? undefined : n;
 };
 const toBool = (v?: string) =>
-  v === undefined || v === '' ? undefined : ['true', '1', 'yes'].includes(v.toLowerCase());
+  v === undefined || v === ''
+    ? undefined
+    : ['true', '1', 'yes'].includes(v.toLowerCase());
 
 function parseListQuery(q: Record<string, string | undefined>) {
   return {
@@ -68,8 +70,9 @@ function parseListQuery(q: Record<string, string | undefined>) {
 }
 
 const clientIp = (req: Request) =>
-  (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
-  req.ip;
+  (req.headers['x-forwarded-for'] as string | undefined)
+    ?.split(',')[0]
+    ?.trim() || req.ip;
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -86,15 +89,28 @@ export class ProjectsController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'region', required: false })
   @ApiQuery({ name: 'developer', required: false, description: 'id or slug' })
-  @ApiQuery({ name: 'status', required: false, enum: ['PLANNED', 'UNDER_CONSTRUCTION', 'COMPLETED'] })
-  @ApiQuery({ name: 'rooms', required: false, type: Number, description: '4 = 4+' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['PLANNED', 'UNDER_CONSTRUCTION', 'COMPLETED'],
+  })
+  @ApiQuery({
+    name: 'rooms',
+    required: false,
+    type: Number,
+    description: '4 = 4+',
+  })
   @ApiQuery({ name: 'pricePerSqmFrom', required: false, type: Number })
   @ApiQuery({ name: 'pricePerSqmTo', required: false, type: Number })
   @ApiQuery({ name: 'priceFrom', required: false, type: Number })
   @ApiQuery({ name: 'priceTo', required: false, type: Number })
   @ApiQuery({ name: 'deliveryYear', required: false, type: Number })
   @ApiQuery({ name: 'hotSale', required: false, type: Boolean })
-  @ApiQuery({ name: 'sort', required: false, enum: ['featured', 'newest', 'price_asc', 'price_desc', 'delivery'] })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    enum: ['featured', 'newest', 'price_asc', 'price_desc', 'delivery'],
+  })
   findAll(@Query() query: Record<string, string | undefined>) {
     return this.projects.findAll(parseListQuery(query));
   }
@@ -120,7 +136,11 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Consultation requests (admin)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false, enum: ['NEW', 'CONTACTED', 'CLOSED'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['NEW', 'CONTACTED', 'CLOSED'],
+  })
   @ApiQuery({ name: 'projectId', required: false })
   findLeads(@Query() q: Record<string, string | undefined>) {
     return this.projects.findLeads({
@@ -154,7 +174,10 @@ export class ProjectsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'All projects incl. unpublished (admin)' })
   findAllAdmin(@Query() query: Record<string, string | undefined>) {
-    return this.projects.findAll({ ...parseListQuery(query), includeUnpublished: true });
+    return this.projects.findAll({
+      ...parseListQuery(query),
+      includeUnpublished: true,
+    });
   }
 
   @Get('admin/:id')
@@ -197,8 +220,17 @@ export class ProjectsController {
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Add gallery photos (admin)' })
-  @UseInterceptors(FilesInterceptor('images', MAX_IMAGES_PER_REQUEST, multerConfig('projects')))
-  addImages(@Param('id') id: string, @UploadedFiles() images?: Express.Multer.File[]) {
+  @UseInterceptors(
+    FilesInterceptor(
+      'images',
+      MAX_IMAGES_PER_REQUEST,
+      multerConfig('projects'),
+    ),
+  )
+  addImages(
+    @Param('id') id: string,
+    @UploadedFiles() images?: Express.Multer.File[],
+  ) {
     return this.projects.addImages(id, images, null);
   }
 
@@ -215,7 +247,10 @@ export class ProjectsController {
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a photo or floor plan (admin)' })
-  deleteImage(@Param('id') id: string, @Param('imageId', ParseIntPipe) imageId: number) {
+  deleteImage(
+    @Param('id') id: string,
+    @Param('imageId', ParseIntPipe) imageId: number,
+  ) {
     return this.projects.deleteImage(id, imageId);
   }
 
@@ -246,7 +281,10 @@ export class ProjectsController {
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete an apartment type (admin)' })
-  deleteUnitType(@Param('id') id: string, @Param('unitTypeId') unitTypeId: string) {
+  deleteUnitType(
+    @Param('id') id: string,
+    @Param('unitTypeId') unitTypeId: string,
+  ) {
     return this.projects.deleteUnitType(id, unitTypeId);
   }
 
@@ -255,7 +293,13 @@ export class ProjectsController {
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Add floor plans to an apartment type (admin)' })
-  @UseInterceptors(FilesInterceptor('images', MAX_IMAGES_PER_REQUEST, multerConfig('projects')))
+  @UseInterceptors(
+    FilesInterceptor(
+      'images',
+      MAX_IMAGES_PER_REQUEST,
+      multerConfig('projects'),
+    ),
+  )
   addUnitTypeImages(
     @Param('id') id: string,
     @Param('unitTypeId') unitTypeId: string,
@@ -282,7 +326,11 @@ export class ProjectsController {
   @Throttle({ default: { limit: 5, ttl: 600_000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Request a consultation for a project' })
-  createLead(@Param('id') id: string, @Body() dto: CreateLeadDto, @Req() req: Request) {
+  createLead(
+    @Param('id') id: string,
+    @Body() dto: CreateLeadDto,
+    @Req() req: Request,
+  ) {
     return this.projects.createLead(id, dto, clientIp(req));
   }
 

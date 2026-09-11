@@ -40,7 +40,9 @@ export class CreateLeadDto {
   @MaxLength(2000)
   message?: string | null;
 
-  @ApiPropertyOptional({ description: 'Unit type the visitor is interested in' })
+  @ApiPropertyOptional({
+    description: 'Unit type the visitor is interested in',
+  })
   @IsOptional()
   @TrimToNull()
   @IsString()

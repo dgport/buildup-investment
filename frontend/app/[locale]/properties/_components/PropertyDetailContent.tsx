@@ -4,23 +4,33 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import useEmblaCarousel from "embla-carousel-react";
 import {
+  BedDouble,
+  Building2,
+  CalendarDays,
+  Check,
   ChevronLeft,
   ChevronRight,
-  Phone,
-  MessageCircle,
   Copy,
-  Check,
-  MapPin,
-  Building2,
+  DoorOpen,
+  FileText,
   Flame,
-  User,
+  Hash,
   ImageIcon,
+  Map as MapIcon,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Layers,
+  Ruler,
   Share2,
+  User,
+  type LucideIcon,
 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/constants/routes";
 import { useProperty } from "@/lib/hooks/useProperties";
-import { useCurrency } from "@/lib/currency";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { useTranslations, useLocale } from "next-intl";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -30,6 +40,7 @@ import { MobileContactBar } from "@/components/shared/MobileContactBar";
 import { SimilarProperties } from "./SimilarProperties";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils/format";
+import { DetailSection } from "./DetailSection";
 
 import { ConditionUtilitiesSection } from "./ConditionUtilitesSection";
 import { AmenitiesFeaturesSection } from "./AmenitiesFeatureSection";
@@ -38,15 +49,18 @@ import MapboxMap from "./MapBox";
 import { parseLocation } from "./form/PropertyFormSections";
 
 function InfoRow({
+  icon: Icon,
   label,
   children,
 }: {
+  icon: LucideIcon;
   label: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-2.5 border-b border-teal-50 last:border-0">
-      <span className="text-xs font-semibold uppercase tracking-wide text-teal-600 shrink-0">
+    <div className="flex items-center justify-between gap-3 py-2.5 border-b border-dashed border-teal-900/10 last:border-0">
+      <span className="flex items-center gap-2 text-[13px] font-medium text-slate-500 shrink-0">
+        <Icon className="w-3.5 h-3.5 text-teal-600" />
         {label}
       </span>
       <div className="text-right min-w-0">{children}</div>
@@ -58,6 +72,7 @@ export function PropertyDetailContent() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const t = useTranslations("properties");
+  const tc = useTranslations("common");
   const locale = useLocale();
   const { currency, setCurrency, exchangeRate } = useCurrency();
 
@@ -103,12 +118,8 @@ export function PropertyDetailContent() {
     };
   }, [emblaApi, thumbsApi]);
 
-  const formatPrice = (priceUSD: number | null) => {
-    if (!priceUSD) return t("priceOnRequest");
-    return currency === "USD"
-      ? `$${priceUSD.toLocaleString()}`
-      : `${Math.round(priceUSD * exchangeRate).toLocaleString()} ₾`;
-  };
+  const formatPrice = (priceUSD: number | null) =>
+    formatMoney(priceUSD, currency, exchangeRate) ?? t("priceOnRequest");
 
   const share = async () => {
     try {
@@ -172,33 +183,64 @@ export function PropertyDetailContent() {
     ? `${property.user.firstname} ${property.user.lastname}`
     : null;
 
+  /** The four numbers a buyer scans first, shown as a strip under the gallery. */
+  const keyFacts = [
+    property.totalArea
+      ? { icon: Ruler, label: t("fields.totalArea"), value: `${property.totalArea} m²` }
+      : null,
+    property.rooms ? { icon: DoorOpen, label: t("fields.rooms"), value: String(property.rooms) } : null,
+    property.bedrooms
+      ? { icon: BedDouble, label: t("fields.bedrooms"), value: String(property.bedrooms) }
+      : null,
+    property.floors != null
+      ? {
+          icon: Layers,
+          label: t("fields.floor"),
+          value: property.floorsTotal ? `${property.floors} / ${property.floorsTotal}` : String(property.floors),
+        }
+      : null,
+  ].filter((f): f is { icon: LucideIcon; label: string; value: string } => !!f);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20 lg:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-teal-900 rounded-xl p-2 shrink-0">
-            <Building2 className="w-5 h-5 text-amber-400" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-teal-950 truncate">
-              {title}
-            </h1>
-            <p className="text-sm text-teal-700/70">
-              {t(`enums.propertyType.${property.propertyType}`)} ·{" "}
-              {t(`enums.dealType.${property.dealType}`)}
-            </p>
-          </div>
-          <div className="ml-auto flex items-center gap-2 shrink-0">
-            {property.hotSale && (
-              <span className="bg-gradient-to-r from-red-500 to-orange-500 rounded-lg px-3 py-1.5 shadow flex items-center gap-1.5 text-white text-xs font-bold uppercase tracking-wide">
-                <Flame className="w-4 h-4" />
-                {t("hotSale")}
-              </span>
-            )}
+        <div className="mb-6">
+          <nav className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
+            <Link href={ROUTES.HOME} className="hover:text-teal-800">{tc("nav.home")}</Link>
+            <span className="text-slate-300">/</span>
+            <Link href={ROUTES.PROPERTIES} className="hover:text-teal-800">{tc("nav.properties")}</Link>
+            <span className="text-slate-300">/</span>
+            <span className="text-teal-900 font-medium truncate">{title}</span>
+          </nav>
+
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-900 text-white text-[11px] font-bold uppercase tracking-wide px-3 py-1">
+                  <Building2 className="w-3.5 h-3.5 text-amber-300" />
+                  {t(`enums.propertyType.${property.propertyType}`)}
+                </span>
+                <span className="rounded-full bg-teal-50 text-teal-800 border border-teal-100 text-[11px] font-bold uppercase tracking-wide px-3 py-1">
+                  {t(`enums.dealType.${property.dealType}`)}
+                </span>
+                {property.hotSale && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400 text-teal-950 text-[11px] font-black uppercase tracking-wide px-3 py-1">
+                    <Flame className="w-3.5 h-3.5" />
+                    {t("hotSale")}
+                  </span>
+                )}
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-teal-950 leading-tight">{title}</h1>
+              <p className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">
+                <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
+                {locationString}
+              </p>
+            </div>
+
             <button
               type="button"
               onClick={share}
-              className="inline-flex items-center gap-1.5 text-sm text-teal-800 hover:text-amber-600 border border-teal-200 rounded-xl px-3 py-2 bg-white"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-teal-800 hover:text-amber-600 border border-teal-200 hover:border-amber-300 rounded-xl px-3.5 h-10 bg-white shrink-0 transition-colors"
             >
               {shared ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4" />}
               <span className="hidden sm:inline">{shared ? t("linkCopied") : t("share")}</span>
@@ -288,17 +330,47 @@ export function PropertyDetailContent() {
           <div className="lg:col-span-1">
             <div className="card p-5 h-auto lg:h-[500px] flex flex-col justify-between lg:sticky lg:top-28">
               <div>
-                <div className="bg-teal-950 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-teal-300">
-                    {t(`enums.dealType.${property.dealType}`)}
-                  </span>
-                  <span className="text-amber-400 font-bold text-lg">
-                    {formatPrice(property.price)}
-                  </span>
+                <div className="relative overflow-hidden bg-teal-950 rounded-2xl px-4 py-4 mb-4">
+                  <span
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backgroundImage:
+                        "radial-gradient(ellipse 70% 80% at 100% 0%, rgba(245,158,11,0.22), transparent 60%)",
+                    }}
+                  />
+                  <div className="relative">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300/90">
+                      {t(`enums.dealType.${property.dealType}`)}
+                    </p>
+                    <p className="text-white font-bold text-3xl tracking-tight tabular-nums mt-0.5">
+                      {formatPrice(property.price)}
+                    </p>
+                    {property.price != null && property.totalArea ? (
+                      <p className="text-teal-100/60 text-xs mt-1">
+                        {formatPrice(Math.round(property.price / property.totalArea))} / m²
+                      </p>
+                    ) : null}
+
+                    <div className="mt-3 inline-flex rounded-lg bg-white/10 p-0.5 gap-0.5">
+                      {(["GEL", "USD"] as const).map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setCurrency(c)}
+                          aria-pressed={currency === c}
+                          className={`px-2.5 h-7 rounded-md text-[11px] font-bold tracking-wide transition ${
+                            currency === c ? "bg-amber-400 text-teal-950" : "text-white/60 hover:text-white"
+                          }`}
+                        >
+                          {c === "GEL" ? "₾ GEL" : "$ USD"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-0">
-                  <InfoRow label={t("detailPropertyId")}>
+                  <InfoRow icon={Hash} label={t("detailPropertyId")}>
                     <div className="flex items-center gap-2 justify-end">
                       <span className="font-mono text-sm text-teal-900">
                         {property.externalId ?? property.id}
@@ -319,50 +391,27 @@ export function PropertyDetailContent() {
                     </div>
                   </InfoRow>
 
-                  <InfoRow label={t("detailPropertyType")}>
+                  <InfoRow icon={Building2} label={t("detailPropertyType")}>
                     <span className="text-sm font-bold text-teal-950">
                       {t(`enums.propertyType.${property.propertyType}`)}
                     </span>
                   </InfoRow>
 
-                  <InfoRow label={t("detailRegion")}>
+                  <InfoRow icon={MapPin} label={t("detailRegion")}>
                     <span className="text-sm font-bold text-teal-950">
                       {property.regionName ?? "—"}
                     </span>
                   </InfoRow>
 
-                  <InfoRow label={t("detailCurrency")}>
-                    <div className="flex items-center gap-2 bg-teal-50 rounded-full px-3 py-1.5">
-                      <span
-                        className={`text-xs font-semibold ${currency === "USD" ? "text-teal-900" : "text-teal-400"}`}
-                      >
-                        USD
-                      </span>
-                      <Switch
-                        checked={currency === "GEL"}
-                        onCheckedChange={(c) => setCurrency(c ? "GEL" : "USD")}
-                        aria-label="USD / GEL"
-                      />
-                      <span
-                        className={`text-xs font-semibold ${currency === "GEL" ? "text-teal-900" : "text-teal-400"}`}
-                      >
-                        GEL
-                      </span>
-                    </div>
-                  </InfoRow>
-
-                  <InfoRow label={t("detailListedOn")}>
+                  <InfoRow icon={CalendarDays} label={t("detailListedOn")}>
                     <span className="text-sm font-semibold text-teal-950">
                       {formatDate(property.createdAt, locale)}
                     </span>
                   </InfoRow>
 
                   {ownerName && (
-                    <InfoRow label={t("listedBy")}>
-                      <span className="text-sm font-semibold text-teal-950 flex items-center gap-1.5 justify-end">
-                        <User className="w-3.5 h-3.5 text-teal-500" />
-                        {ownerName}
-                      </span>
+                    <InfoRow icon={User} label={t("listedBy")}>
+                      <span className="text-sm font-semibold text-teal-950">{ownerName}</span>
                     </InfoRow>
                   )}
                 </div>
@@ -414,43 +463,52 @@ export function PropertyDetailContent() {
           </div>
         </div>
 
+        {keyFacts.length > 0 && (
+          <div className="card mb-4 grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-teal-900/[0.07] overflow-hidden">
+            {keyFacts.map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex items-center gap-3 p-4">
+                <span className="rounded-xl bg-teal-50 text-teal-800 p-2.5 shrink-0">
+                  <Icon className="w-5 h-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 truncate">{label}</p>
+                  <p className="text-lg font-bold text-teal-950 tabular-nums truncate">{value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="space-y-4">
-          <div className="card p-6">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3">
-              {t("descriptionTitle")}
-            </h3>
+          <DetailSection icon={FileText} title={t("descriptionTitle")}>
             {property.translation?.description ? (
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+              <p className="text-slate-700 whitespace-pre-line leading-relaxed">
                 {property.translation.description}
               </p>
             ) : (
-              <p className="text-teal-400 italic">{t("noDescription")}</p>
+              <p className="text-slate-400 italic">{t("noDescription")}</p>
             )}
-          </div>
+          </DetailSection>
 
           <PropertyDetailsSection property={property} />
 
-          <div className="card p-6">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3 flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              {t("location")}
-            </h3>
+          <DetailSection icon={MapPin} title={t("location")} accent="amber">
             <p className="text-teal-950 font-medium">{locationString}</p>
-          </div>
+          </DetailSection>
 
           <ConditionUtilitiesSection property={property} />
           <AmenitiesFeaturesSection property={property} />
 
           {coordinates && (
-            <div className="card p-4">
-              <div className="h-[300px] sm:h-[350px] rounded-xl overflow-hidden">
+            <DetailSection icon={MapIcon} title={t("mapTitle")} accent="violet">
+              <div className="h-[300px] sm:h-[380px] rounded-xl overflow-hidden ring-1 ring-teal-900/10">
                 <MapboxMap
                   latitude={coordinates.lat}
                   longitude={coordinates.lng}
                   labels={{ view2d: t("view2d"), view3d: t("view3d") }}
                 />
               </div>
-            </div>
+            </DetailSection>
           )}
 
           <SimilarProperties property={property} />

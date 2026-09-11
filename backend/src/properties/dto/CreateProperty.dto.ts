@@ -48,7 +48,9 @@ export class CreatePropertyDto {
   @MaxLength(200)
   title?: string | null;
 
-  @ApiPropertyOptional({ description: 'Description (English). Alias of descriptionEn.' })
+  @ApiPropertyOptional({
+    description: 'Description (English). Alias of descriptionEn.',
+  })
   @IsOptional()
   @TrimToNull()
   @IsString()

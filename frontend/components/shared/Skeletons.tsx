@@ -66,6 +66,39 @@ export function DetailSkeleton() {
   );
 }
 
+/**
+ * Catalogue placeholder: dark search band + result grid, matching the
+ * /properties and /projects layout so the page does not jump when it loads.
+ */
+export function CatalogueSkeleton({ count = 8 }: { count?: number }) {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <section className="bg-teal-950">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 pt-10 pb-8">
+          <div className="space-y-2 mb-6">
+            <Skeleton className="h-3 w-24 bg-white/10" />
+            <Skeleton className="h-9 w-64 bg-white/10" />
+          </div>
+          <div className="rounded-2xl bg-white p-2 shadow-2xl shadow-black/25">
+            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-10 w-48 rounded-xl" />
+        </div>
+        <CardGridSkeleton count={count} tall />
+      </div>
+    </div>
+  );
+}
+
 /** Generic page placeholder used by app/[locale]/loading.tsx. */
 export function PageSkeleton() {
   return (

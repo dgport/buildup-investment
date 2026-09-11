@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header/Header";
@@ -11,6 +12,7 @@ import { CurrencyProvider } from "@/lib/currency";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ConfirmProvider } from "@/components/shared/ConfirmDialog";
+import { NavigationProgress } from "@/components/shared/NavigationProgress";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -64,6 +66,9 @@ export default async function LocaleLayout({
         <QueryProvider>
           <NextIntlClientProvider messages={plainMessages}>
             <ConfirmProvider>
+              <Suspense fallback={null}>
+                <NavigationProgress />
+              </Suspense>
               <Header />
               <CurrencyProvider>
                 <main id="main-content">{children}</main>

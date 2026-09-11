@@ -27,7 +27,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Pagination } from "@/components/shared/Pagination";
 import { CardGridSkeleton } from "@/components/shared/Skeletons";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { fallbackToFullImage, thumbnailUrl } from "@/lib/utils/image-utils";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
 import { locales as SITE_LOCALES } from "@/i18n/routing";
@@ -64,13 +65,15 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
   const t = useTranslations("dashboard");
   const tp = useTranslations("properties");
   const tl = useTranslations("common.language");
+  const { currency, exchangeRate } = useCurrency();
 
   const title = property.translation?.title || t("untitledProperty");
   const location =
     [property.regionName, property.translation?.address ?? property.address]
       .filter(Boolean)
       .join(", ") || t("locationNotSpecified");
-  const cover = resolveImageUrl(property.galleryImages?.[0]?.imageUrl);
+  const coverSource = property.galleryImages?.[0]?.imageUrl;
+  const cover = thumbnailUrl(coverSource);
   const missingLanguages = PROPERTY_LANGUAGES.filter((l) => (SITE_LOCALES as readonly string[]).includes(l)).filter(
     (lang) =>
       !property.translations?.some(
@@ -86,7 +89,13 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
       >
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={cover} alt={title} className="w-full h-full object-cover" />
+          <img
+            src={cover}
+            alt={title}
+            loading="lazy"
+            onError={(e) => fallbackToFullImage(e, coverSource)}
+            className="w-full h-full object-cover"
+          />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-300 gap-1">
             <ImageIcon className="w-12 h-12" />
@@ -148,9 +157,7 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
 
         <div className="mb-3">
           <span className="text-2xl font-bold text-teal-900">
-            {property.price != null
-              ? `$${property.price.toLocaleString()}`
-              : tp("priceOnRequest")}
+            {formatMoney(property.price, currency, exchangeRate) ?? tp("priceOnRequest")}
           </span>
         </div>
 

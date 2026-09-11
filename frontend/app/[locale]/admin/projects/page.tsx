@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/shared/Pagination";
 import { TableSkeleton } from "@/components/shared/Skeletons";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { thumbnailUrl } from "@/lib/utils/image-utils";
 import { formatUsd } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants/routes";
 import { getErrorMessage } from "@/lib/api/api";
@@ -85,7 +85,7 @@ export default function AdminProjectsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {projects.map((p) => {
-                  const cover = resolveImageUrl(p.coverImage);
+                  const cover = thumbnailUrl(p.coverImage);
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/60">
                       <td className="px-4 py-3">

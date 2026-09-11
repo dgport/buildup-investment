@@ -15,8 +15,8 @@ import {
   MapPin,
   Ruler,
 } from "lucide-react";
-import { useCurrency } from "@/lib/currency";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { formatMoney, useCurrency } from "@/lib/currency";
+import { fallbackToFullImage, thumbnailUrl } from "@/lib/utils/image-utils";
 import { ROUTES } from "@/lib/constants/routes";
 import { formatDate } from "@/lib/utils/format";
 import type { Property } from "@/lib/types/properties";
@@ -38,8 +38,8 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
 
   const title = property.translation?.title || t("noTitle");
   const images = (property.galleryImages ?? [])
-    .map((img) => resolveImageUrl(img.imageUrl))
-    .filter((src): src is string => !!src);
+    .map((img) => ({ src: thumbnailUrl(img.imageUrl), original: img.imageUrl }))
+    .filter((img): img is { src: string; original: string } => !!img.src);
   const many = images.length > 1;
 
   const stop = (e: React.MouseEvent) => {
@@ -58,11 +58,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     }
   };
 
-  const price = property.price
-    ? currency === "USD"
-      ? `$${property.price.toLocaleString()}`
-      : `${Math.round(property.price * exchangeRate).toLocaleString()} ₾`
-    : t("priceOnRequest");
+  const price = formatMoney(property.price, currency, exchangeRate) ?? t("priceOnRequest");
 
   const date = formatDate(property.createdAt, locale, "short");
 
@@ -82,14 +78,15 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
         {/* Photo */}
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
           {images.length > 0 ? (
-            images.map((src, i) => (
+            images.map((img, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                key={src}
-                src={src}
+                key={img.src}
+                src={img.src}
                 alt={`${title} – ${i + 1}`}
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
+                onError={(e) => fallbackToFullImage(e, img.original)}
                 className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03] ${
                   i === index ? "opacity-100" : "opacity-0"
                 }`}

@@ -25,6 +25,8 @@ export const pickTranslation = <T extends { language: string }>(
   hasContent: (row: T) => boolean = () => true,
 ): T | undefined =>
   rows.find((r) => r.language === lang && hasContent(r)) ??
+  // Georgian is the site's primary language, English is the second fallback
+  rows.find((r) => r.language === 'ka' && hasContent(r)) ??
   rows.find((r) => r.language === 'en' && hasContent(r)) ??
   rows.find(hasContent);
 
@@ -109,10 +111,15 @@ export class DevelopersService {
     const data: Prisma.DeveloperUpdateInput = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.slug !== undefined && dto.slug && dto.slug !== existing.slug) {
-      data.slug = await this.resolveSlug(dto.slug, dto.name ?? existing.name, id);
+      data.slug = await this.resolveSlug(
+        dto.slug,
+        dto.name ?? existing.name,
+        id,
+      );
     }
     for (const key of ['website', 'phone', 'email', 'foundedYear'] as const) {
-      if (dto[key] !== undefined) (data as Record<string, unknown>)[key] = dto[key];
+      if (dto[key] !== undefined)
+        (data as Record<string, unknown>)[key] = dto[key];
     }
     if (typeof dto.published === 'boolean') data.published = dto.published;
 
@@ -134,10 +141,14 @@ export class DevelopersService {
   async setLogo(id: string, file: Express.Multer.File | undefined) {
     const dev = await this.prisma.developer.findUnique({ where: { id } });
     if (!dev) {
-      await FileUtils.deleteFile(FileUtils.generateImageUrl(file, 'developers') ?? '');
+      await FileUtils.deleteFile(
+        FileUtils.generateImageUrl(file, 'developers') ?? '',
+      );
       throw new NotFoundException('Developer not found');
     }
-    const [valid] = await FileUtils.keepOnlyRealImages(file ? [file] : []);
+    const [valid] = await FileUtils.optimizeImages(
+      await FileUtils.keepOnlyRealImages(file ? [file] : []),
+    );
     const url = FileUtils.generateImageUrl(valid, 'developers');
     if (!url) throw new ConflictException('No valid logo file received');
 

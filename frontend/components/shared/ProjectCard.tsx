@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Building2, CalendarClock, ImageIcon, Layers, MapPin } from "lucide-react";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
-import { formatUsd } from "@/lib/utils/format";
+import { fallbackToFullImage, resolveImageUrl, thumbnailUrl } from "@/lib/utils/image-utils";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants/routes";
 import type { Project } from "@/lib/types/projects";
 
@@ -25,7 +25,9 @@ export function roomsLabel(
 
 export default function ProjectCard({ project }: { project: Project }) {
   const t = useTranslations("projects");
-  const cover = resolveImageUrl(project.coverImage);
+  const { currency, exchangeRate } = useCurrency();
+  const money = (usd: number | null | undefined) => formatMoney(usd, currency, exchangeRate) ?? "";
+  const cover = thumbnailUrl(project.coverImage);
   const logo = resolveImageUrl(project.developer.logo);
   const title = project.title || project.slug;
   const delivery =
@@ -47,6 +49,8 @@ export default function ProjectCard({ project }: { project: Project }) {
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            decoding="async"
+            onError={(e) => fallbackToFullImage(e, project.coverImage)}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-teal-900/30">
@@ -100,7 +104,7 @@ export default function ProjectCard({ project }: { project: Project }) {
             </p>
             <p className="text-xl font-bold text-teal-950">
               {project.pricePerSqmFrom
-                ? t("priceFromSqm", { price: formatUsd(project.pricePerSqmFrom) })
+                ? t("priceFromSqm", { price: money(project.pricePerSqmFrom) })
                 : t("priceOnRequest")}
             </p>
           </div>
@@ -110,7 +114,7 @@ export default function ProjectCard({ project }: { project: Project }) {
                 {t("detail.priceFrom")}
               </p>
               <p className="text-base font-bold text-amber-600">
-                {t("priceFrom", { price: formatUsd(project.priceFrom) })}
+                {t("priceFrom", { price: money(project.priceFrom) })}
               </p>
             </div>
           ) : null}

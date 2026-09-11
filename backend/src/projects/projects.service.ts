@@ -550,7 +550,9 @@ export class ProjectsService {
     files: Express.Multer.File[] | undefined,
     unitTypeId: string | null = null,
   ) {
-    files = await FileUtils.keepOnlyRealImages(files);
+    files = await FileUtils.optimizeImages(
+      await FileUtils.keepOnlyRealImages(files),
+    );
     if (!files.length)
       throw new BadRequestException('No valid image files received');
 

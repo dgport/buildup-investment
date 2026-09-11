@@ -34,7 +34,8 @@ import { useProject } from "@/lib/hooks/useProjects";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { DetailSkeleton } from "@/components/shared/Skeletons";
 import { MobileContactBar } from "@/components/shared/MobileContactBar";
-import { formatUsd, toEmbedUrl } from "@/lib/utils/format";
+import { toEmbedUrl } from "@/lib/utils/format";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants/routes";
 import type { UnitType } from "@/lib/types/projects";
 import MapboxMap from "@/app/[locale]/properties/_components/MapBox";
@@ -62,6 +63,8 @@ export function ProjectDetailContent() {
   const { slug } = useParams<{ slug: string }>();
   const t = useTranslations("projects");
   const locale = useLocale();
+  const { currency, exchangeRate } = useCurrency();
+  const money = (usd: number | null | undefined) => formatMoney(usd, currency, exchangeRate) ?? "";
   const { data: project, isLoading, error } = useProject(slug, locale);
 
   const [selected, setSelected] = useState(0);
@@ -224,7 +227,7 @@ export function ProjectDetailContent() {
                               }`}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={img} alt="" className="h-full w-full object-cover" />
+                              <img src={img} alt="" loading="lazy" className="h-full w-full object-cover" />
                             </div>
                           ))}
                         </div>
@@ -241,13 +244,13 @@ export function ProjectDetailContent() {
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-teal-300">{t("detail.pricePerSqm")}</p>
                 <p className="text-amber-400 font-bold text-xl leading-tight">
-                  {project.pricePerSqmFrom ? t("priceFromSqm", { price: formatUsd(project.pricePerSqmFrom) }) : t("priceOnRequest")}
+                  {project.pricePerSqmFrom ? t("priceFromSqm", { price: money(project.pricePerSqmFrom) }) : t("priceOnRequest")}
                 </p>
               </div>
               {project.priceFrom ? (
                 <div className="text-right">
                   <p className="text-[10px] uppercase tracking-wider text-teal-300">{t("detail.priceFrom")}</p>
-                  <p className="text-white font-bold">{t("priceFrom", { price: formatUsd(project.priceFrom) })}</p>
+                  <p className="text-white font-bold">{t("priceFrom", { price: money(project.priceFrom) })}</p>
                 </div>
               ) : null}
             </div>
