@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Flame, Eye, EyeOff, MapPin, X } from "lucide-react";
+import { Flame, Eye, EyeOff, Lock, MapPin, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -104,6 +104,12 @@ export function BasicsSection({ data, onChange, errors = {} }: SectionProps) {
           value={data.contactPhone ?? ""}
           onChange={(e) => onChange("contactPhone", e.target.value)}
           placeholder={t("contactPhonePlaceholder")}
+          hint={
+            <span className="inline-flex items-start gap-1.5">
+              <Lock className="w-3.5 h-3.5 mt-px shrink-0 text-teal-600" />
+              {t("contactPhoneHint")}
+            </span>
+          }
         />
       </div>
 

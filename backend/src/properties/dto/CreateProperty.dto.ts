@@ -387,4 +387,13 @@ export class CreatePropertyDto {
   @ToBoolean()
   @IsBoolean()
   hasGate?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Owner accepts the current listing terms (required once per terms version before the first listing).',
+  })
+  @IsOptional()
+  @ToBoolean()
+  @IsBoolean()
+  acceptTerms?: boolean;
 }

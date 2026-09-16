@@ -13,6 +13,7 @@ import { User } from '../types/user.type';
 import { UserAccountService } from './user-account.service';
 import { TokenService } from './token.service';
 import { CookieService } from './cookie.service';
+import { withListingTermsStatus } from '@/common/constants/listing-terms';
 
 @Injectable()
 export class AuthService {
@@ -67,12 +68,15 @@ export class AuthService {
       await this.tokenService.revokeRefreshTokenById(storedTokenId);
       await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
       this.cookieService.setRefreshTokenCookie(response, tokens.refreshToken);
-      return { accessToken: tokens.accessToken, user };
+      return {
+        accessToken: tokens.accessToken,
+        user: withListingTermsStatus(user),
+      };
     }
 
     const accessToken =
       await this.tokenService.generateAccessToken(tokenPayload);
-    return { accessToken, user };
+    return { accessToken, user: withListingTermsStatus(user) };
   }
 
   async logout(
@@ -104,7 +108,7 @@ export class AuthService {
     return {
       sub: user.id,
       email: user.email,
-      role: user.role as UserRole,
+      role: user.role,
       firstname: user.firstname,
       lastname: user.lastname,
       avatar: user.avatar ?? undefined,
@@ -120,6 +124,9 @@ export class AuthService {
     );
     await this.tokenService.saveRefreshToken(user.id, tokens.refreshToken);
     this.cookieService.setRefreshTokenCookie(response, tokens.refreshToken);
-    return { user, accessToken: tokens.accessToken };
+    return {
+      user: withListingTermsStatus(user),
+      accessToken: tokens.accessToken,
+    };
   }
 }

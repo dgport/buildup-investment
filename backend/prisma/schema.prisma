@@ -107,6 +107,11 @@ model User {
   updatedAt                 DateTime   @updatedAt @map("updated_at")
   lastLogin                 DateTime?  @map("last_login")
 
+  // Listing terms (owner phone stays private, BuildUp is the contact point).
+  // Re-acceptance is required whenever LISTING_TERMS_VERSION changes.
+  listingTermsVersion       String?    @map("listing_terms_version")
+  listingTermsAcceptedAt    DateTime?  @map("listing_terms_accepted_at")
+
   accounts   Account[]
   sessions   Session[]
   properties Property[] // User can have multiple properties

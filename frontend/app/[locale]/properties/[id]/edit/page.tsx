@@ -68,7 +68,7 @@ function propertyToFormData(p: Property): PropertyFormData {
     region: p.region ?? "",
     address: p.address ?? "",
     location: p.location ?? "",
-    contactPhone: p.contactPhone === p.user?.phone ? "" : (p.contactPhone ?? ""),
+    contactPhone: p.contactPhone ?? "",
     hotSale: p.hotSale,
     public: p.public,
     price: p.price ?? "",

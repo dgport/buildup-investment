@@ -21,6 +21,7 @@ export default function Footer() {
     { path: ROUTES.PROJECTS, label: t("nav.projects") },
     { path: ROUTES.DEVELOPERS, label: t("nav.developers") },
     { path: ROUTES.CONTACT, label: t("nav.contact") },
+    { path: ROUTES.LISTING_TERMS, label: t("nav.listingTerms") },
   ];
 
   return (

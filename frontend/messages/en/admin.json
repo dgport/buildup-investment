@@ -231,7 +231,8 @@
       "role": "Role",
       "listings": "Listings",
       "joined": "Joined",
-      "active": "Active"
+      "active": "Active",
+      "terms": "Terms"
     },
     "roles": {
       "ADMIN": "Admin",
@@ -243,7 +244,8 @@
     "lastLogin": "Last login",
     "blocked": "Blocked",
     "promoteConfirm": "Give {name} admin rights? They will be able to manage everything.",
-    "deactivateConfirm": "Block {name}? They will no longer be able to sign in and their sessions will be closed."
+    "deactivateConfirm": "Block {name}? They will no longer be able to sign in and their sessions will be closed.",
+    "termsVersion": "version {version}"
   },
   "settings": {
     "title": "Settings",

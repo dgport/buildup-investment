@@ -107,6 +107,25 @@ npm run build
 - SEO: `/robots.txt`, `/sitemap.xml` (listings, projects, developers), `/manifest.webmanifest`,
   canonical URLs, Open Graph defaults and schema.org JSON-LD on property and project pages.
 
+## Owner privacy & listing terms
+
+Owners' phone numbers and e-mails are **never public**. Public listing responses return
+BuildUp's own number as `contactPhone` (the "Default contact phone" in `/admin/settings`,
+falling back to `DEFAULT_CONTACT_PHONE`), so buyers call BuildUp and quote the listing ID.
+Owners and admins still see the owner's number in the edit screens and the admin panel.
+If no BuildUp number is configured, listing pages show a "Contact us" button instead.
+
+Before their first listing, owners accept the **listing terms** (`/listing-terms`): private
+number, watermarked photos, and that public number display may later become a paid option
+(only with separate consent). `POST /api/properties` returns
+`403 { code: "LISTING_TERMS_REQUIRED" }` until `acceptTerms=true` is sent once; the accepted
+version and date are stored on the user and shown in `/admin/users`.
+
+When the terms change, bump `LISTING_TERMS_VERSION` in
+`backend/src/common/constants/listing-terms.ts` and `version` in
+`frontend/messages/{ka,en}/terms.json` — every owner is asked to accept again before their
+next listing.
+
 ## Photos & watermark
 
 Every uploaded photo is resized (max 1920px, EXIF orientation applied) and gets a 640px

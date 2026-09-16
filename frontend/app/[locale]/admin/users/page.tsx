@@ -92,6 +92,7 @@ export default function AdminUsersPage() {
                   <th className="text-left px-4 py-3">{t("users.columns.contact")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.role")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.listings")}</th>
+                  <th className="text-left px-4 py-3">{t("users.columns.terms")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.joined")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.active")}</th>
                 </tr>
@@ -137,6 +138,21 @@ export default function AdminUsersPage() {
                         </select>
                       </td>
                       <td className="px-4 py-3 tabular-nums">{u.propertiesCount}</td>
+                      <td className="px-4 py-3 text-xs whitespace-nowrap">
+                        {u.listingTermsAcceptedAt ? (
+                          <>
+                            <span className="inline-flex items-center gap-1 font-medium text-teal-800">
+                              <BadgeCheck className="w-3.5 h-3.5 text-teal-600" />
+                              {formatDate(u.listingTermsAcceptedAt, locale)}
+                            </span>
+                            {u.listingTermsVersion && (
+                              <p className="text-[11px] text-gray-400">{t("users.termsVersion", { version: u.listingTermsVersion })}</p>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-gray-400">{t("common.none")}</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
                         {formatDate(u.createdAt, locale)}
                         {u.lastLogin && <p className="text-[11px] text-gray-400">{t("users.lastLogin")}: {formatDate(u.lastLogin, locale)}</p>}

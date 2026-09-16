@@ -27,6 +27,8 @@ const USER_SELECT = {
   avatar: true,
   createdAt: true,
   lastLogin: true,
+  listingTermsVersion: true,
+  listingTermsAcceptedAt: true,
   _count: { select: { properties: true } },
 } satisfies Prisma.UserSelect;
 

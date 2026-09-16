@@ -32,6 +32,8 @@ const USER_SELECT = {
   updatedAt: true,
   lastLogin: true,
   method: true,
+  listingTermsVersion: true,
+  listingTermsAcceptedAt: true,
   password: false,
 } as const;
 

@@ -201,6 +201,10 @@ export class PropertiesController {
   @ApiResponse({ status: 201, description: 'Property created successfully' })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 403,
+    description: 'LISTING_TERMS_REQUIRED – send acceptTerms=true',
+  })
   @UseInterceptors(
     FilesInterceptor(
       'images',

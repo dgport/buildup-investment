@@ -16,4 +16,8 @@ export interface User {
   updatedAt: Date;
   lastLogin: Date | null;
   method: AuthMethod;
+  listingTermsVersion: string | null;
+  listingTermsAcceptedAt: Date | null;
+  /** Computed for API responses: accepted the current terms version. */
+  listingTermsAccepted?: boolean;
 }

@@ -22,7 +22,7 @@ export function FormStepper({
   const pct = Math.round(((step - 1) / (STEP_KEYS.length - 1)) * 100);
 
   return (
-    <aside className="lg:sticky lg:top-28">
+    <aside className="min-w-0 lg:sticky lg:top-28">
       <div className="rounded-[22px] bg-teal-950 text-white p-5 sm:p-6 shadow-xl shadow-teal-950/20 relative overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none"

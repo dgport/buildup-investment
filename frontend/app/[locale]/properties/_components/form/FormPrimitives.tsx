@@ -46,18 +46,25 @@ export function FieldInput({
   label,
   required,
   error,
+  hint,
   className,
   ...props
 }: {
   label: string;
   required?: boolean;
   error?: string;
+  /** Helper text under the field (hidden while an error is shown). */
+  hint?: React.ReactNode;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="space-y-1.5">
       <FieldLabel label={label} required={required} />
       <Input {...props} aria-invalid={!!error} className={cn(FIELD, className)} />
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error ? (
+        <p className="text-xs text-red-500">{error}</p>
+      ) : hint ? (
+        <p className="text-xs text-slate-500 leading-relaxed">{hint}</p>
+      ) : null}
     </div>
   );
 }

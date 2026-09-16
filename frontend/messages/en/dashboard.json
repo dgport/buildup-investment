@@ -113,7 +113,8 @@
       "tooManyImages": "You can upload at most {max} photos at once",
       "imageTooLarge": "{name} is larger than 10MB",
       "notImage": "{name} is not an image"
-    }
+    },
+    "contactPhoneHint": "This number is not shown on the site — BuildUp uses it to reach you when someone is interested."
   },
   "images": {
     "title": "Photos",

@@ -88,7 +88,8 @@ export interface PropertyUser {
   id: string;
   firstname: string;
   lastname: string;
-  phone: string | null;
+  /** Only present in owner/admin responses – owner contacts are private */
+  phone?: string | null;
   /** Only present in owner/admin responses */
   email?: string;
 }
@@ -137,6 +138,10 @@ export interface Property extends PropertyAmenities {
   hotSale: boolean;
   public: boolean;
   price: number | null;
+  /**
+   * Public responses: BuildUp's contact number (owners' numbers are private).
+   * Owner/admin responses: the number the owner entered for this listing.
+   */
   contactPhone: string | null;
   userId: string | null;
   user: PropertyUser | null;
@@ -169,6 +174,8 @@ export interface Property extends PropertyAmenities {
  * On update an empty string clears a nullable field; `undefined` leaves it.
  */
 export interface CreatePropertyDto extends Partial<PropertyAmenities> {
+  /** Accept the current listing terms (needed once before the first listing). */
+  acceptTerms?: boolean;
   propertyType: PropertyType;
   dealType: DealType;
   titleKa?: string;

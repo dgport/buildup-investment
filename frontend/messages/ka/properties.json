@@ -177,5 +177,8 @@
     "areaFrom": "ფართი-დან (მ²)",
     "areaTo": "ფართი-მდე (მ²)",
     "currency": "ვალუტა"
-  }
+  },
+  "callHint": "ზარისას მიუთითეთ განცხადების ID: {id}",
+  "contactUs": "დაგვიკავშირდით",
+  "agencyContact": "BuildUp-ის ნომერი"
 }

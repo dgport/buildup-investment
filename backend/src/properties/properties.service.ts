@@ -14,6 +14,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { FileUtils } from '@/common/utils/file.utils';
 import { TranslationSyncUtil } from '@/common/utils/translation-sync.util';
 import { LANGUAGES, Language } from '@/common/constants/language';
+import { LISTING_TERMS_VERSION } from '@/common/constants/listing-terms';
 import {
   Region,
   UserRole,
@@ -205,8 +206,12 @@ export class PropertiesService {
 
   /**
    * Map a raw Prisma property record to the standard API response shape.
-   * `includePrivateDetails` adds owner-only data (rejection reason, owner
-   * e-mail). Public responses never expose the owner's e-mail address.
+   * `includePrivateDetails` adds owner/admin-only data (rejection reason,
+   * owner phone and e-mail, the listing's own contact phone).
+   *
+   * Public responses never expose how to reach the owner: `contactPhone` is
+   * BuildUp's own number, so every enquiry goes through the site (see the
+   * listing terms owners accept).
    */
   private mapProperty(
     property: PropertyWithRelations,
@@ -220,8 +225,10 @@ export class PropertiesService {
           id: property.user.id,
           firstname: property.user.firstname,
           lastname: property.user.lastname,
-          phone: property.user.phone,
-          ...(includePrivateDetails && { email: property.user.email }),
+          ...(includePrivateDetails && {
+            phone: property.user.phone,
+            email: property.user.email,
+          }),
         }
       : null;
 
@@ -238,9 +245,11 @@ export class PropertiesService {
       hotSale: property.hotSale,
       public: property.public,
       status: property.status,
-      // Listing phone → owner's profile phone → site-wide default
-      contactPhone:
-        property.contactPhone ?? property.user?.phone ?? defaultPhone,
+      // Owners/admins see the number the owner entered; everyone else sees
+      // BuildUp's contact number.
+      contactPhone: includePrivateDetails
+        ? property.contactPhone
+        : defaultPhone,
       userId: property.userId,
       user: owner,
       ...(includePrivateDetails && {
@@ -679,11 +688,38 @@ export class PropertiesService {
     userId: string,
     userRole: UserRole = UserRole.REGULAR,
   ) {
+    // Owners must accept the current listing terms (private phone, BuildUp
+    // as contact point, watermarked photos) before publishing.
+    const owner = await this.prismaService.user.findUnique({
+      where: { id: userId },
+      select: { listingTermsVersion: true },
+    });
+    const termsAlreadyAccepted =
+      owner?.listingTermsVersion === LISTING_TERMS_VERSION;
+    if (!termsAlreadyAccepted && dto.acceptTerms !== true) {
+      await this.discardUploadedFiles(images);
+      throw new ForbiddenException({
+        statusCode: 403,
+        code: 'LISTING_TERMS_REQUIRED',
+        message: 'Please accept the listing terms before publishing a listing',
+      });
+    }
+
     if (!this.hasAnyTitle(dto)) {
       await this.discardUploadedFiles(images);
       throw new BadRequestException(
         'A title is required in at least one language',
       );
+    }
+
+    if (!termsAlreadyAccepted) {
+      await this.prismaService.user.update({
+        where: { id: userId },
+        data: {
+          listingTermsVersion: LISTING_TERMS_VERSION,
+          listingTermsAcceptedAt: new Date(),
+        },
+      });
     }
 
     const [externalId, moderation] = await Promise.all([

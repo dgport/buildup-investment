@@ -417,8 +417,25 @@ export function PropertyDetailContent() {
                 </div>
               </div>
 
+              {!property.contactPhone && (
+                <div className="pt-3 border-t border-teal-50">
+                  <Button size="lg" asChild className="w-full bg-teal-900 hover:bg-teal-800 h-11 font-semibold">
+                    <Link href={ROUTES.CONTACT}>
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      {t("contactUs")}
+                    </Link>
+                  </Button>
+                </div>
+              )}
+
               {property.contactPhone && (
                 <div className="space-y-2 pt-3 border-t border-teal-50">
+                  <p className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    <span>{t("agencyContact")}</span>
+                    <span className="normal-case tracking-normal font-medium text-slate-400">
+                      {t("callHint", { id: property.externalId ?? property.id })}
+                    </span>
+                  </p>
                   <div className="relative">
                     <Button
                       size="lg"

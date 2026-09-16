@@ -48,6 +48,8 @@ export interface AdminUser {
   avatar: string | null;
   createdAt: string;
   lastLogin: string | null;
+  listingTermsVersion: string | null;
+  listingTermsAcceptedAt: string | null;
   propertiesCount: number;
 }
 

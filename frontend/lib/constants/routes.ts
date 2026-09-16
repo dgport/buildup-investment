@@ -3,6 +3,7 @@ export const ROUTES = {
   SIGNUP: "/signup",
   SIGNIN: "/signin",
   CONTACT: "/contact",
+  LISTING_TERMS: "/listing-terms",
   PRIVACY: "/privacy",
   TERMS: "/terms",
   PROPERTIES: "/properties",

@@ -28,6 +28,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from './types/user.type';
 import { ScheduledTasksService } from './services/sheduled-tasks.service';
+import { withListingTermsStatus } from '@/common/constants/listing-terms';
 
 @Controller('auth')
 export class AuthController {
@@ -91,7 +92,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getCurrentUser(@CurrentUser() user: User) {
-    return user;
+    return withListingTermsStatus(user);
   }
 
   // ─── Google OAuth ─────────────────────────────────────────────────────────────

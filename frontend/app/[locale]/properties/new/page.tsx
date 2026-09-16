@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { authKeys, useCurrentUser } from "@/lib/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, ChevronRight, Save } from "lucide-react";
 import { useCreateProperty } from "@/lib/hooks/useProperties";
@@ -21,6 +23,7 @@ import {
 import { SectionTitle } from "../_components/form/FormPrimitives";
 import { ImageDropzone, type PendingImage } from "../_components/form/ImageDropzone";
 import { FormStepper, STEP_KEYS } from "../_components/form/FormStepper";
+import { ListingTermsConsent } from "../_components/form/ListingTermsConsent";
 
 const INITIAL_FORM: PropertyFormData = {
   propertyType: PropertyType.APARTMENT,
@@ -37,6 +40,11 @@ export default function CreatePropertyPage() {
   const router = useRouter();
   const t = useTranslations("dashboard.form");
   const createProperty = useCreateProperty();
+  const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
+  const termsAlreadyAccepted = !!currentUser?.listingTermsAccepted;
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<PropertyFormData>(INITIAL_FORM);
@@ -87,6 +95,10 @@ export default function CreatePropertyPage() {
       goTo(1);
       return;
     }
+    if (!termsAlreadyAccepted && !acceptTerms) {
+      setTermsError(true);
+      return;
+    }
     setSubmitError(null);
 
     // Drop empty strings so nothing is sent as "clear"
@@ -97,14 +109,25 @@ export default function CreatePropertyPage() {
         return true;
       }),
     ) as unknown as CreatePropertyDto;
+    if (!termsAlreadyAccepted) cleaned.acceptTerms = true;
 
     try {
       await createProperty.mutateAsync({
         data: cleaned,
         images: images.length ? images.map((i) => i.file) : undefined,
       });
+      // Acceptance is now stored on the account
+      queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
       router.push(`${ROUTES.DASHBOARD}?created=1`);
     } catch (err) {
+      const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
+      if (code === "LISTING_TERMS_REQUIRED") {
+        // Terms changed while the form was open – ask again
+        setAcceptTerms(false);
+        setTermsError(true);
+        queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
+        return;
+      }
       setSubmitError(getErrorMessage(err, t("createFailed")));
     }
   };
@@ -123,7 +146,7 @@ export default function CreatePropertyPage() {
           {step > 1 ? t("previousStep") : t("backToDashboard")}
         </button>
 
-        <div className="grid lg:grid-cols-[280px_minmax(0,1fr)] gap-6 items-start">
+        <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)] gap-6 items-start">
           <FormStepper
             title={t("newTitle")}
             step={step}
@@ -148,6 +171,16 @@ export default function CreatePropertyPage() {
               <div className="space-y-6">
                 <SectionTitle>{t("sections.photos")}</SectionTitle>
                 <ImageDropzone images={images} onChange={setImages} onError={setSubmitError} />
+                <ListingTermsConsent
+                  alreadyAccepted={termsAlreadyAccepted}
+                  acceptedAt={currentUser?.listingTermsAcceptedAt}
+                  checked={acceptTerms}
+                  onCheckedChange={(value) => {
+                    setAcceptTerms(value);
+                    if (value) setTermsError(false);
+                  }}
+                  showError={termsError}
+                />
               </div>
             )}
 

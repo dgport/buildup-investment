@@ -177,5 +177,8 @@
     "areaFrom": "Min area (m²)",
     "areaTo": "Max area (m²)",
     "currency": "Currency"
-  }
+  },
+  "callHint": "Mention listing ID {id} when you call",
+  "contactUs": "Contact us",
+  "agencyContact": "BuildUp contact"
 }

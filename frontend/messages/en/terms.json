@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "title": "Listing terms",
+    "description": "Terms for publishing property listings on BuildUp.ge: private contact number, photos and moderation."
+  },
+  "eyebrow": "BuildUp.ge",
+  "title": "Listing terms",
+  "subtitle": "These terms apply to everyone who publishes a property listing on BuildUp.ge. You accept them once before your first listing.",
+  "version": "2026-09-16",
+  "versionLabel": "Version: {version}",
+  "sections": [
+    {
+      "title": "Your contact number stays private",
+      "items": [
+        "The phone number and e-mail you provide are never shown publicly on the site.",
+        "Listings show BuildUp's contact number. Interested people contact BuildUp, and we pass the enquiry on to you.",
+        "We share your number with a third party only to connect you with a buyer or tenant interested in your property."
+      ]
+    },
+    {
+      "title": "Showing your number in the future",
+      "items": [
+        "BuildUp may introduce a paid service that shows your number directly on your listing.",
+        "Such a service is enabled only after your separate consent and payment. Accepting these terms does not create any charge."
+      ]
+    },
+    {
+      "title": "Photos",
+      "items": [
+        "Uploaded photos automatically receive the BuildUp.ge watermark so they cannot be reused elsewhere without permission.",
+        "You confirm you have the right to use the photos and allow BuildUp to display them on the listing and the site."
+      ]
+    },
+    {
+      "title": "Accurate information",
+      "items": [
+        "The property must be real and available; price, area and location must be correct.",
+        "Delete or hide the listing once the property is sold or rented."
+      ]
+    },
+    {
+      "title": "Moderation",
+      "items": [
+        "BuildUp may reject, edit or remove any listing that breaks these terms or the law."
+      ]
+    },
+    {
+      "title": "Personal data",
+      "items": [
+        "We process your data in line with Georgian law and only for the purposes described here.",
+        "You can ask us to delete your account and data at any time."
+      ]
+    },
+    {
+      "title": "Changes to these terms",
+      "items": [
+        "If the terms change, you accept the new version before your next listing.",
+        "The date and version of your acceptance are stored with your account."
+      ]
+    }
+  ],
+  "contactNote": "Questions? <link>Contact us</link>.",
+  "consent": {
+    "title": "Listing terms",
+    "points": [
+      "Your number is not shown on the site — buyers contact BuildUp and we reach out to you.",
+      "Photos get the BuildUp.ge watermark.",
+      "Showing your number publicly may become a paid option later — only with your separate consent."
+    ],
+    "checkbox": "I have read and agree to the <link>listing terms</link>",
+    "required": "Please accept the listing terms to publish your listing.",
+    "accepted": "You accepted the listing terms on {date}."
+  }
+}

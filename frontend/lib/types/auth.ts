@@ -11,6 +11,9 @@ export interface User {
   isVerified?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  /** Accepted the current version of the listing terms. */
+  listingTermsAccepted?: boolean;
+  listingTermsAcceptedAt?: string | null;
 }
 
 export interface SignInDto {
