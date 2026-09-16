@@ -19,3 +19,6 @@ uploads/
 
 # Claude Code per-machine permissions
 .claude/settings.local.json
+
+# Next.js build output (only the frontend should have one)
+.next/
