@@ -111,14 +111,14 @@ npm run build
 
 Every uploaded photo is resized (max 1920px, EXIF orientation applied) and gets a 640px
 thumbnail (`photo_t.jpg`) used by cards. Listing and project photos (including floor plans)
-also get the **BuildUp watermark** burned in — a centered logo plus `buildup.ge` in the
+also get the **BuildUp watermark** burned in — `BuildUp.ge` in the center plus `buildup.ge` in the
 bottom-right corner — so they cannot be reposted elsewhere as-is. Developer logos are not
 watermarked.
 
 - The clean, un-watermarked copy is kept in `backend/storage/originals/` (Docker volume
   `originals_data`). It is never served over HTTP — back this volume up with the uploads.
 - The watermark artwork lives in `backend/assets/watermark/` and is rendered by
-  `node scripts/generate-watermark.js` (from `frontend/public/Logo.png`).
+  `node scripts/generate-watermark.js` (text only, no logo).
 - After changing the artwork, or to watermark photos uploaded before this feature, run:
 
   ```bash
