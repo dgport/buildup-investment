@@ -27,9 +27,11 @@ COPY prisma.config.ts ./
 RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
+# pre-rendered watermark PNGs (no fonts needed at runtime)
+COPY assets ./assets
 
-# uploads volume mount point
-RUN mkdir -p /app/public/uploads
+# volume mount points: served uploads + private originals
+RUN mkdir -p /app/public/uploads /app/storage/originals
 
 EXPOSE 3000
 

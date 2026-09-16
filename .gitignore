@@ -2,6 +2,7 @@
 backend/node_modules
 backend/dist
 backend/public/uploads/*
+backend/storage/
 
 # Frontend
 frontend/node_modules

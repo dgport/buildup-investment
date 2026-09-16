@@ -550,8 +550,10 @@ export class ProjectsService {
     files: Express.Multer.File[] | undefined,
     unitTypeId: string | null = null,
   ) {
+    // Gallery photos and floor plans carry the BuildUp watermark.
     files = await FileUtils.optimizeImages(
       await FileUtils.keepOnlyRealImages(files),
+      { watermark: true },
     );
     if (!files.length)
       throw new BadRequestException('No valid image files received');

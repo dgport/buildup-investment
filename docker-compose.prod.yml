@@ -44,6 +44,8 @@ services:
       PORT: "3000"
     volumes:
       - uploads_data:/app/public/uploads
+      # un-watermarked originals of listing/project photos (never served)
+      - originals_data:/app/storage/originals
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
       interval: 30s
@@ -72,3 +74,4 @@ services:
 volumes:
   postgres_data:
   uploads_data:
+  originals_data:

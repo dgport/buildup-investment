@@ -1129,8 +1129,11 @@ export class PropertiesService {
     images: Express.Multer.File[],
     startOrder: number,
   ): Promise<void> {
+    // Listing photos carry the BuildUp watermark so they cannot be reposted
+    // elsewhere as-is; the clean original is kept in storage/originals.
     const realImages = await FileUtils.optimizeImages(
       await FileUtils.keepOnlyRealImages(images),
+      { watermark: true },
     );
     const imageData = realImages
       .map((image, index) => ({

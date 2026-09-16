@@ -8,6 +8,15 @@ import { Request } from 'express';
 /** Absolute folder where every upload is stored: <cwd>/public/uploads */
 export const UPLOADS_ROOT = join(process.cwd(), 'public', 'uploads');
 
+/**
+ * Un-watermarked copies of watermarked photos: <cwd>/storage/originals.
+ * Never served over HTTP; lets the watermark be re-rendered later.
+ */
+export const ORIGINALS_ROOT = join(process.cwd(), 'storage', 'originals');
+
+/** Pre-rendered watermark PNGs (see scripts/generate-watermark.js). */
+export const WATERMARK_DIR = join(process.cwd(), 'assets', 'watermark');
+
 export const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 export const MAX_IMAGES_PER_REQUEST = 20;
 

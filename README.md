@@ -107,6 +107,28 @@ npm run build
 - SEO: `/robots.txt`, `/sitemap.xml` (listings, projects, developers), `/manifest.webmanifest`,
   canonical URLs, Open Graph defaults and schema.org JSON-LD on property and project pages.
 
+## Photos & watermark
+
+Every uploaded photo is resized (max 1920px, EXIF orientation applied) and gets a 640px
+thumbnail (`photo_t.jpg`) used by cards. Listing and project photos (including floor plans)
+also get the **BuildUp watermark** burned in — a centered logo plus `buildup.ge` in the
+bottom-right corner — so they cannot be reposted elsewhere as-is. Developer logos are not
+watermarked.
+
+- The clean, un-watermarked copy is kept in `backend/storage/originals/` (Docker volume
+  `originals_data`). It is never served over HTTP — back this volume up with the uploads.
+- The watermark artwork lives in `backend/assets/watermark/` and is rendered by
+  `node scripts/generate-watermark.js` (from `frontend/public/Logo.png`).
+- After changing the artwork, or to watermark photos uploaded before this feature, run:
+
+  ```bash
+  cd backend
+  npx ts-node -r tsconfig-paths/register scripts/process-existing-images.ts
+  ```
+
+  It re-renders every photo from its saved original, so running it again never stacks a
+  second watermark, and file names/URLs do not change.
+
 ## API overview
 
 | Method | Path                                     | Auth        | Purpose                                  |

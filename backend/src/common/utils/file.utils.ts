@@ -1,8 +1,12 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import sharp from 'sharp';
+import sharp, { type OverlayOptions, type Sharp } from 'sharp';
 import { Logger } from '@nestjs/common';
-import { UPLOADS_ROOT } from '../config/multer.config';
+import {
+  ORIGINALS_ROOT,
+  UPLOADS_ROOT,
+  WATERMARK_DIR,
+} from '../config/multer.config';
 
 /** Longest edge of the stored "full size" image. */
 const MAX_EDGE = 1920;
@@ -10,6 +14,50 @@ const MAX_EDGE = 1920;
 const THUMB_EDGE = 640;
 /** Suffix of the generated thumbnail: photo.jpg → photo_t.jpg */
 export const THUMB_SUFFIX = '_t';
+
+type OutputFormat = 'jpeg' | 'png' | 'webp';
+
+export interface ProcessOptions {
+  /** Burn the BuildUp mark into the photo and keep a clean original. */
+  watermark?: boolean;
+}
+
+export interface RenderedImage {
+  format: OutputFormat;
+  /** Resized, auto-rotated photo without watermark. */
+  clean: Buffer;
+  /** What the public URL serves (watermarked when requested). */
+  public: Buffer;
+  /** 640px JPEG made from `public`. */
+  thumb: Buffer;
+}
+
+interface WatermarkAssets {
+  center: Buffer;
+  /** height / width of center.png */
+  centerRatio: number;
+  corner: Buffer;
+  cornerRatio: number;
+}
+
+const EXT_BY_FORMAT: Record<OutputFormat, string> = {
+  jpeg: '.jpg',
+  png: '.png',
+  webp: '.webp',
+};
+
+const FORMAT_BY_EXT: Record<string, OutputFormat> = {
+  '.jpg': 'jpeg',
+  '.jpeg': 'jpeg',
+  '.png': 'png',
+  '.webp': 'webp',
+};
+
+const exists = (p: string) =>
+  fs
+    .access(p)
+    .then(() => true)
+    .catch(() => false);
 
 /** Magic-number signatures of the image formats we accept. */
 const IMAGE_SIGNATURES: { name: string; test: (b: Buffer) => boolean }[] = [
@@ -41,80 +89,244 @@ const IMAGE_SIGNATURES: { name: string; test: (b: Buffer) => boolean }[] = [
 export class FileUtils {
   private static readonly logger = new Logger(FileUtils.name);
 
+  private static watermarkAssets?: Promise<WatermarkAssets | null>;
+
   /**
-   * Rewrite an uploaded photo as a web-sized image and generate a thumbnail
-   * next to it. Phone photos arrive at 4000px / several MB and would otherwise
-   * be downloaded at full size by every listing card.
+   * Rewrite uploaded photos for the web and generate thumbnails next to them.
+   * Phone photos arrive at 4000px / several MB and would otherwise be
+   * downloaded at full size by every listing card.
    *
    * - EXIF orientation is applied, so sideways phone photos come out upright
    * - the longest edge is capped at 1920px (thumbnail 640px)
-   * - HEIC/AVIF are converted to JPEG (`file.filename` is updated accordingly)
+   * - HEIC/AVIF/GIF become JPEG (`file.filename` is updated accordingly)
+   * - with `watermark`, the BuildUp mark is burned into the served photo and
+   *   the clean version is kept in storage/originals (never served)
    *
-   * Any failure leaves the original file untouched — an unoptimised photo is
+   * A failure leaves the uploaded file untouched — an unprocessed photo is
    * better than a failed upload.
    */
   static async optimizeImages(
     files: Express.Multer.File[] | undefined,
+    options: ProcessOptions = {},
   ): Promise<Express.Multer.File[]> {
     for (const file of files ?? []) {
       try {
-        await FileUtils.optimizeImage(file);
+        await FileUtils.processUpload(file, options);
       } catch (error) {
         FileUtils.logger.warn(
-          `Could not optimize ${file.filename}: ${(error as Error).message}`,
+          `Could not process ${file.filename}: ${(error as Error).message}`,
         );
       }
     }
     return files ?? [];
   }
 
-  private static async optimizeImage(file: Express.Multer.File) {
-    // Read into memory first: opening the same path sharp is about to write
-    // (and files the static server may be serving) is unreliable on Windows.
+  private static async processUpload(
+    file: Express.Multer.File,
+    options: ProcessOptions,
+  ) {
+    // Read into memory first: opening a path sharp is about to overwrite (or
+    // one the static server may be serving) is unreliable on Windows.
     const source = await fs.readFile(file.path);
-    const pipeline = sharp(source, { failOn: 'none' }).rotate();
-    const { format } = await pipeline.metadata();
-
-    // Formats browsers cannot display everywhere are re-encoded as JPEG.
-    const keepsFormat = format === 'png' || format === 'webp';
-    const targetExt = keepsFormat ? path.extname(file.path) : '.jpg';
-
-    const resized = pipeline.resize({
-      width: MAX_EDGE,
-      height: MAX_EDGE,
-      fit: 'inside',
-      withoutEnlargement: true,
-    });
-    const optimized = await (
-      keepsFormat
-        ? format === 'png'
-          ? resized.png({ compressionLevel: 9, palette: true })
-          : resized.webp({ quality: 82 })
-        : resized.jpeg({ quality: 82, mozjpeg: true })
-    ).toBuffer();
+    const rendered = await FileUtils.renderImage(source, options);
 
     const dir = path.dirname(file.path);
     const base = path.basename(file.path, path.extname(file.path));
-    const mainPath = path.join(dir, base + targetExt);
+    const publicPath = path.join(dir, base + EXT_BY_FORMAT[rendered.format]);
 
-    await fs.writeFile(mainPath, optimized);
-    if (mainPath !== file.path) {
+    await FileUtils.writeImageSet(publicPath, rendered, options);
+    if (publicPath !== file.path) {
       await fs.unlink(file.path).catch(() => undefined);
-      file.filename = base + targetExt;
-      file.path = mainPath;
+      file.filename = path.basename(publicPath);
+      file.path = publicPath;
     }
-    file.size = optimized.length;
+    file.size = rendered.public.length;
+  }
 
-    // Thumbnail is always JPEG – it is only ever shown small.
-    await sharp(optimized)
+  /**
+   * Resize/rotate a photo, optionally watermark it, and build its thumbnail.
+   * `format` forces the output encoding (used when re-processing a file whose
+   * URL — and therefore extension — must not change).
+   */
+  static async renderImage(
+    source: Buffer,
+    options: ProcessOptions & { format?: OutputFormat } = {},
+  ): Promise<RenderedImage> {
+    const { format: sourceFormat } = await sharp(source, {
+      failOn: 'none',
+    }).metadata();
+    const format: OutputFormat =
+      options.format ??
+      (sourceFormat === 'png' || sourceFormat === 'webp'
+        ? sourceFormat
+        : 'jpeg');
+
+    // Decode once to raw pixels so the clean and the watermarked versions
+    // are each encoded a single time (no double JPEG compression).
+    const { data, info } = await sharp(source, { failOn: 'none' })
+      .rotate()
+      .resize({
+        width: MAX_EDGE,
+        height: MAX_EDGE,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const raw = () =>
+      sharp(data, {
+        raw: {
+          width: info.width,
+          height: info.height,
+          channels: info.channels,
+        },
+      });
+
+    const clean = await FileUtils.encode(raw(), format).toBuffer();
+
+    const layers = options.watermark
+      ? await FileUtils.watermarkLayers(info.width, info.height)
+      : [];
+    const publicBuffer = layers.length
+      ? await FileUtils.encode(raw().composite(layers), format).toBuffer()
+      : clean;
+
+    const thumb = await sharp(publicBuffer)
       .resize({
         width: THUMB_EDGE,
         height: THUMB_EDGE,
         fit: 'inside',
         withoutEnlargement: true,
       })
+      .flatten({ background: '#ffffff' })
       .jpeg({ quality: 76, mozjpeg: true })
-      .toFile(path.join(dir, base + THUMB_SUFFIX + '.jpg'));
+      .toBuffer();
+
+    return { format, clean, public: publicBuffer, thumb };
+  }
+
+  /** Write the served photo, its thumbnail and (when watermarked) the original. */
+  static async writeImageSet(
+    publicPath: string,
+    rendered: RenderedImage,
+    options: ProcessOptions,
+  ) {
+    const rel = path.relative(UPLOADS_ROOT, publicPath);
+    if (options.watermark && !rel.startsWith('..')) {
+      // Original first: a watermarked public file must always have one.
+      const originalPath = path.join(ORIGINALS_ROOT, rel);
+      await fs.mkdir(path.dirname(originalPath), { recursive: true });
+      await fs.writeFile(originalPath, rendered.clean);
+    }
+    await fs.writeFile(publicPath, rendered.public);
+    await fs.writeFile(FileUtils.thumbnailPath(publicPath), rendered.thumb);
+  }
+
+  /** Clean copy kept for a public upload path, if one exists. */
+  static async readOriginal(publicPath: string): Promise<Buffer | null> {
+    const rel = path.relative(UPLOADS_ROOT, publicPath);
+    if (rel.startsWith('..')) return null;
+    const originalPath = path.join(ORIGINALS_ROOT, rel);
+    return (await exists(originalPath)) ? fs.readFile(originalPath) : null;
+  }
+
+  static formatForExtension(filePath: string): OutputFormat | null {
+    return FORMAT_BY_EXT[path.extname(filePath).toLowerCase()] ?? null;
+  }
+
+  static thumbnailPath(publicPath: string) {
+    return path.join(
+      path.dirname(publicPath),
+      path.basename(publicPath, path.extname(publicPath)) +
+        THUMB_SUFFIX +
+        '.jpg',
+    );
+  }
+
+  private static encode(image: Sharp, format: OutputFormat) {
+    switch (format) {
+      case 'png':
+        return image.png({ compressionLevel: 9, palette: true });
+      case 'webp':
+        return image.webp({ quality: 82 });
+      default:
+        return image
+          .flatten({ background: '#ffffff' })
+          .jpeg({ quality: 82, mozjpeg: true });
+    }
+  }
+
+  /**
+   * Centered logo mark (~42% of the width) plus a small "buildup.ge" in the
+   * bottom-right corner — two marks are much harder to crop out than one.
+   */
+  private static async watermarkLayers(
+    width: number,
+    height: number,
+  ): Promise<OverlayOptions[]> {
+    const assets = await FileUtils.loadWatermark();
+    if (!assets || width < 120 || height < 80) return [];
+
+    const layers: OverlayOptions[] = [];
+
+    const centerWidth = Math.floor(
+      Math.min(
+        Math.max(width * 0.42, 160),
+        width * 0.85,
+        (height * 0.8) / assets.centerRatio,
+      ),
+    );
+    layers.push({
+      input: await sharp(assets.center)
+        .resize({ width: centerWidth })
+        .toBuffer(),
+      gravity: 'centre',
+    });
+
+    if (width >= 480 && height >= 240) {
+      const cornerWidth = Math.round(
+        Math.min(Math.max(width * 0.16, 110), 320),
+      );
+      const cornerHeight = Math.round(cornerWidth * assets.cornerRatio);
+      const margin = Math.round(width * 0.02);
+      if (cornerHeight + margin * 2 < height) {
+        layers.push({
+          input: await sharp(assets.corner)
+            .resize({ width: cornerWidth, height: cornerHeight, fit: 'fill' })
+            .toBuffer(),
+          left: width - cornerWidth - margin,
+          top: height - cornerHeight - margin,
+        });
+      }
+    }
+    return layers;
+  }
+
+  private static loadWatermark(): Promise<WatermarkAssets | null> {
+    FileUtils.watermarkAssets ??= (async () => {
+      try {
+        const [center, corner] = await Promise.all([
+          fs.readFile(path.join(WATERMARK_DIR, 'center.png')),
+          fs.readFile(path.join(WATERMARK_DIR, 'corner.png')),
+        ]);
+        const [cm, km] = await Promise.all([
+          sharp(center).metadata(),
+          sharp(corner).metadata(),
+        ]);
+        return {
+          center,
+          centerRatio: (cm.height ?? 1) / (cm.width ?? 1),
+          corner,
+          cornerRatio: (km.height ?? 1) / (km.width ?? 1),
+        };
+      } catch (error) {
+        FileUtils.logger.error(
+          `Watermark assets missing in ${WATERMARK_DIR} – photos are stored WITHOUT watermark: ${(error as Error).message}`,
+        );
+        return null;
+      }
+    })();
+    return FileUtils.watermarkAssets;
   }
 
   /**
@@ -179,12 +391,13 @@ export class FileUtils {
 
     if (!fullPath.startsWith(UPLOADS_ROOT)) return;
 
-    const thumbPath = path.join(
-      path.dirname(fullPath),
-      path.basename(fullPath, path.extname(fullPath)) + THUMB_SUFFIX + '.jpg',
-    );
+    const targets = [
+      fullPath,
+      FileUtils.thumbnailPath(fullPath),
+      path.join(ORIGINALS_ROOT, cleanPath),
+    ];
 
-    for (const target of [fullPath, thumbPath]) {
+    for (const target of targets) {
       try {
         await fs.unlink(target);
       } catch (err) {
