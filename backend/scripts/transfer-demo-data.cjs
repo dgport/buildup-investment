@@ -11,10 +11,11 @@ const child = (value) => strip(value, ['id', 'propertyId', 'projectId', 'develop
 async function main() {
   if (!filename || !['export', 'import'].includes(mode)) throw new Error('Usage: node scripts/transfer-demo-data.cjs export|import FILE');
   if (mode === 'export') {
-    const [developers, projects, properties] = await Promise.all([
+    const [developers, projects, properties, regions] = await Promise.all([
       prisma.developer.findMany({ include: { translations: true } }),
       prisma.project.findMany({ include: { translations: true, images: true, unitTypes: { include: { translations: true } } } }),
       prisma.property.findMany({ include: { translations: true, galleryImages: true } }),
+      prisma.regionTranslations.findMany({ select: { region: true, language: true, name: true } }),
     ]);
     const mediaRoot = path.join(path.dirname(path.resolve(filename)), 'demo-assets', 'uploads', 'demo');
     const uploads = path.resolve('public/uploads');
@@ -34,7 +35,11 @@ async function main() {
       return '/uploads/demo/' + relative.replaceAll('\\', '/');
     };
     for (const d of developers) { d.logo = copyImage(d.logo); d.phone = null; d.email = null; }
-    for (const p of projects) for (const image of p.images) image.imageUrl = copyImage(image.imageUrl);
+    for (const p of projects) {
+      p.videoUrl = null;
+      p.tourUrl = null;
+      for (const image of p.images) image.imageUrl = copyImage(image.imageUrl);
+    }
     for (const p of properties) {
       delete p.userId;
       p.contactPhone = null;
@@ -47,7 +52,7 @@ async function main() {
       }
     }
     fs.mkdirSync(path.dirname(path.resolve(filename)), { recursive: true });
-    fs.writeFileSync(filename, JSON.stringify({ version: 1, developers, projects, properties }, null, 2));
+    fs.writeFileSync(filename, JSON.stringify({ version: 1, developers, projects, properties, regions }, null, 2));
     console.log(JSON.stringify({ exported: { developers: developers.length, projects: projects.length, properties: properties.length }, mediaRoot }));
     return;
   }
@@ -55,6 +60,9 @@ async function main() {
   const data = JSON.parse(fs.readFileSync(filename, 'utf8'));
   if (data.version !== 1) throw new Error('Unsupported export format');
   const result = await prisma.$transaction(async (db) => {
+    for (const region of data.regions ?? []) {
+      await db.regionTranslations.upsert({ where: { region_language: { region: region.region, language: region.language } }, update: {}, create: region });
+    }
     const developerIds = new Map();
     const counts = { developers: 0, projects: 0, properties: 0 };
     for (const d of data.developers) {

@@ -296,7 +296,7 @@ export default function Header() {
         <div className="flex h-20 lg:h-24 items-center justify-between gap-4">
           <Link
             href={ROUTES.HOME}
-            className="flex items-center gap-3 lg:gap-4 shrink-0 group"
+            className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 group"
           >
             <Image
               src="/Logo.png"
@@ -304,13 +304,13 @@ export default function Header() {
               width={80}
               height={80}
               priority
-              className="h-14 lg:h-20 w-auto transition-transform duration-300 group-hover:scale-105"
+              className="h-10 sm:h-14 lg:h-20 w-auto shrink-0 transition-transform duration-300 group-hover:scale-105"
             />
             <div className="flex flex-col">
-              <span className="text-base lg:text-lg font-bold text-amber-400 leading-tight tracking-wide">
+              <span className="text-sm sm:text-base lg:text-lg font-bold text-amber-400 leading-tight tracking-wide">
                 {t("brand")}
               </span>
-              <span className="text-[10px] lg:text-[11px] font-semibold text-amber-100/50 tracking-[0.25em] uppercase">
+              <span className="hidden sm:block text-[10px] lg:text-[11px] font-semibold text-amber-100/50 tracking-[0.25em] uppercase">
                 {t("tagline")}
               </span>
             </div>

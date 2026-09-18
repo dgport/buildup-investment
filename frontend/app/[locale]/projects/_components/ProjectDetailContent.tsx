@@ -157,7 +157,6 @@ export function ProjectDetailContent() {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-teal-950">{title}</h1>
-              {project.isDemo && <DemoNotice />}
               <span className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border ${STATUS_STYLES[project.status]}`}>
                 {t(`status.${project.status}`)}
               </span>
@@ -175,14 +174,16 @@ export function ProjectDetailContent() {
           <button
             type="button"
             onClick={share}
+            aria-label={t("detail.share")}
             className="shrink-0 inline-flex items-center gap-1.5 text-sm text-teal-800 hover:text-amber-600 border border-teal-200 rounded-xl px-3 py-2 bg-white"
           >
             {copied ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4" />}
-            {copied ? t("detail.copied") : t("detail.share")}
+            <span className="hidden sm:inline">{copied ? t("detail.copied") : t("detail.share")}</span>
           </button>
         </div>
 
         {/* Gallery + info card */}
+        {project.isDemo && <DemoNotice />}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 h-[340px] lg:h-[520px]">
             <div className="card overflow-hidden h-full relative">
