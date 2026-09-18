@@ -47,7 +47,7 @@ services:
       # un-watermarked originals of listing/project photos (never served)
       - originals_data:/app/storage/originals
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 5
