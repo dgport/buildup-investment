@@ -37,10 +37,10 @@ export function DetailSkeleton() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-6">
       <div className="flex items-center gap-3">
-        <Skeleton className="w-10 h-10 rounded-xl" />
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-72" />
-          <Skeleton className="h-4 w-40" />
+        <Skeleton className="w-10 h-10 shrink-0 rounded-xl" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-7 w-72 max-w-full" />
+          <Skeleton className="h-4 w-40 max-w-full" />
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -89,9 +89,9 @@ export function CatalogueSkeleton({ count = 8 }: { count?: number }) {
         </div>
       </section>
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-10 w-48 rounded-xl" />
+          <Skeleton className="h-10 w-full sm:w-48 rounded-xl" />
         </div>
         <CardGridSkeleton count={count} tall />
       </div>

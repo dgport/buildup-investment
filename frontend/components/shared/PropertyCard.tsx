@@ -75,8 +75,12 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   ].filter((s): s is { icon: typeof DoorOpen; value: string } => !!s);
 
   return (
-    <Link href={ROUTES.PROPERTY(property.id)} className="group block h-full">
-      <article className="h-full flex flex-col rounded-[22px] bg-white p-2.5 border border-teal-950/[0.07] shadow-card transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-card-hover">
+      <article className="group relative h-full flex flex-col rounded-[22px] bg-white p-2.5 border border-teal-950/[0.07] shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover focus-within:shadow-card-hover">
+        <Link
+          href={ROUTES.PROPERTY(property.id)}
+          aria-label={title}
+          className="absolute inset-0 z-10 rounded-[22px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+        />
         {property.isDemo && <DemoNotice compact />}
         {/* Photo */}
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
@@ -110,8 +114,8 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                   stop(e);
                   setIndex((i) => (i - 1 + images.length) % images.length);
                 }}
-                aria-label="Previous image"
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
+                aria-label={locale === "ka" ? "წინა ფოტო" : "Previous image"}
+                className="absolute z-20 left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -121,8 +125,8 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                   stop(e);
                   setIndex((i) => (i + 1) % images.length);
                 }}
-                aria-label="Next image"
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
+                aria-label={locale === "ka" ? "შემდეგი ფოტო" : "Next image"}
+                className="absolute z-20 right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -178,7 +182,8 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             <button
               type="button"
               onClick={copyId}
-              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 hover:bg-slate-100 hover:text-teal-800 transition"
+              className="relative z-20 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 hover:bg-slate-100 hover:text-teal-800 transition"
+              aria-label={copied ? t("copied") : `${t("copyId")}: ${property.externalId}`}
               title={copied ? t("copied") : t("copyId")}
             >
               ID {property.externalId}
@@ -187,7 +192,6 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           </div>
         </div>
       </article>
-    </Link>
   );
 };
 
