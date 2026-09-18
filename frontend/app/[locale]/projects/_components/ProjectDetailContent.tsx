@@ -1,5 +1,7 @@
 "use client";
 
+import { DemoNotice } from "@/components/shared/DemoNotice";
+
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -155,6 +157,7 @@ export function ProjectDetailContent() {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-teal-950">{title}</h1>
+              {project.isDemo && <DemoNotice />}
               <span className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border ${STATUS_STYLES[project.status]}`}>
                 {t(`status.${project.status}`)}
               </span>

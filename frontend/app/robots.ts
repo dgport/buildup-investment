@@ -19,7 +19,6 @@ export default function robots(): MetadataRoute.Robots {
           "/google-auth-error",
           "/properties/new",
           "/properties/*/edit",
-          "/_next/",
         ],
       },
     ],

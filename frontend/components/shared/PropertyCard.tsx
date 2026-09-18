@@ -1,5 +1,7 @@
 "use client";
 
+import { DemoNotice } from "./DemoNotice";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -75,6 +77,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   return (
     <Link href={ROUTES.PROPERTY(property.id)} className="group block h-full">
       <article className="h-full flex flex-col rounded-[22px] bg-white p-2.5 border border-teal-950/[0.07] shadow-card transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-card-hover">
+        {property.isDemo && <DemoNotice compact />}
         {/* Photo */}
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
           {images.length > 0 ? (
@@ -84,7 +87,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                 key={img.src}
                 src={img.src}
                 alt={`${title} – ${i + 1}`}
-                loading={i === 0 ? "eager" : "lazy"}
+                loading="lazy"
                 decoding="async"
                 onError={(e) => fallbackToFullImage(e, img.original)}
                 className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03] ${
@@ -108,7 +111,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                   setIndex((i) => (i - 1 + images.length) % images.length);
                 }}
                 aria-label="Previous image"
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -119,7 +122,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                   setIndex((i) => (i + 1) % images.length);
                 }}
                 aria-label="Next image"
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

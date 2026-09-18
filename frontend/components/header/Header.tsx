@@ -363,9 +363,11 @@ export default function Header() {
 
       {/* Mobile menu */}
       <div
+        inert={!mobileOpen}
+        aria-hidden={!mobileOpen}
         className={cn(
           "lg:hidden overflow-hidden transition-all duration-300 bg-teal-950/98 backdrop-blur-md border-t border-amber-400/10",
-          mobileOpen ? "max-h-[560px] opacity-100" : "max-h-0 opacity-0",
+          mobileOpen ? "max-h-[calc(100dvh-5rem)] overflow-y-auto opacity-100" : "max-h-0 opacity-0",
         )}
       >
         <nav className="flex flex-col p-4 gap-1">

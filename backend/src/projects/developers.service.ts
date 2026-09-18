@@ -43,6 +43,7 @@ export class DevelopersService {
     );
     return {
       id: dev.id,
+      isDemo: dev.isDemo,
       slug: dev.slug,
       name: dev.name,
       logo: dev.logo,

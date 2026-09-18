@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -12,16 +13,13 @@ interface PageProps {
 }
 
 async function fetchProperty(id: string, lang: string): Promise<Property | null> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/properties/${encodeURIComponent(id)}?lang=${lang}`,
-      { next: { revalidate: 60 } },
-    );
-    if (!res.ok) return null;
-    return (await res.json()) as Property;
-  } catch {
-    return null;
-  }
+  const res = await fetch(
+    `${API_BASE_URL}/properties/${encodeURIComponent(id)}?lang=${lang}`,
+    { next: { revalidate: 60 } },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Property request failed: ${res.status}`);
+  return (await res.json()) as Property;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -31,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const property = await fetchProperty(id, locale);
 
   if (!property) {
-    return { title: t("notFound"), description: t("description") };
+    return { title: t("notFound"), robots: { index: false, follow: false } };
   }
 
   const title = property.translation?.title || `${t("title")} #${property.externalId}`;
@@ -49,6 +47,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    robots: property.isDemo ? { index: false, follow: true } : { index: true, follow: true },
+    twitter: { card: "summary_large_image", title, description, images: [image || "/og-image.jpg"] },
     alternates: { canonical: `/properties/${property.id}` },
     openGraph: {
       title,
@@ -109,10 +109,11 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const { id } = await params;
   const locale = await getLocale();
   const property = await fetchProperty(id, locale);
+  if (!property) notFound();
 
   return (
     <>
-      {property && (
+      {property && !property.isDemo && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLd(propertyJsonLd(property, locale)) }}

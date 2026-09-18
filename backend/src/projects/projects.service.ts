@@ -135,6 +135,7 @@ export class ProjectsService {
 
     return {
       id: project.id,
+      isDemo: project.isDemo,
       slug: project.slug,
       title: translation?.title ?? null,
       description: translation?.description ?? null,

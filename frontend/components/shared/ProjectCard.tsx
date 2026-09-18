@@ -1,5 +1,7 @@
 "use client";
 
+import { DemoNotice } from "./DemoNotice";
+
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Building2, CalendarClock, ImageIcon, Layers, MapPin } from "lucide-react";
@@ -41,6 +43,7 @@ export default function ProjectCard({ project }: { project: Project }) {
       href={ROUTES.PROJECT(project.slug)}
       className="group flex flex-col h-full rounded-[22px] bg-white p-2.5 border border-teal-950/[0.07] shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
     >
+      {project.isDemo && <DemoNotice compact />}
       <div className="relative h-56 rounded-2xl bg-teal-950/5 overflow-hidden">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element

@@ -92,7 +92,7 @@ export function PropertyFilters() {
     for (const key of FILTER_KEYS) {
       const value = next[key].trim();
       if (!isSet(key, value)) continue;
-      if (isLand && (key === "rooms" || key === "bedrooms")) continue;
+      if (next.propertyType === PropertyType.LAND && (key === "rooms" || key === "bedrooms")) continue;
       params.set(key, value);
     }
     router.push(`${pathname}?${params.toString()}`);
@@ -152,6 +152,7 @@ export function PropertyFilters() {
                 key={d}
                 type="button"
                 onClick={() => set("dealType", d)}
+                aria-pressed={filters.dealType === d}
                 className={`sm:flex-1 xl:flex-none px-3 h-9 rounded-lg text-[13px] sm:text-sm font-semibold whitespace-nowrap transition ${
                   filters.dealType === d ? "bg-teal-900 text-white shadow" : "text-teal-900 hover:bg-white"
                 }`}
@@ -187,7 +188,7 @@ export function PropertyFilters() {
 
           {/* Price range */}
           <div className="col-span-2 md:col-span-2 xl:col-span-1 flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 gap-1.5 focus-within:bg-white focus-within:border-teal-500">
-            <span className="text-sm font-semibold text-slate-400">$</span>
+            <span className="text-sm font-semibold text-slate-500 whitespace-nowrap">USD</span>
             <input
               inputMode="numeric"
               value={filters.priceFrom}

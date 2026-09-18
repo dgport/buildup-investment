@@ -103,7 +103,7 @@ export function PropertiesContent() {
             {meta ? t("count", { count: meta.total }) : ""}
             {isFetching && !isLoading ? " …" : ""}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <div className="inline-flex rounded-xl border border-slate-200 bg-white p-0.5" role="group" aria-label={t("filters.currency")}>
               {(["GEL", "USD"] as const).map((c) => (
                 <button
@@ -120,7 +120,7 @@ export function PropertiesContent() {
               ))}
             </div>
             <Select value={filters.sort ?? "featured"} onValueChange={setSort}>
-              <SelectTrigger className="h-10 w-[190px] border-slate-200 rounded-xl text-sm bg-white">
+              <SelectTrigger aria-label={t("sort")} className="h-10 w-full sm:w-[190px] border-slate-200 rounded-xl text-sm bg-white">
                 <SelectValue placeholder={t("sort")} />
               </SelectTrigger>
               <SelectContent>

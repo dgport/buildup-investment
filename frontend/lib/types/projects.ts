@@ -51,6 +51,7 @@ export interface TranslationRow {
 }
 
 export interface Developer {
+  isDemo?: boolean;
   id: string;
   slug: string;
   name: string;
@@ -98,6 +99,7 @@ export interface UnitType {
 }
 
 export interface Project {
+  isDemo?: boolean;
   id: string;
   slug: string;
   title: string | null;

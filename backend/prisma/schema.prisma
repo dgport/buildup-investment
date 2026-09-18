@@ -185,6 +185,7 @@ model SiteSettings {
 // ==================== PROPERTY MODELS ====================
 
 model Property {
+  isDemo       Boolean      @default(false) @map("is_demo")
   id           String       @id @default(cuid())
   externalId   String       @unique @map("external_id")
   propertyType PropertyType @map("property_type")
@@ -318,6 +319,7 @@ enum LeadStatus {
 }
 
 model Developer {
+  isDemo      Boolean  @default(false) @map("is_demo")
   id          String   @id @default(cuid())
   slug        String   @unique
   name        String
@@ -350,6 +352,7 @@ model DeveloperTranslation {
 }
 
 model Project {
+  isDemo               Boolean       @default(false) @map("is_demo")
   id                   String        @id @default(cuid())
   slug                 String        @unique
   developerId          String        @map("developer_id")

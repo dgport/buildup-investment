@@ -126,6 +126,7 @@ export type AmenityKey = (typeof AMENITY_KEYS)[number];
 export type PropertyAmenities = Record<AmenityKey, boolean>;
 
 export interface Property extends PropertyAmenities {
+  isDemo?: boolean;
   id: string;
   externalId: string;
   propertyType: PropertyType;

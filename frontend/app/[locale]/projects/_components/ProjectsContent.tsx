@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { LayoutGrid, Map as MapIcon, SearchX } from "lucide-react";
@@ -53,9 +52,7 @@ export function ProjectsContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const filters = parse(searchParams);
-  const [view, setView] = useState<"list" | "map">(
-    searchParams.get("view") === "map" ? "map" : "list",
-  );
+  const view = searchParams.get("view") === "map" ? "map" : "list";
 
   const { data, isLoading, error } = useProjects({ ...filters, lang: locale });
   const projects = data?.data ?? [];
@@ -97,12 +94,12 @@ export function ProjectsContent() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <p className="text-sm text-slate-500">{meta ? t("count", { count: meta.total }) : ""}</p>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Select
               value={filters.sort ?? "featured"}
               onValueChange={(v) => setParam("sort", v === "featured" ? undefined : v)}
             >
-              <SelectTrigger className="h-10 w-[190px] border-slate-200 rounded-xl text-sm bg-white">
+              <SelectTrigger aria-label={t("sort")} className="h-10 w-full sm:w-[190px] border-slate-200 rounded-xl text-sm bg-white">
                 <SelectValue placeholder={t("sort")} />
               </SelectTrigger>
               <SelectContent>
@@ -117,7 +114,8 @@ export function ProjectsContent() {
             <div className="inline-flex rounded-xl border border-slate-200 bg-white p-0.5">
               <button
                 type="button"
-                onClick={() => setView("list")}
+                onClick={() => setParam("view")}
+                aria-pressed={view === "list"}
                 className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-sm font-medium transition ${
                   view === "list" ? "bg-teal-900 text-white" : "text-teal-800 hover:bg-teal-50"
                 }`}
@@ -127,7 +125,8 @@ export function ProjectsContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setView("map")}
+                onClick={() => setParam("view", "map")}
+                aria-pressed={view === "map"}
                 className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-sm font-medium transition ${
                   view === "map" ? "bg-teal-900 text-white" : "text-teal-800 hover:bg-teal-50"
                 }`}

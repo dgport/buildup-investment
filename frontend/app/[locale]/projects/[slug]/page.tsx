@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -12,15 +13,13 @@ interface PageProps {
 }
 
 async function fetchProject(slug: string, lang: string): Promise<Project | null> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/projects/${encodeURIComponent(slug)}?lang=${lang}`,
-      { next: { revalidate: 60 } },
-    );
-    return res.ok ? ((await res.json()) as Project) : null;
-  } catch {
-    return null;
-  }
+  const res = await fetch(
+    `${API_BASE_URL}/projects/${encodeURIComponent(slug)}?lang=${lang}`,
+    { next: { revalidate: 60 } },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Project request failed: ${res.status}`);
+  return (await res.json()) as Project;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -28,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const locale = await getLocale();
   const t = await getTranslations("projects");
   const project = await fetchProject(slug, locale);
-  if (!project) return { title: t("notFound") };
+  if (!project) return { title: t("notFound"), robots: { index: false, follow: false } };
 
   const title = `${project.title ?? project.slug} · ${project.developer.name}`;
   const description =
@@ -38,6 +37,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    robots: project.isDemo ? { index: false, follow: true } : { index: true, follow: true },
+    twitter: { card: "summary_large_image", title, description, images: [image || "/og-image.jpg"] },
     alternates: { canonical: `/projects/${project.slug}` },
     openGraph: {
       title,
@@ -97,10 +98,11 @@ export default async function ProjectPage({ params }: PageProps) {
   const { slug } = await params;
   const locale = await getLocale();
   const project = await fetchProject(slug, locale);
+  if (!project) notFound();
 
   return (
     <>
-      {project && (
+      {project && !project.isDemo && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLd(projectJsonLd(project, locale)) }}

@@ -22,3 +22,4 @@ uploads/
 
 # Next.js build output (only the frontend should have one)
 .next/
+.deploy/

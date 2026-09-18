@@ -4,29 +4,41 @@ import { API_BASE_URL, SITE_URL } from "@/lib/constants/env";
 interface Listing {
   id: string;
   updatedAt: string;
+  isDemo?: boolean;
 }
 interface Slugged {
   slug: string;
   updatedAt: string;
+  isDemo?: boolean;
 }
 
-async function fetchAll<T>(path: string, pick: (json: unknown) => T[]): Promise<T[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, { next: { revalidate: 3600 } });
-    if (!res.ok) return [];
-    return pick(await res.json());
-  } catch {
-    return [];
-  }
+async function fetchJson(path: string) {
+  const res = await fetch(`${API_BASE_URL}${path}`, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`Sitemap source unavailable: ${res.status}`);
+  return res.json();
 }
 
-export const revalidate = 3600;
+async function fetchPages<T>(path: string): Promise<T[]> {
+  const results: T[] = [];
+  let page = 1;
+  let totalPages = 1;
+  do {
+    const json = await fetchJson(`${path}?limit=100&page=${page}`) as { data: T[]; meta: { totalPages: number } };
+    results.push(...json.data);
+    totalPages = json.meta.totalPages;
+    page++;
+  } while (page <= totalPages);
+  return results;
+}
+
+// Generate against live data, including records added after the image was built.
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [properties, projects, developers] = await Promise.all([
-    fetchAll<Listing>("/properties?limit=100&page=1", (j) => (j as { data: Listing[] }).data),
-    fetchAll<Slugged>("/projects?limit=100&page=1", (j) => (j as { data: Slugged[] }).data),
-    fetchAll<Slugged>("/developers", (j) => j as Slugged[]),
+    fetchPages<Listing>("/properties"),
+    fetchPages<Slugged>("/projects"),
+    fetchJson("/developers") as Promise<Slugged[]>,
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -42,19 +54,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages,
-    ...properties.map((p) => ({
+    ...properties.filter((p) => !p.isDemo).map((p) => ({
       url: `${SITE_URL}/properties/${p.id}`,
       lastModified: p.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
-    ...projects.map((p) => ({
+    ...projects.filter((p) => !p.isDemo).map((p) => ({
       url: `${SITE_URL}/projects/${p.slug}`,
       lastModified: p.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...developers.map((d) => ({
+    ...developers.filter((d) => !d.isDemo).map((d) => ({
       url: `${SITE_URL}/developers/${d.slug}`,
       lastModified: d.updatedAt,
       changeFrequency: "monthly" as const,

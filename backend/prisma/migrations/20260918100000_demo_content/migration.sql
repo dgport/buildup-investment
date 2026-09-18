@@ -1,0 +1,3 @@
+ALTER TABLE "properties" ADD COLUMN "is_demo" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "projects" ADD COLUMN "is_demo" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "developers" ADD COLUMN "is_demo" BOOLEAN NOT NULL DEFAULT false;

@@ -148,7 +148,30 @@ watermarked.
   It re-renders every photo from its saved original, so running it again never stacks a
   second watermark, and file names/URLs do not change.
 
-## API overview
+## Demo content transfer
+
+`backend/scripts/transfer-demo-data.cjs` exports only developers, projects,
+property examples and their referenced images. It excludes accounts, sessions,
+leads and owner contacts. Run from `backend/`:
+
+```bash
+node scripts/transfer-demo-data.cjs export ../.deploy/demo-content.json
+```
+
+The ignored `.deploy/` directory contains the JSON and `demo-assets/uploads/demo/`.
+Copy those assets into the deployment's uploads volume, run database migrations,
+then import using the production Prisma client:
+
+```bash
+DEMO_IMPORT_CONFIRM=buildup-investment node scripts/transfer-demo-data.cjs import /path/to/demo-content.json
+```
+
+The import is transactional, skips existing demo records and refuses to overwrite
+live projects/properties. Imported records have `isDemo=true`, show a demo notice,
+use `noindex` and are excluded from the sitemap. Back up the production database
+and uploads before importing. Never commit the export or production backups.
+
+## API endpoints
 
 | Method | Path                                     | Auth        | Purpose                                  |
 | ------ | ---------------------------------------- | ----------- | ---------------------------------------- |

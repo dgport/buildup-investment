@@ -234,6 +234,7 @@ export class PropertiesService {
 
     return {
       id: property.id,
+      isDemo: property.isDemo,
       externalId: property.externalId,
       propertyType: property.propertyType,
       dealType: property.dealType,
