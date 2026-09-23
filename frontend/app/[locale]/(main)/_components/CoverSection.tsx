@@ -52,7 +52,7 @@ export default function CoverSection() {
       </video>
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/70 via-teal-800/50 to-teal-950/80" />
       <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[length:24px_24px]" />
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-8 text-center max-w-full pt-28 pb-16 sm:pt-32">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-8 text-center max-w-full pt-28 pb-24 sm:pt-32">
         <div className="relative h-12 sm:h-24 md:h-28 w-full flex items-center justify-center overflow-hidden">
           <h1
             className={`text-xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white transition-all duration-500 px-2 ${
@@ -69,7 +69,20 @@ export default function CoverSection() {
           {t("subtitle")}
         </p>
 
-        <div className="flex gap-1.5 sm:gap-2 mt-4 sm:mt-8">
+
+        <HeroSearch />
+
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mt-5 sm:mt-8 w-full sm:w-auto px-4 sm:px-0">
+          <Button
+            asChild
+            variant="ghost"
+            className="px-8 py-4 sm:py-6 text-amber-100/90 hover:text-amber-300 hover:bg-white/10 font-semibold rounded-lg transition-all duration-300 text-sm sm:text-base"
+          >
+            <Link href={ROUTES.PROJECTS}>{t("hero.allProjects")} →</Link>
+          </Button>
+        </div>
+
+        <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2">
           {switchingTexts.map((_, index) => (
             <Button
               key={index}
@@ -82,18 +95,6 @@ export default function CoverSection() {
               }`}
             />
           ))}
-        </div>
-
-        <HeroSearch />
-
-        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mt-5 sm:mt-8 w-full sm:w-auto px-4 sm:px-0">
-          <Button
-            asChild
-            variant="ghost"
-            className="px-8 py-4 sm:py-6 text-amber-100/90 hover:text-amber-300 hover:bg-white/10 font-semibold rounded-lg transition-all duration-300 text-sm sm:text-base"
-          >
-            <Link href={ROUTES.PROJECTS}>{t("hero.allProjects")} →</Link>
-          </Button>
         </div>
       </div>
 
