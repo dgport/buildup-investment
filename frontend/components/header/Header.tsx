@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser, useLogout } from "@/lib/hooks/useAuth";
+import { IS_RENT_SITE, RENT_URL, SALES_URL } from "@/lib/market";
 import { ROUTES } from "@/lib/constants/routes";
 
 const LanguageFlags: Record<Locale, { src: string; alt: string }> = {
@@ -210,6 +211,7 @@ function ProfileDropdown() {
 
 function AuthButtons() {
   const t = useTranslations("common.nav");
+  if (IS_RENT_SITE) return <a href={`${SALES_URL}/dashboard?market=rent`} className="rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-teal-950">{t("dashboard")}</a>;
   return (
     <div className="flex items-center gap-2">
       <Button
@@ -244,7 +246,8 @@ export default function Header() {
   const navItems = [
     { href: ROUTES.HOME, label: t("nav.home") },
     { href: ROUTES.PROPERTIES, label: t("nav.properties") },
-    { href: ROUTES.PROJECTS, label: t("nav.projects") },
+    ...(IS_RENT_SITE ? [] : [{ href: ROUTES.PROJECTS, label: t("nav.projects") }]),
+    { href: IS_RENT_SITE ? SALES_URL : RENT_URL, label: t(IS_RENT_SITE ? "market.sales" : "market.rentals") },
     { href: ROUTES.CONTACT, label: t("nav.contact") },
   ];
 
@@ -394,7 +397,7 @@ export default function Header() {
 
           {!authLoading && (
             <div className="mt-2 pt-2 border-t border-amber-400/10 flex flex-col gap-1">
-              {user ? (
+              {IS_RENT_SITE ? <AuthButtons /> : user ? (
                 <>
                   <div className="px-4 py-2">
                     <p className="text-sm font-semibold text-amber-100">

@@ -15,6 +15,8 @@ import {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DealType, PropertyType, Region } from "@/lib/types/properties";
 
+import { MARKET_DEAL_TYPES } from "@/lib/market";
+
 const ALL = "all";
 
 interface FilterState {
@@ -147,7 +149,7 @@ export function PropertyFilters() {
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,0.8fr)_auto_auto] gap-2 items-stretch">
           {/* Deal type segmented control */}
           <div className="col-span-2 md:col-span-4 xl:col-span-1 grid grid-cols-2 sm:flex rounded-xl bg-slate-100 p-1 gap-0.5">
-            {[ALL, ...Object.values(DealType)].map((d) => (
+            {[ALL, ...MARKET_DEAL_TYPES].map((d) => (
               <button
                 key={d}
                 type="button"

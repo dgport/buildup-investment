@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Phone, Mail, MapPin, ArrowUpRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { IS_RENT_SITE, SALES_URL, RENT_URL } from "@/lib/market";
 import { ROUTES } from "@/lib/constants/routes";
 import { CONTACT_EMAIL, CONTACT_PHONE, HAS_CONTACT_PHONE } from "@/lib/constants/contact";
 
@@ -18,8 +19,11 @@ export default function Footer() {
   const quickLinks = [
     { path: ROUTES.HOME, label: t("nav.home") },
     { path: ROUTES.PROPERTIES, label: t("nav.properties") },
-    { path: ROUTES.PROJECTS, label: t("nav.projects") },
-    { path: ROUTES.DEVELOPERS, label: t("nav.developers") },
+    ...(IS_RENT_SITE ? [] : [
+      { path: ROUTES.PROJECTS, label: t("nav.projects") },
+      { path: ROUTES.DEVELOPERS, label: t("nav.developers") },
+    ]),
+    { path: IS_RENT_SITE ? SALES_URL : RENT_URL, label: t(IS_RENT_SITE ? "market.sales" : "market.rentals") },
     { path: ROUTES.CONTACT, label: t("nav.contact") },
     { path: ROUTES.LISTING_TERMS, label: t("nav.listingTerms") },
   ];

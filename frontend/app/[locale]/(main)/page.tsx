@@ -1,3 +1,4 @@
+import { IS_RENT_SITE } from "@/lib/market";
 import { getLocale } from "next-intl/server";
 import ClientsSection from "./_components/ClientsSection";
 import CoverSection from "./_components/CoverSection";
@@ -19,7 +20,7 @@ function homeJsonLd(locale: string) {
       "@context": "https://schema.org",
       "@type": "RealEstateAgent",
       "@id": `${SITE_URL}/#organization`,
-      name: "Build Up Investment",
+      name: IS_RENT_SITE ? "BuildUp Rent" : "Build Up Investment",
       url: SITE_URL,
       logo: `${SITE_URL}/icons/icon-512.png`,
       image: `${SITE_URL}/og-image.jpg`,
@@ -34,7 +35,7 @@ function homeJsonLd(locale: string) {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
-      name: "Build Up Investment",
+      name: IS_RENT_SITE ? "BuildUp Rent" : "Build Up Investment",
       inLanguage: locale,
       publisher: { "@id": `${SITE_URL}/#organization` },
       potentialAction: {
@@ -53,12 +54,12 @@ export default async function Page() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(homeJsonLd(locale)) }} />
       <CoverSection />
       <PropertyCarousel />
-      <ProjectsCarousel />
+      {!IS_RENT_SITE && <ProjectsCarousel />}
       <ListPropertyCta />
-      <AboutParallax />
-      <SuggestSection />
-      <MortgageCalculator />
-      <ClientsSection />
+      {!IS_RENT_SITE && <AboutParallax />}
+      {!IS_RENT_SITE && <SuggestSection />}
+      {!IS_RENT_SITE && <MortgageCalculator />}
+      {!IS_RENT_SITE && <ClientsSection />}
     </>
   );
 }

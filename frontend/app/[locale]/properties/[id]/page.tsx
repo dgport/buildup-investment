@@ -1,10 +1,11 @@
 import { PageLoader } from "@/components/shared/PageLoader";
-import { notFound } from "next/navigation";
+import { IS_RENT_SITE, propertySiteUrl } from "@/lib/market";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { PropertyDetailContent } from "../_components/PropertyDetailContent";
-import { API_BASE_URL, SITE_URL } from "@/lib/constants/env";
+import { API_BASE_URL } from "@/lib/constants/env";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { jsonLd } from "@/lib/seo";
 import type { Property } from "@/lib/types/properties";
@@ -50,12 +51,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     robots: property.isDemo ? { index: false, follow: true } : { index: true, follow: true },
     twitter: { card: "summary_large_image", title, description, images: [image || "/og-image.jpg"] },
-    alternates: { canonical: `/properties/${property.id}` },
+    alternates: { canonical: propertySiteUrl(property) },
     openGraph: {
       title,
       description,
       type: "article",
-      url: `${SITE_URL}/properties/${property.id}`,
+      url: propertySiteUrl(property),
       ...(image && { images: [{ url: image }] }),
     },
   };
@@ -72,7 +73,7 @@ function propertyJsonLd(property: Property, locale: string) {
     "@type": "RealEstateListing",
     name: property.translation?.title ?? `#${property.externalId}`,
     description: property.translation?.description ?? undefined,
-    url: `${SITE_URL}/properties/${property.id}`,
+    url: propertySiteUrl(property),
     datePosted: property.createdAt,
     inLanguage: locale,
     image,
@@ -111,6 +112,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const locale = await getLocale();
   const property = await fetchProperty(id, locale);
   if (!property) notFound();
+  if ((property.dealType !== "SALE") !== IS_RENT_SITE) permanentRedirect(propertySiteUrl(property));
 
   return (
     <>

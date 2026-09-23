@@ -57,6 +57,7 @@ const toNumber = (raw: string): number | "" =>
 // ─── Basics ──────────────────────────────────────────────────────────────────
 
 export function BasicsSection({ data, onChange, errors = {} }: SectionProps) {
+  const tm = useTranslations("common.market");
   const t = useTranslations("dashboard.form");
   const options = usePropertyOptions();
   const { data: user } = useCurrentUser();
@@ -86,6 +87,7 @@ export function BasicsSection({ data, onChange, errors = {} }: SectionProps) {
           error={errors.dealType}
         />
       </div>
+      {data.dealType && <p className="text-sm text-teal-700">{tm("publishOn", { site: data.dealType === DealType.SALE ? "buildup.ge" : "rent.buildup.ge" })}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FieldInput

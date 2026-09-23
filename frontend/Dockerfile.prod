@@ -9,6 +9,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG NEXT_PUBLIC_SITE_MODE=sale
+ARG NEXT_PUBLIC_SITE_URL=https://buildup.ge
+ENV NEXT_PUBLIC_SITE_MODE=$NEXT_PUBLIC_SITE_MODE
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 RUN npm run build
 
 # Stage 3: Production runtime

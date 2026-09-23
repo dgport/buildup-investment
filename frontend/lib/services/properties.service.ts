@@ -1,5 +1,6 @@
 import { api } from "../api/api";
 import { API_ENDPOINTS } from "../constants/api";
+import { MARKET } from "../market";
 
 import type {
   PropertiesResponse,
@@ -46,7 +47,7 @@ const buildFormData = (
 export const propertiesService = {
   getAll: (filters?: PropertyFilters) =>
     api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.PROPERTIES, {
-      params: cleanFilters(filters),
+      params: { ...cleanFilters(filters), market: MARKET },
     }),
 
   getMyProperties: (filters?: PropertyFilters) =>

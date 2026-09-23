@@ -1,0 +1,25 @@
+# Merge with docker-compose.prod.yml; both catalogues use the existing API/database.
+services:
+  rent:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_SITE_MODE: rent
+        NEXT_PUBLIC_SITE_URL: https://rent.buildup.ge
+    container_name: buildup_rent_prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3001"
+    env_file:
+      - ./frontend/.env
+    environment:
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_SITE_MODE: rent
+      NEXT_PUBLIC_SITE_URL: https://rent.buildup.ge
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/ka > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s

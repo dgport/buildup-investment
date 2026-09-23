@@ -85,6 +85,7 @@ async function bootstrap() {
       process.env.FRONTEND_URL ?? '',
       'https://buildup.ge',
       'https://www.buildup.ge',
+      'https://rent.buildup.ge',
       'https://api.buildup.ge',
       ...extraOrigins,
     ].filter(Boolean),

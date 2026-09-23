@@ -1,0 +1,41 @@
+{
+  "common": {
+    "brand": "BuildUp Rent",
+    "tagline": "LONG-TERM & DAILY RENTALS",
+    "nav": {
+      "properties": "Rental properties"
+    },
+    "footer": {
+      "description": "Find apartments, homes and commercial spaces for long-term or daily rent in Georgia."
+    }
+  },
+  "main": {
+    "switchingTexts": [
+      "Homes for rent",
+      "Daily rentals",
+      "Your next address"
+    ],
+    "subtitle": "Find apartments, homes and commercial spaces for long-term or daily rent in Georgia.",
+    "featuredProperties": "Rental properties",
+    "hero": {
+      "searchTitle": "Find your next rental",
+      "allProjects": "Browse all rentals"
+    },
+    "listCta": {
+      "title": "List your property for rent",
+      "subtitle": "Use your BuildUp account to publish a long-term or daily rental listing."
+    }
+  },
+  "meta": {
+    "home": {
+      "title": "BuildUp Rent — Long-term and daily rentals in Georgia",
+      "description": "Find apartments, homes and commercial spaces for long-term or daily rent in Georgia.",
+      "ogTitle": "BuildUp Rent — Long-term and daily rentals in Georgia",
+      "ogDescription": "Find apartments, homes and commercial spaces for long-term or daily rent in Georgia."
+    }
+  },
+  "properties": {
+    "title": "Properties for rent",
+    "description": "Find apartments, homes and commercial spaces for long-term or daily rent in Georgia."
+  }
+}

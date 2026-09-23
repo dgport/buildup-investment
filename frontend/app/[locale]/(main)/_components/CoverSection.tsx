@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { ROUTES } from "@/lib/constants/routes";
+import { IS_RENT_SITE } from "@/lib/market";
 import HeroSearch from "./HeroSearch";
 import { useEffect, useRef, useState } from "react";
 
@@ -78,7 +79,7 @@ export default function CoverSection() {
             variant="ghost"
             className="px-8 py-4 sm:py-6 text-amber-100/90 hover:text-amber-300 hover:bg-white/10 font-semibold rounded-lg transition-all duration-300 text-sm sm:text-base"
           >
-            <Link href={ROUTES.PROJECTS}>{t("hero.allProjects")} →</Link>
+            <Link href={IS_RENT_SITE ? ROUTES.PROPERTIES : ROUTES.PROJECTS}>{t("hero.allProjects")} →</Link>
           </Button>
         </div>
 

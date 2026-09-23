@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { PageLoader } from "@/components/shared/PageLoader";
 import { useQueryClient } from "@tanstack/react-query";
 import { authKeys, useCurrentUser } from "@/lib/hooks/useAuth";
 import { useTranslations } from "next-intl";
@@ -36,7 +37,8 @@ const INITIAL_FORM: PropertyFormData = {
 const hasAnyTitle = (data: PropertyFormData) =>
   [data.titleKa, data.titleEn, data.titleRu].some((v) => typeof v === "string" && v.trim().length > 0);
 
-export default function CreatePropertyPage() {
+function CreatePropertyContent() {
+  const params = useSearchParams();
   const router = useRouter();
   const t = useTranslations("dashboard.form");
   const createProperty = useCreateProperty();
@@ -47,7 +49,9 @@ export default function CreatePropertyPage() {
   const [termsError, setTermsError] = useState(false);
 
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<PropertyFormData>(INITIAL_FORM);
+  const [formData, setFormData] = useState<PropertyFormData>(() => ({ ...INITIAL_FORM,
+    dealType: params.get("dealType") === DealType.RENT ? DealType.RENT : params.get("dealType") === DealType.DAILY_RENT ? DealType.DAILY_RENT : DealType.SALE,
+  }));
   const [images, setImages] = useState<PendingImage[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -218,4 +222,8 @@ export default function CreatePropertyPage() {
       </div>
     </div>
   );
+}
+
+export default function CreatePropertyPage() {
+  return <Suspense fallback={<PageLoader />}><CreatePropertyContent /></Suspense>;
 }

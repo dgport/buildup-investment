@@ -124,5 +124,12 @@
         }
       ]
     }
+  },
+  "market": {
+    "label": "Listing category",
+    "all": "All listings",
+    "sales": "Sales",
+    "rentals": "Rentals",
+    "publishOn": "This listing will appear on {site}"
   }
 }

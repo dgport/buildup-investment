@@ -217,6 +217,7 @@ export interface UpsertPropertyTranslationDto {
 }
 
 export interface PropertyFilters {
+  market?: "sale" | "rent";
   lang?: string;
   page?: number;
   limit?: number;

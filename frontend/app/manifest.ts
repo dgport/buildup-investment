@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { IS_RENT_SITE } from "@/lib/market";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Build Up Investment",
-    short_name: "BuildUp",
-    description: "Real estate listings and development projects in Batumi, Georgia",
+    name: IS_RENT_SITE ? "BuildUp Rent" : "Build Up Investment",
+    short_name: IS_RENT_SITE ? "BuildUp Rent" : "BuildUp",
+    description: IS_RENT_SITE ? "Long-term and daily property rentals in Georgia" : "Real estate listings and development projects in Batumi, Georgia",
     start_url: "/",
     display: "standalone",
     background_color: "#042f2e",

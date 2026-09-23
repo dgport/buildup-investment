@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowRight, Camera, ClipboardList, UserPlus, BadgeCheck } from "lucide-react";
 import { useHasToken } from "@/lib/hooks/useAuth";
+import { IS_RENT_SITE, SALES_URL } from "@/lib/market";
 import { ROUTES } from "@/lib/constants/routes";
 
 const STEPS = [
@@ -16,7 +17,7 @@ const STEPS = [
 export default function ListPropertyCta() {
   const t = useTranslations("main.listCta");
   const hasToken = useHasToken();
-  const href = hasToken ? ROUTES.PROPERTY_NEW : `${ROUTES.SIGNUP}`;
+  const href = IS_RENT_SITE ? `${SALES_URL}/properties/new?dealType=RENT` : hasToken ? ROUTES.PROPERTY_NEW : `${ROUTES.SIGNUP}`;
 
   return (
     <section className="relative overflow-hidden bg-[#f3f5f4] py-16 sm:py-20 px-6 md:px-12 lg:px-20">

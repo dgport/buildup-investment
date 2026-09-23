@@ -33,6 +33,7 @@ export interface FindAllParams {
   region?: Region;
   propertyType?: string;
   dealType?: string;
+  market?: string;
   priceFrom?: number;
   priceTo?: number;
   areaFrom?: number;
@@ -399,6 +400,13 @@ export class PropertiesService {
     );
     const skip = (page - 1) * limit;
     const where: Prisma.PropertyWhereInput = {};
+    if (params.market) {
+      if (!['sale', 'rent'].includes(params.market)) {
+        throw new BadRequestException('market must be sale or rent');
+      }
+      where.AND = [{ dealType: { in: params.market === 'rent'
+        ? [DealType.RENT, DealType.DAILY_RENT] : [DealType.SALE] } }];
+    }
 
     if (!includePrivate) where.public = true;
     if (onlyApproved) where.status = PropertyStatus.APPROVED;

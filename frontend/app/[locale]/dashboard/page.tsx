@@ -34,6 +34,8 @@ import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
 import { locales as SITE_LOCALES } from "@/i18n/routing";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
+import { propertySiteUrl, parseMarket } from "@/lib/market";
+import { MarketTabs } from "@/components/shared/MarketTabs";
 import { ROUTES } from "@/lib/constants/routes";
 import {
   PROPERTY_LANGUAGES,
@@ -193,7 +195,7 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
           </Button>
           {property.public && property.status === PropertyStatus.APPROVED && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={ROUTES.PROPERTY(property.id)} target="_blank" aria-label={t("view")}>
+              <Link href={propertySiteUrl(property)} target="_blank" aria-label={t("view")}>
                 <ExternalLink className="w-3.5 h-3.5" />
               </Link>
             </Button>
@@ -292,7 +294,7 @@ function DashboardContent() {
     data: propertiesResponse,
     isLoading,
     error,
-  } = useMyProperties({ page, limit: PROPERTIES_PER_PAGE, lang: locale });
+  } = useMyProperties({ page, limit: PROPERTIES_PER_PAGE, lang: locale, market: parseMarket(searchParams.get("market")) });
   const { data: stats } = useMyPropertyStats();
   const deleteProperty = useDeleteProperty();
 
@@ -324,6 +326,7 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <MarketTabs />
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>

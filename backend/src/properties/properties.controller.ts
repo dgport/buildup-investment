@@ -63,6 +63,7 @@ function parseListQuery(q: Record<string, string | undefined>) {
     region: q.region as Region | undefined,
     propertyType: q.propertyType,
     dealType: q.dealType,
+    market: q.market,
     priceFrom: toInt(q.priceFrom),
     priceTo: toInt(q.priceTo),
     areaFrom: toInt(q.areaFrom),

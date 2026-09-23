@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { useDeleteProperty, usePropertiesAdmin, useSetPropertyStatus, useUpdateProperty } from "@/lib/hooks/useProperties";
 import { useAdminStats } from "@/lib/hooks/useAdmin";
 import { PropertyStatus, type Property } from "@/lib/types/properties";
+import { propertySiteUrl, parseMarket } from "@/lib/market";
+import { MarketTabs } from "@/components/shared/MarketTabs";
 import { ROUTES } from "@/lib/constants/routes";
 import { thumbnailUrl } from "@/lib/utils/image-utils";
 import { formatUsd } from "@/lib/utils/format";
@@ -44,6 +46,7 @@ export default function AdminListingsPage() {
     status: status || undefined,
     search: search.trim() || undefined,
     sort: "newest",
+    market: parseMarket(searchParams.get("market")),
   });
   const { data: stats } = useAdminStats(locale);
   const setStatus = useSetPropertyStatus();
@@ -73,6 +76,7 @@ export default function AdminListingsPage() {
   return (
     <div className="space-y-5">
       <PageHeader title={t("listings.title")} subtitle={t("listings.subtitle")} />
+      <MarketTabs />
 
       <div className="flex flex-wrap items-center gap-3">
         <FilterChips
@@ -193,7 +197,7 @@ export default function AdminListingsPage() {
                           </Button>
                           {p.status === PropertyStatus.APPROVED && p.public && (
                             <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t("common.view")}>
-                              <Link href={ROUTES.PROPERTY(p.id)} target="_blank"><ExternalLink className="w-4 h-4" /></Link>
+                              <Link href={propertySiteUrl(p)} target="_blank"><ExternalLink className="w-4 h-4" /></Link>
                             </Button>
                           )}
                           <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t("common.edit")}>

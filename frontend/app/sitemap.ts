@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { API_BASE_URL, SITE_URL } from "@/lib/constants/env";
+import { IS_RENT_SITE, MARKET } from "@/lib/market";
 
 interface Listing {
   id: string;
@@ -23,7 +24,7 @@ async function fetchPages<T>(path: string): Promise<T[]> {
   let page = 1;
   let totalPages = 1;
   do {
-    const json = await fetchJson(`${path}?limit=100&page=${page}`) as { data: T[]; meta: { totalPages: number } };
+    const json = await fetchJson(`${path}${path.includes("?") ? "&" : "?"}limit=100&page=${page}`) as { data: T[]; meta: { totalPages: number } };
     results.push(...json.data);
     totalPages = json.meta.totalPages;
     page++;
@@ -36,9 +37,9 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [properties, projects, developers] = await Promise.all([
-    fetchPages<Listing>("/properties"),
-    fetchPages<Slugged>("/projects"),
-    fetchJson("/developers") as Promise<Slugged[]>,
+    fetchPages<Listing>(`/properties?market=${MARKET}`),
+    IS_RENT_SITE ? Promise.resolve([] as Slugged[]) : fetchPages<Slugged>("/projects"),
+    IS_RENT_SITE ? Promise.resolve([] as Slugged[]) : fetchJson("/developers") as Promise<Slugged[]>,
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -53,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   return [
-    ...staticPages,
+    ...staticPages.filter((p) => !IS_RENT_SITE || p.url === `${SITE_URL}/` || p.url === `${SITE_URL}/properties`),
     ...properties.filter((p) => !p.isDemo).map((p) => ({
       url: `${SITE_URL}/properties/${p.id}`,
       lastModified: p.updatedAt,

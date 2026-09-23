@@ -11,10 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DealType, PropertyType, Region } from "@/lib/types/properties";
+import { PropertyType, Region } from "@/lib/types/properties";
 import { useProperties } from "@/lib/hooks/useProperties";
 import { useProjects, useDevelopers } from "@/lib/hooks/useProjects";
 import { ROUTES } from "@/lib/constants/routes";
+
+import { IS_RENT_SITE, MARKET_DEAL_TYPES } from "@/lib/market";
 
 const ANY = "any";
 
@@ -45,8 +47,8 @@ export default function HeroSearch() {
 
   const stats = [
     { value: listings?.meta.total, label: t("listings") },
-    { value: projects?.meta.total, label: t("projects") },
-    { value: developers?.length, label: t("developers") },
+    { value: IS_RENT_SITE ? undefined : projects?.meta.total, label: t("projects") },
+    { value: IS_RENT_SITE ? undefined : developers?.length, label: t("developers") },
   ].filter((s) => typeof s.value === "number" && s.value > 0);
 
   return (
@@ -62,7 +64,7 @@ export default function HeroSearch() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ANY}>{t("dealType")}: {t("any")}</SelectItem>
-              {Object.values(DealType).map((d) => (
+              {MARKET_DEAL_TYPES.map((d) => (
                 <SelectItem key={d} value={d}>{tp(`enums.dealType.${d}`)}</SelectItem>
               ))}
             </SelectContent>
