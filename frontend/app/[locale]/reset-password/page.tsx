@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -251,7 +252,7 @@ const ResetPasswordForm = () => {
 export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
-      <Suspense>
+      <Suspense fallback={<PageLoader />}>
         <ResetPasswordForm />
       </Suspense>
     </div>

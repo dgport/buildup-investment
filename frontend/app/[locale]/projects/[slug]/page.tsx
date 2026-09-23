@@ -1,3 +1,4 @@
+import { PageLoader } from "@/components/shared/PageLoader";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -108,7 +109,7 @@ export default async function ProjectPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: jsonLd(projectJsonLd(project, locale)) }}
         />
       )}
-      <Suspense>
+      <Suspense fallback={<PageLoader />}>
         <ProjectDetailContent />
       </Suspense>
     </>

@@ -1,3 +1,4 @@
+import { PageLoader } from "@/components/shared/PageLoader";
 import { publicPageMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -11,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function ProjectsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<PageLoader />}>
       <ProjectsContent />
     </Suspense>
   );

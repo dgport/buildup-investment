@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { useProject } from "@/lib/hooks/useProjects";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
-import { DetailSkeleton } from "@/components/shared/Skeletons";
+import { PageLoader } from "@/components/shared/PageLoader";
 import { MobileContactBar } from "@/components/shared/MobileContactBar";
 import { toEmbedUrl } from "@/lib/utils/format";
 import { formatMoney, useCurrency } from "@/lib/currency";
@@ -97,11 +97,7 @@ export function ProjectDetailContent() {
   }, [emblaApi, thumbsApi]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-        <DetailSkeleton />
-      </div>
-    );
+    return <PageLoader />;
   }
   if (error || !project) {
     return (

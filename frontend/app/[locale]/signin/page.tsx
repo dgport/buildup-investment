@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -308,7 +309,7 @@ function SigninForm() {
 
 export default function SigninPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<PageLoader />}>
       <SigninForm />
     </Suspense>
   );

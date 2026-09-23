@@ -1,9 +1,5 @@
-import { PageSkeleton } from "@/components/shared/Skeletons";
+import { PageLoader } from "@/components/shared/PageLoader";
 
 export default function Loading() {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <PageSkeleton />
-    </div>
-  );
+  return <PageLoader />;
 }

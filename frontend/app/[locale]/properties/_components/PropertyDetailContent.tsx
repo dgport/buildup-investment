@@ -37,7 +37,7 @@ import { useTranslations, useLocale } from "next-intl";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
-import { DetailSkeleton } from "@/components/shared/Skeletons";
+import { PageLoader } from "@/components/shared/PageLoader";
 import { MobileContactBar } from "@/components/shared/MobileContactBar";
 import { SimilarProperties } from "./SimilarProperties";
 import { toast } from "sonner";
@@ -149,11 +149,7 @@ export function PropertyDetailContent() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-        <DetailSkeleton />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (error || !property) {

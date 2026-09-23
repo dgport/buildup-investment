@@ -71,7 +71,7 @@ export default async function LocaleLayout({
               </Suspense>
               <Header />
               <CurrencyProvider>
-                <main id="main-content">{children}</main>
+                <main id="main-content" className="min-h-screen min-h-[100svh]">{children}</main>
               </CurrencyProvider>
               <Footer />
               <Toaster position="top-center" richColors closeButton />

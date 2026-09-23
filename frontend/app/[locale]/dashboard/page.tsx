@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -466,7 +467,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense>
+    <Suspense fallback={<PageLoader />}>
       <DashboardContent />
     </Suspense>
   );

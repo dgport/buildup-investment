@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -44,7 +45,7 @@ function GoogleAuthErrorContent() {
 
 export default function GoogleAuthError() {
   return (
-    <Suspense>
+    <Suspense fallback={<PageLoader />}>
       <GoogleAuthErrorContent />
     </Suspense>
   );

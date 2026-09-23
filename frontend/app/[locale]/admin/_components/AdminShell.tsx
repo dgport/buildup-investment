@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PageLoader } from "@/components/shared/PageLoader";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -40,11 +41,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   ];
 
   if (hasToken && isLoading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-800" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!isAdmin) {

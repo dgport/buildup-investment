@@ -1,9 +1,5 @@
-import { DetailSkeleton } from "@/components/shared/Skeletons";
+import { PageLoader } from "@/components/shared/PageLoader";
 
 export default function Loading() {
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <DetailSkeleton />
-    </div>
-  );
+  return <PageLoader />;
 }

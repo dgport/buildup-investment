@@ -1,5 +1,5 @@
-import { CatalogueSkeleton } from "@/components/shared/Skeletons";
+import { PageLoader } from "@/components/shared/PageLoader";
 
 export default function Loading() {
-  return <CatalogueSkeleton />;
+  return <PageLoader />;
 }

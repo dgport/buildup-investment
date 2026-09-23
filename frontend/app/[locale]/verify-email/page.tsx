@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
 import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -273,7 +274,7 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
-      <Suspense>
+      <Suspense fallback={<PageLoader />}>
         <VerifyEmailContent />
       </Suspense>
     </div>

@@ -1,3 +1,4 @@
+import { PageLoader } from "@/components/shared/PageLoader";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -119,7 +120,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: jsonLd(propertyJsonLd(property, locale)) }}
         />
       )}
-      <Suspense>
+      <Suspense fallback={<PageLoader />}>
         <PropertyDetailContent />
       </Suspense>
     </>
