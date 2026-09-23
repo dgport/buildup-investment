@@ -50,7 +50,7 @@ export default function HeroSearch() {
   ].filter((s) => typeof s.value === "number" && s.value > 0);
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-6 sm:mt-10 px-2 sm:px-0">
+    <div className="w-full max-w-4xl mx-auto mt-12 sm:mt-24 px-2 sm:px-0">
       <p className="text-amber-100/80 text-sm sm:text-base font-medium mb-3 text-center">
         {t("searchTitle")}
       </p>
