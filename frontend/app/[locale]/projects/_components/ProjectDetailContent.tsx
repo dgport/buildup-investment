@@ -1,6 +1,5 @@
 "use client";
 
-import { DemoNotice } from "@/components/shared/DemoNotice";
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -179,7 +178,7 @@ export function ProjectDetailContent() {
         </div>
 
         {/* Gallery + info card */}
-        {project.isDemo && <DemoNotice />}
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 h-[340px] lg:h-[520px]">
             <div className="card overflow-hidden h-full relative">

@@ -277,7 +277,7 @@ export default function Header() {
     ? scrolled
       ? "bg-teal-950/95 backdrop-blur-md border-b border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
       : "bg-transparent"
-    : "bg-teal-950 border-b border-amber-400/10 shadow-[0_4px_24px_rgba(0,0,0,0.3)]";
+    : "bg-teal-950 border-b border-amber-400/10";
 
   return (
     <header

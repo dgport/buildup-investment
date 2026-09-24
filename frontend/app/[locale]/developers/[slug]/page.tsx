@@ -1,6 +1,5 @@
 import { publicPageMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
-import { DemoNotice } from "@/components/shared/DemoNotice";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { API_BASE_URL } from "@/lib/constants/env";
@@ -34,5 +33,5 @@ export default async function DeveloperPage({ params }: PageProps) {
   if (res.status === 404) notFound();
   if (!res.ok) throw new Error(`Developer request failed: ${res.status}`);
   const developer = await res.json() as Developer;
-  return <>{developer.isDemo && <div className="max-w-7xl mx-auto px-4"><DemoNotice /></div>}<DeveloperDetailContent /></>;
+  return <><DeveloperDetailContent /></>;
 }

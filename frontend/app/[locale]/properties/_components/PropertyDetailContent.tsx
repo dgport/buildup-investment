@@ -1,6 +1,5 @@
 "use client";
 
-import { DemoNotice } from "@/components/shared/DemoNotice";
 
 import { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
@@ -229,7 +228,7 @@ export function PropertyDetailContent() {
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-teal-950 leading-tight">{title}</h1>
-              {property.isDemo && <DemoNotice />}
+              
               <p className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">
                 <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
                 {locationString}

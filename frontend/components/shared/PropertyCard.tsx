@@ -1,6 +1,5 @@
 "use client";
 
-import { DemoNotice } from "./DemoNotice";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -81,7 +80,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           aria-label={title}
           className="absolute inset-0 z-10 rounded-[22px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
         />
-        {property.isDemo && <DemoNotice compact />}
+        
         {/* Photo */}
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
           {images.length > 0 ? (
