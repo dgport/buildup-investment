@@ -260,7 +260,7 @@ export function PropertyDetailContent() {
                         <img
                           src={img}
                           alt={`${title} ${i + 1}`}
-                          className="w-full h-full object-cover cursor-zoom-in"
+                          className="w-full h-full object-cover cursor-pointer"
                           onClick={() => {
                             setLightboxIndex(selectedIndex);
                             setLightboxOpen(true);
