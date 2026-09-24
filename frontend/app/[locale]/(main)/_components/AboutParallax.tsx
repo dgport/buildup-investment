@@ -39,7 +39,7 @@ export default function AboutParallax() {
       ref={sectionRef}
       className="relative w-full overflow-hidden bg-[#f3f5f4]"
     >
-      <div className="relative overflow-hidden bg-[#f3f5f4] min-h-[600px] md:min-h-[800px] 3xl:min-h-[900px] 4xl:min-h-[1000px] 5xl:min-h-[1200px]">
+      <div className="relative overflow-hidden bg-[#f3f5f4] min-h-[520px] md:min-h-[680px] 3xl:min-h-[780px] 4xl:min-h-[880px] 5xl:min-h-[1040px]">
         <motion.div
           style={{
             y: bgY,
@@ -54,7 +54,7 @@ export default function AboutParallax() {
         <div className="absolute inset-0 bg-gradient-to-r from-teal-950/80 via-teal-900/50 to-teal-950/70" />
         <div className="absolute inset-0 bg-gradient-to-t from-teal-950/60 via-transparent to-transparent" />
 
-        <div className="relative z-10 flex items-center min-h-[600px] md:min-h-[800px] 3xl:min-h-[900px] 4xl:min-h-[1000px] 5xl:min-h-[1200px] py-16 md:py-24 3xl:py-28 4xl:py-32 5xl:py-40">
+        <div className="relative z-10 flex items-center min-h-[520px] md:min-h-[680px] 3xl:min-h-[780px] 4xl:min-h-[880px] 5xl:min-h-[1040px] py-16 md:py-24 3xl:py-28 4xl:py-32 5xl:py-40">
           <div className="w-full mx-auto px-6 lg:px-24 3xl:px-36 4xl:px-48 5xl:px-64 max-w-[1440px] 3xl:max-w-[1700px] 4xl:max-w-[1900px] 5xl:max-w-[2200px]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 3xl:gap-24 4xl:gap-28 5xl:gap-36 items-center">
               {/* Left: text */}
@@ -69,17 +69,6 @@ export default function AboutParallax() {
                   </span>
                   <span className="flex-1 max-w-[60px] 3xl:max-w-[80px] 4xl:max-w-[100px] 5xl:max-w-[120px] h-px bg-amber-400/40" />
                 </motion.div>
-
-                <motion.h2
-                  {...fadeUp(0.12)}
-                  className="text-white font-bold leading-tight mb-7 3xl:mb-8 4xl:mb-9 5xl:mb-12 text-3xl md:text-4xl lg:text-5xl 3xl:text-6xl 4xl:text-7xl 5xl:text-8xl"
-                >
-                  {t("aboutHeadingRegular")}{" "}
-                  <span className="italic text-amber-300">
-                    {t("aboutHeadingItalic")}
-                  </span>{" "}
-                  {t("aboutHeadingSuffix")}
-                </motion.h2>
 
                 <motion.p
                   {...fadeUp(0.22)}
