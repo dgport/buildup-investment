@@ -17,7 +17,7 @@ export default function SuggestSection() {
   const items = t.raw("items") as { header: string; text: string }[];
 
   return (
-    <section className="relative w-full bg-white py-16 lg:py-24 px-6 sm:px-16 md:px-20 xl:px-24 overflow-hidden">
+    <section className="relative w-full bg-white py-12 lg:py-16 px-6 sm:px-16 md:px-20 xl:px-24 overflow-hidden">
       {/* subtle brand grid */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.35]"

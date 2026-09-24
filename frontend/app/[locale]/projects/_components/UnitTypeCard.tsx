@@ -41,13 +41,14 @@ export function UnitTypeCard({ unit, onAsk, onOpenImage }: Props) {
     >
       <div className="relative h-52 bg-slate-50">
         {images.length ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          <button type="button" className="w-full h-full cursor-pointer" onClick={() => onOpenImage?.(images, index)} aria-label={unit.title ?? roomsLabel(t, unit.rooms)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={images[index]}
             alt={unit.title ?? roomsLabel(t, unit.rooms)}
-            className="w-full h-full object-contain cursor-zoom-in"
-            onClick={() => onOpenImage?.(images, index)}
+            className="w-full h-full object-contain"
           />
+          </button>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-teal-900/30 gap-1">
             <ImageIcon className="w-8 h-8" />

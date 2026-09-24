@@ -1,5 +1,7 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
+
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Building2, Globe, Phone } from "lucide-react";
@@ -12,6 +14,8 @@ export function DevelopersContent() {
   const t = useTranslations("projects.developers");
   const locale = useLocale();
   const { data: developers = [], isLoading } = useDevelopers(locale);
+
+  if (isLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">

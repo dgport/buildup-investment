@@ -22,9 +22,11 @@ export function Pagination({
   const searchParams = useSearchParams();
 
   const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", page.toString());
     router.push(`${pathname}?${params.toString()}`, { scroll: true });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const getPageNumbers = (): (number | "...")[] => {
@@ -51,7 +53,7 @@ export function Pagination({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
       <Button
         variant="outline"
         size="icon"
@@ -68,7 +70,7 @@ export function Pagination({
           page === "..." ? (
             <span
               key={`ellipsis-${index}`}
-              className="px-3 py-2 text-gray-500 select-none"
+              className="px-1 sm:px-3 py-2 text-gray-500 select-none"
             >
               …
             </span>
@@ -103,6 +105,6 @@ export function Pagination({
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
-    </div>
+    </nav>
   );
 }

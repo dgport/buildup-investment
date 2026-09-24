@@ -10,7 +10,7 @@ export function PageLoader() {
     <div
       role="status"
       aria-live="polite"
-      className="flex min-h-screen min-h-[100svh] items-center justify-center bg-slate-50 px-4"
+      className="page-loader flex items-center justify-center bg-slate-50 px-4"
     >
       <div className="flex flex-col items-center gap-4 text-teal-900">
         <Loader2 aria-hidden="true" className="h-10 w-10 animate-spin motion-reduce:animate-none" />

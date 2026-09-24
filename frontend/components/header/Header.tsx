@@ -283,7 +283,7 @@ export default function Header() {
     <header
       className={cn(
         "left-0 right-0 z-50 transition-all duration-300",
-        isMainPage ? "fixed top-0" : "sticky top-0",
+        isMainPage ? "fixed top-0" : "relative",
         headerBg,
       )}
     >

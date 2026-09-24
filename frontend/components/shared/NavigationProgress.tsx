@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 /**
@@ -13,6 +13,23 @@ export function NavigationProgress() {
   const searchParams = useSearchParams();
   const [active, setActive] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previousPath = useRef(pathname);
+
+  // Next may retain the old offset when shared layouts remain visible.
+  // Reset only page changes; query-only filters and browser Back keep their position.
+  const restoringHistory = useRef(false);
+  useEffect(() => {
+    const onPopState = () => { restoringHistory.current = true; };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+  useLayoutEffect(() => {
+    if (previousPath.current !== pathname && !restoringHistory.current && !window.location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+    previousPath.current = pathname;
+    restoringHistory.current = false;
+  }, [pathname, searchParams]);
 
   // Any click on an internal link starts the bar.
   useEffect(() => {
@@ -33,6 +50,9 @@ export function NavigationProgress() {
       if (url.pathname === window.location.pathname && url.search === window.location.search) return;
 
       setActive(true);
+      if (url.pathname !== window.location.pathname && !url.hash) {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      }
     };
 
     document.addEventListener("click", onClick, true);

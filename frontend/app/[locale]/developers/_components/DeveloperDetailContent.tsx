@@ -1,5 +1,7 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
+
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -16,13 +18,7 @@ export function DeveloperDetailContent() {
   const { data: dev, isLoading, error } = useDeveloper(slug, locale);
   const { data: projects } = useProjects({ developer: slug, lang: locale, limit: 48 });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-700" />
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
   if (error || !dev) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">

@@ -1,5 +1,7 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
+
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { LayoutGrid, Map as MapIcon, SearchX } from "lucide-react";
@@ -65,6 +67,8 @@ export function ProjectsContent() {
     if (key !== "page") params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   };
+
+  if (isLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-slate-50">

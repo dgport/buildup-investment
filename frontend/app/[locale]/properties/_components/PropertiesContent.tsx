@@ -1,5 +1,7 @@
 "use client";
 
+import { PageLoader } from "@/components/shared/PageLoader";
+
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { SearchX } from "lucide-react";
@@ -71,6 +73,8 @@ export function PropertiesContent() {
 
   const properties = response?.data ?? [];
   const meta = response?.meta;
+
+  if (isLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-slate-50">

@@ -170,13 +170,19 @@ body.locale-ka {
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
     -webkit-text-size-adjust: 100%;
   }
   body {
     background-color: var(--background);
     color: var(--foreground);
     text-rendering: optimizeLegibility;
+  }
+  :where(a[href], button, [role="button"], [role="tab"], [role="menuitem"], [role="option"], select, summary, input[type="submit"], input[type="button"], input[type="checkbox"], input[type="radio"]):not(:disabled):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  :where(button:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
   }
   ::selection {
     background-color: rgb(251 191 36 / 0.35);
@@ -199,6 +205,17 @@ body.locale-ka {
       scroll-behavior: auto !important;
     }
   }
+}
+
+/* Reserve a viewport between the persistent header and footer during loading. */
+#main-content {
+  min-height: calc(100svh - 5rem);
+}
+.page-loader {
+  min-height: calc(100svh - 5rem);
+}
+@media (min-width: 1024px) {
+  #main-content, .page-loader { min-height: calc(100svh - 6rem); }
 }
 
 /* Navigation progress bar (components/shared/NavigationProgress.tsx) */
