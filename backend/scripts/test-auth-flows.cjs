@@ -1,0 +1,80 @@
+// Runs against the investment database in one rolled-back transaction.
+// Email is captured in memory; no messages are sent and no test users persist.
+require('reflect-metadata');
+const assert = require('node:assert/strict');
+const { randomUUID } = require('node:crypto');
+const { PrismaClient } = require('@prisma/client');
+const { ConfigService } = require('@nestjs/config');
+const { JwtService } = require('@nestjs/jwt');
+const { UserAccountService } = require('../dist/auth/services/user-account.service');
+const { AuthService } = require('../dist/auth/services/auth.service');
+const { TokenService } = require('../dist/auth/services/token.service');
+const { CookieService } = require('../dist/auth/services/cookie.service');
+const prisma = new PrismaClient();
+const rollback = new Error('AUTH_QA_ROLLBACK');
+async function main() {
+  let createdId;
+  try {
+    await prisma.$transaction(async tx => {
+      const db = new Proxy(tx, { get(target, key) { return key === '$transaction' ? fn => fn(db) : target[key]; } });
+      const deliveries = []; let failMail = false;
+      const capture = kind => async (...args) => { if (failMail) throw new Error('simulated delivery failure'); deliveries.push({ kind, args }); };
+      const mail = { sendVerificationEmail: capture('verify'), sendResetPasswordEmail: capture('reset'), sendAddPasswordEmail: capture('add') };
+      const config = new ConfigService({ ...process.env });
+      const account = new UserAccountService(db, mail);
+      const tokens = new TokenService(new JwtService(), config, db);
+      const auth = new AuthService(account, tokens, new CookieService(config));
+      let cookie;
+      const response = { cookie(name, value) { if (name === 'refreshToken') cookie = value; }, clearCookie() { cookie = null; } };
+      const email = `auth-qa-${randomUUID()}@example.com`;
+      const oldPassword = 'Auth-QA#Password123'; const newPassword = 'New-QA#Password456';
+      const user = await auth.signup({ email, firstname: 'Auth', lastname: 'Verification', password: oldPassword });
+      createdId = user.id;
+      assert.equal(user.verificationEmailSent, true);
+      await assert.rejects(auth.signin({ email, password: oldPassword }, response), /verify your email/);
+      await assert.rejects(auth.signup({ email, firstname: 'Auth', lastname: 'Verification', password: oldPassword }), /already exists/);
+      const firstToken = deliveries.at(-1).args[2];
+      await account.resendVerificationEmail(email);
+      const validToken = deliveries.at(-1).args[2];
+      assert.notEqual(firstToken, validToken);
+      await assert.rejects(account.verifyEmail(firstToken), /Invalid or expired/);
+      await account.verifyEmail(validToken);
+      await assert.rejects(account.verifyEmail(validToken), /Invalid or expired/);
+      await assert.rejects(auth.signin({ email, password: 'wrong' }, response), /Invalid credentials/);
+      const signedIn = await auth.signin({ email, password: oldPassword }, response);
+      assert.equal(signedIn.user.id, user.id); assert.equal(signedIn.user.password, undefined); assert(cookie);
+      const previousCookie = cookie;
+      assert((await auth.refreshAccessToken({ cookies: { refreshToken: cookie } }, response)).accessToken);
+      await account.sendUpdatePasswordEmail(email);
+      const resetToken = deliveries.at(-1).args[1];
+      await account.updatePassword({ token: resetToken, password: newPassword });
+      await assert.rejects(account.updatePassword({ token: resetToken, password: newPassword }), /Invalid or expired/);
+      await assert.rejects(auth.refreshAccessToken({ cookies: { refreshToken: previousCookie } }, response), /revoked or expired/);
+      await assert.rejects(auth.signin({ email, password: oldPassword }, response), /Invalid credentials/);
+      await auth.signin({ email, password: newPassword }, response);
+      const logoutCookie = cookie;
+      await auth.logout({ cookies: { refreshToken: cookie } }, response);
+      await assert.rejects(auth.refreshAccessToken({ cookies: { refreshToken: logoutCookie } }, response), /revoked or expired/);
+      const googleUser = { email, googleId: `qa-${randomUUID()}`, firstname: 'Auth', lastname: 'Verification' };
+      assert.equal((await account.signupOrLoginWithGoogle(googleUser)).id, user.id);
+      assert.equal((await account.findById(user.id)).method, 'BOTH');
+      await tx.user.update({ where: { id: user.id }, data: { isActive: false } });
+      await assert.rejects(account.signupOrLoginWithGoogle(googleUser), /inactive/);
+      await assert.rejects(auth.signin({ email, password: newPassword }, response));
+      const googleOnly = await account.signupOrLoginWithGoogle({ ...googleUser, email: `google-${email}`, googleId: `qa-${randomUUID()}` });
+      await account.sendUpdatePasswordEmail(googleOnly.email);
+      assert.equal(deliveries.at(-1).kind, 'add');
+      await account.updatePassword({ token: deliveries.at(-1).args[2], password: newPassword });
+      assert.equal((await auth.signin({ email: googleOnly.email, password: newPassword }, response)).user.method, 'BOTH');
+      failMail = true;
+      const unsent = await auth.signup({ email: `unsent-${email}`, firstname: 'Auth', lastname: 'Verification', password: oldPassword });
+      assert.equal(unsent.verificationEmailSent, false);
+      await assert.rejects(account.resendVerificationEmail(unsent.email), /delivery failure/);
+      console.log('PASS: signup, duplicate, resend, verification/reuse, login, refresh, password reset/reuse, session revocation, logout, Google linking, Google password addition, inactive users and email failure.');
+      throw rollback;
+    }, { timeout: 60000 });
+  } catch (e) { if (e !== rollback) throw e; }
+  assert.equal(await prisma.user.findUnique({ where: { id: createdId } }), null);
+  console.log('PASS: transaction rolled back; no test accounts or sessions remain.');
+}
+main().catch(e => { console.error(e.message); process.exitCode = 1; }).finally(() => prisma.$disconnect());

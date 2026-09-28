@@ -15,7 +15,7 @@ const baseWrapper = (
   <table role="presentation" style="width:100%;border-collapse:collapse;">
     <tr>
       <td align="center" style="padding:40px 0;">
-        <table role="presentation" style="width:600px;border-collapse:collapse;background-color:#ffffff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;background-color:#ffffff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <tr>
             <td style="padding:40px 40px 20px 40px;text-align:center;background:${headerColor};border-radius:8px 8px 0 0;">
               ${headerContent}
@@ -58,43 +58,50 @@ const expiryNote = (text: string) => `
   <p style="margin:0;color:#856404;font-size:14px;">⏰ <strong>Note:</strong> ${text}</p>
 </div>`;
 
+function accountEmail(
+  title: string,
+  englishTitle: string,
+  body: string,
+  url: string,
+  button: string,
+  expiry: string,
+): string {
+  const safeUrl = escapeHtml(url);
+  return baseWrapper(
+    '#042f2e',
+    `<h1 style="margin:0;color:#ffffff;font-size:24px;">BuildUp</h1>`,
+    `
+    <h2 style="margin:0 0 12px;color:#042f2e;font-size:24px;">${title}</h2>
+    <p style="color:#64748b;font-size:14px;">${englishTitle}</p>
+    <p style="color:#334155;font-size:16px;line-height:1.7;">${body}</p>
+    ${actionButton(safeUrl, '#0f766e', button)}
+    ${expiryNote(expiry)}
+    <p style="color:#64748b;font-size:13px;line-height:1.6;">თუ ეს მოთხოვნა თქვენ არ გაგიგზავნიათ, უგულებელყავით წერილი.<br>If you did not request this, ignore this email.</p>`,
+  );
+}
+
 export function verificationEmailTemplate(
   firstname: string,
   url: string,
 ): string {
-  const header = `<h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:600;">Welcome to BuildUp! 🎉</h1>`;
-  const body = `
-    <h2 style="margin:0 0 20px 0;color:#333333;font-size:24px;">Hi ${firstname},</h2>
-    <p style="margin:0 0 20px 0;color:#666666;font-size:16px;line-height:1.6;">
-      Thank you for signing up! Please verify your email address to get started.
-    </p>
-    ${actionButton(url, 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)', 'Verify Email Address')}
-    ${expiryNote('This verification link will expire in 24 hours.')}`;
-
-  return baseWrapper(
-    'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
-    header,
-    body,
+  return accountEmail(
+    'დაადასტურეთ ელ-ფოსტა',
+    'Verify your email address',
+    `გამარჯობა, ${escapeHtml(firstname)}! რეგისტრაციის დასასრულებლად დაადასტურეთ თქვენი ელ-ფოსტა.<br>Confirm your email to finish creating your account.`,
+    url,
+    'დადასტურება / Verify email',
+    'ბმული მოქმედებს 24 საათი / This link expires in 24 hours.',
   );
 }
 
 export function resetPasswordEmailTemplate(url: string): string {
-  const header = `<h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:600;">🔐 Password Reset</h1>`;
-  const body = `
-    <h2 style="margin:0 0 20px 0;color:#333333;font-size:24px;">Reset Your Password</h2>
-    <p style="margin:0 0 20px 0;color:#666666;font-size:16px;line-height:1.6;">
-      We received a request to reset your password. Click below to create a new one.
-    </p>
-    ${actionButton(url, 'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)', 'Reset Password')}
-    ${expiryNote('This link will expire in 1 hour.')}
-    <div style="margin:20px 0;padding:16px;background-color:#f8d7da;border-left:4px solid #dc3545;border-radius:4px;">
-      <p style="margin:0;color:#721c24;font-size:14px;">🛡️ If you didn't request this, please ignore this email.</p>
-    </div>`;
-
-  return baseWrapper(
-    'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)',
-    header,
-    body,
+  return accountEmail(
+    'პაროლის აღდგენა',
+    'Reset your password',
+    'ახალი პაროლის შესაქმნელად გამოიყენეთ ქვემოთ მოცემული ბმული.<br>Use the link below to choose a new password.',
+    url,
+    'პაროლის აღდგენა / Reset password',
+    'ბმული მოქმედებს 1 საათი / This link expires in 1 hour.',
   );
 }
 
@@ -102,19 +109,13 @@ export function addPasswordEmailTemplate(
   firstname: string,
   url: string,
 ): string {
-  const header = `<h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:600;">🔑 Add Password</h1>`;
-  const body = `
-    <h2 style="margin:0 0 20px 0;color:#333333;font-size:24px;">Hi ${firstname},</h2>
-    <p style="margin:0 0 20px 0;color:#666666;font-size:16px;line-height:1.6;">
-      You requested to add a password to your account, allowing sign-in with email and password in addition to Google.
-    </p>
-    ${actionButton(url, 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)', 'Set Your Password')}
-    ${expiryNote('This link will expire in 1 hour.')}`;
-
-  return baseWrapper(
-    'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
-    header,
-    body,
+  return accountEmail(
+    'პაროლის დამატება',
+    'Add a password',
+    `გამარჯობა, ${escapeHtml(firstname)}! დაამატეთ პაროლი, რომ Google-ის გარდა ელ-ფოსტითაც შეხვიდეთ.<br>Add a password to sign in with email as well as Google.`,
+    url,
+    'პაროლის დამატება / Set password',
+    'ბმული მოქმედებს 1 საათი / This link expires in 1 hour.',
   );
 }
 

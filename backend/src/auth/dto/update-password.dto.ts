@@ -1,7 +1,13 @@
-import { IsStrongPassword, IsString, MaxLength } from 'class-validator';
+import {
+  IsStrongPassword,
+  IsString,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 
 export class UpdatePasswordInput {
   @IsString()
+  @Matches(/^[a-f0-9]{64}$/i)
   token: string;
 
   @IsStrongPassword(

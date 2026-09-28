@@ -15,6 +15,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ScheduledTasksService } from './services/sheduled-tasks.service';
 import { OptionalJwtAuthGuard } from './guards/optional-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 @Module({
   imports: [
     ConfigModule,
@@ -40,6 +41,7 @@ import { AdminGuard } from './guards/admin.guard';
     ScheduledTasksService,
     EmailService,
     GoogleStrategy,
+    GoogleAuthGuard,
     JwtStrategy,
     JwtAuthGuard,
     OptionalJwtAuthGuard,

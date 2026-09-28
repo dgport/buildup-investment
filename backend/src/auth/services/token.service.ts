@@ -6,6 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuthTokens } from '../types/auth-tokens.type';
 import { calculateExpiryDate } from '../../common/utils/expiry-date.util';
 import { JwtPayload } from '../types/jwt-payload.type';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class TokenService {
@@ -159,6 +160,7 @@ export class TokenService {
     return this.jwt.signAsync(payload, {
       secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.getExpiry('JWT_REFRESH_TOKEN_EXPIRATION', '7d'),
+      jwtid: randomUUID(),
     });
   }
 

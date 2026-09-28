@@ -12,7 +12,8 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { EmailInput } from './dto/email.dto';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -46,10 +47,12 @@ export class AuthController {
     const result = await this.authService.signup(dto);
     return {
       success: true,
-      message:
-        'Account created. Please check your email to verify your account.',
+      message: result.verificationEmailSent
+        ? 'Account created. Please check your email to verify your account.'
+        : 'Account created, but the verification email could not be sent. Request a new verification link.',
       userId: result.id,
       email: result.email,
+      verificationEmailSent: result.verificationEmailSent,
     };
   }
 
@@ -98,23 +101,25 @@ export class AuthController {
   // ─── Google OAuth ─────────────────────────────────────────────────────────────
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   googleAuth() {}
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: GoogleRequest, @Res() res: Response) {
     const frontendUrl = this.config.getOrThrow<string>('FRONTEND_URL');
     try {
-      const result = await this.authService.signupOrLoginWithGoogle(req, res);
+      await this.authService.signupOrLoginWithGoogle(req, res);
+      const context = req as GoogleRequest & {
+        googleReturnTo?: string;
+        googleLocale?: string;
+      };
+      const locale = context.googleLocale === 'en' ? '/en' : '';
       res.redirect(
-        `${frontendUrl}/google-auth-success?token=${result.accessToken}`,
+        `${frontendUrl}${locale}/google-auth-success?next=${encodeURIComponent(context.googleReturnTo ?? '/dashboard')}`,
       );
-    } catch (error) {
-      const message = encodeURIComponent(
-        error.message ?? 'Authentication failed',
-      );
-      res.redirect(`${frontendUrl}/google-auth-error?message=${message}`);
+    } catch {
+      res.redirect(`${frontendUrl}/google-auth-error`);
     }
   }
 
@@ -132,8 +137,8 @@ export class AuthController {
   @Post('resend-verification')
   @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
-  async resendVerificationEmail(@Body('email') email: string) {
-    return this.userAccountService.resendVerificationEmail(email);
+  async resendVerificationEmail(@Body() dto: EmailInput) {
+    return this.userAccountService.resendVerificationEmail(dto.email);
   }
 
   // ─── Password Management ──────────────────────────────────────────────────────
@@ -141,8 +146,8 @@ export class AuthController {
   @Post('forgot-password')
   @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body('email') email: string) {
-    return this.userAccountService.sendUpdatePasswordEmail(email);
+  async forgotPassword(@Body() dto: EmailInput) {
+    return this.userAccountService.sendUpdatePasswordEmail(dto.email);
   }
 
   @Post('reset-password')

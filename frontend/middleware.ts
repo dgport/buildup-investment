@@ -13,7 +13,7 @@ const PROTECTED_PATTERNS = [
   /^\/properties\/new(\/|$)/,
   /^\/properties\/[^/]+\/edit(\/|$)/,
 ];
-const AUTH_ROUTES = ["/signin", "/signup"];
+
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -56,7 +56,6 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
 
   const isProtected = PROTECTED_PATTERNS.some((re) => re.test(strippedPath));
-  const isAuthRoute = AUTH_ROUTES.some((r) => strippedPath.startsWith(r));
 
   if (isProtected && !token) {
     const url = new URL(`${localePrefix}/signin`, request.url);
@@ -64,11 +63,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(
-      new URL(`${localePrefix}/dashboard`, request.url),
-    );
-  }
+  // A stale access cookie must never prevent the user from signing in again.
+  // API guards, rather than cookie presence, establish the session's validity.
 
   // Locale = explicit prefix (language switcher) → NEXT_LOCALE cookie →
   // default (Georgian). The browser's Accept-Language is deliberately ignored

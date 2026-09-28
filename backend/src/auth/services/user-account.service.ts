@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthMethod } from '@prisma/client';
@@ -44,7 +43,9 @@ export class UserAccountService {
     private readonly emailService: EmailService,
   ) {}
 
-  async createUserWithCredentials(dto: SignupRequest): Promise<User> {
+  async createUserWithCredentials(
+    dto: SignupRequest,
+  ): Promise<User & { verificationEmailSent: boolean }> {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -78,25 +79,48 @@ export class UserAccountService {
       select: USER_SELECT,
     });
 
-    this.emailService
-      .sendVerificationEmail(user.email, user.firstname, token)
-      .catch(() => null);
-
-    return user as User;
+    let verificationEmailSent = true;
+    try {
+      await this.emailService.sendVerificationEmail(
+        user.email,
+        user.firstname,
+        token,
+      );
+    } catch {
+      verificationEmailSent = false;
+    }
+    return { ...user, verificationEmailSent } as User & {
+      verificationEmailSent: boolean;
+    };
   }
 
   async signupOrLoginWithGoogle(googleUser: GoogleUser): Promise<User> {
     const { email, firstname, lastname, avatar, googleId } = googleUser;
 
-    let user = await this.prisma.user.findUnique({ where: { email } });
+    const linkedAccount = await this.prisma.account.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: 'google',
+          providerAccountId: googleId,
+        },
+      },
+      include: { user: true },
+    });
+    let user =
+      linkedAccount?.user ??
+      (await this.prisma.user.findUnique({ where: { email } }));
 
     if (user) {
+      if (!user.isActive)
+        throw new UnauthorizedException('Account is inactive');
       user = await this.prisma.user.update({
         where: { id: user.id },
         data: {
           lastLogin: new Date(),
           avatar: avatar ?? user.avatar,
           isVerified: true,
+          emailVerificationToken: null,
+          emailVerificationExpires: null,
           ...(user.method === AuthMethod.CREDENTIALS && {
             method: AuthMethod.BOTH,
           }),
@@ -141,7 +165,7 @@ export class UserAccountService {
   async validateCredentials(email: string, password: string): Promise<User> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user) {
+    if (!user || !user.isActive) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -151,14 +175,14 @@ export class UserAccountService {
       );
     }
 
+    if (!(await verify(user.password, password))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     if (!user.isVerified) {
       throw new UnauthorizedException(
         'Please verify your email before signing in.',
       );
-    }
-
-    if (!(await verify(user.password, password))) {
-      throw new UnauthorizedException('Invalid credentials');
     }
 
     return this.prisma.user.update({
@@ -169,26 +193,21 @@ export class UserAccountService {
   }
 
   async verifyEmail(token: string): Promise<{ message: string }> {
-    const user = await this.prisma.user.findFirst({
+    const result = await this.prisma.user.updateMany({
       where: {
         emailVerificationToken: token,
         emailVerificationExpires: { gt: new Date() },
         isVerified: false,
+        isActive: true,
       },
-    });
-
-    if (!user) {
-      throw new BadRequestException('Invalid or expired verification token');
-    }
-
-    await this.prisma.user.update({
-      where: { id: user.id },
       data: {
         isVerified: true,
         emailVerificationToken: null,
         emailVerificationExpires: null,
       },
     });
+    if (result.count !== 1)
+      throw new BadRequestException('Invalid or expired verification token');
 
     return { message: 'Email verified successfully' };
   }
@@ -196,9 +215,10 @@ export class UserAccountService {
   async resendVerificationEmail(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user) throw new NotFoundException('User not found');
-    if (user.isVerified)
-      throw new BadRequestException('Email is already verified');
+    const response = {
+      message: 'If verification is needed, an email has been sent.',
+    };
+    if (!user || user.isVerified || !user.isActive) return response;
 
     const { token, expires } = this.generateExpiringToken(
       VERIFICATION_EXPIRES_HOURS * 60,
@@ -218,13 +238,17 @@ export class UserAccountService {
       token,
     );
 
-    return { message: 'Verification email sent successfully' };
+    return response;
   }
 
   async sendUpdatePasswordEmail(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user) throw new NotFoundException('User not found');
+    const response = {
+      message:
+        'If an active account exists, a password reset email has been sent.',
+    };
+    if (!user || !user.isActive) return response;
 
     const { token, expires } = this.generateExpiringToken(
       RESET_TOKEN_EXPIRES_MINUTES,
@@ -237,15 +261,14 @@ export class UserAccountService {
 
     if (user.password) {
       await this.emailService.sendResetPasswordEmail(email, token);
-      return { message: 'Password reset link sent to your email' };
     } else {
       await this.emailService.sendAddPasswordEmail(
         email,
         user.firstname,
         token,
       );
-      return { message: 'Add password link sent to your email' };
     }
+    return response;
   }
 
   async updatePassword(dto: UpdatePasswordInput): Promise<void> {
@@ -253,22 +276,40 @@ export class UserAccountService {
       where: {
         resetPasswordToken: dto.token,
         resetPasswordTokenExpires: { gt: new Date() },
+        isActive: true,
       },
     });
 
     if (!user) throw new UnauthorizedException('Invalid or expired token');
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        password: await hash(dto.password),
-        method:
-          !user.password && user.method === AuthMethod.GOOGLE
-            ? AuthMethod.BOTH
-            : user.method,
-        resetPasswordToken: null,
-        resetPasswordTokenExpires: null,
-      },
+    const password = await hash(dto.password);
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.updateMany({
+        where: {
+          id: user.id,
+          resetPasswordToken: dto.token,
+          resetPasswordTokenExpires: { gt: new Date() },
+          isActive: true,
+        },
+        data: {
+          password,
+          isVerified: true,
+          emailVerificationToken: null,
+          emailVerificationExpires: null,
+          method:
+            !user.password && user.method === AuthMethod.GOOGLE
+              ? AuthMethod.BOTH
+              : user.method,
+          resetPasswordToken: null,
+          resetPasswordTokenExpires: null,
+        },
+      });
+      if (updated.count !== 1)
+        throw new UnauthorizedException('Invalid or expired token');
+      await tx.session.updateMany({
+        where: { userId: user.id, isRevoked: false },
+        data: { isRevoked: true },
+      });
     });
   }
 
@@ -278,7 +319,8 @@ export class UserAccountService {
       select: USER_SELECT,
     });
 
-    if (!user) throw new NotFoundException('User not found');
+    if (!user || !user.isActive)
+      throw new UnauthorizedException('User not found or inactive');
 
     return user as User;
   }

@@ -35,7 +35,17 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      {
+        source:
+          "/:locale(en|ka)?/:page(signin|signup|forgot-password|reset-password|verify-email|google-auth-success|google-auth-error)",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "Cache-Control", value: "no-store" },
+        ],
+      },
+    ];
   },
 };
 

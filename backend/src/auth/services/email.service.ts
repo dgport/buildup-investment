@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import {
@@ -108,8 +112,14 @@ export class EmailService {
       if (error) throw new Error(error.message);
       this.logger.log(`Email sent: "${subject}" → ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send email: "${subject}" → ${to}`, error);
-      throw new Error('Failed to send email');
+      this.logger.error(
+        `Email delivery failed: ${error instanceof Error ? error.message : 'provider error'}`,
+      );
+      throw new ServiceUnavailableException({
+        code: 'EMAIL_UNAVAILABLE',
+        message:
+          'Email delivery is temporarily unavailable. Please try again later.',
+      });
     }
   }
 }

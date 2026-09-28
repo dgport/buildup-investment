@@ -17,7 +17,7 @@ export const authService = {
     api.post<AuthResponse>(API_ENDPOINTS.AUTH.SIGNIN, data),
 
   signUp: (data: SignUpDto) =>
-    api.post<{ success: boolean; message: string; userId: string }>(
+    api.post<{ success: boolean; message: string; userId: string; verificationEmailSent: boolean }>(
       API_ENDPOINTS.AUTH.SIGNUP,
       data,
     ),
@@ -29,8 +29,8 @@ export const authService = {
 
   logout: () => api.post<{ message: string }>(API_ENDPOINTS.AUTH.LOGOUT, {}),
 
-  googleAuth: () => {
-    window.location.href = `${API_BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE}`;
+  googleAuth: (next = '/dashboard', locale = 'ka') => {
+    window.location.href = `${API_BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE}?${new URLSearchParams({ next, locale })}`;
   },
 
   verifyEmail: (token: string) =>

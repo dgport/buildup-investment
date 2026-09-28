@@ -14,7 +14,7 @@ import { Transform } from 'class-transformer';
 export class SignupRequest {
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   // \p{L} = any letter in any alphabet (Georgian, Cyrillic, Latin, …)
   @Matches(/^[\p{L}\s'-]+$/u, {
     message:
@@ -26,7 +26,7 @@ export class SignupRequest {
 
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @Matches(/^[\p{L}\s'-]+$/u, {
     message:
       'Last name can only contain letters, spaces, hyphens, and apostrophes',
@@ -37,7 +37,9 @@ export class SignupRequest {
 
   @IsEmail()
   @IsNotEmpty()
-  @Transform(({ value }) => value?.trim().toLowerCase())
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
+  )
   @MaxLength(255)
   email: string;
 
@@ -63,7 +65,11 @@ export class SignupRequest {
 
   @IsOptional()
   @Transform(({ value }) =>
-    typeof value === 'string' && value.trim() === '' ? undefined : value?.trim(),
+    typeof value === 'string' && value.trim() === ''
+      ? undefined
+      : typeof value === 'string'
+        ? value.trim()
+        : value,
   )
   @IsString()
   @MaxLength(40)
