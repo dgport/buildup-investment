@@ -5,6 +5,18 @@ The API lives at `https://api.buildup.ge/api`.
 
 ## Email delivery
 
+Select `EMAIL_PROVIDER=resend` (default) or `EMAIL_PROVIDER=sendly`.
+For Sendly set `SENDLY_EMAIL_KEY` and a plain sender address such as
+`EMAIL_FROM=noreply@buildup.ge`. Activate an Email plan and verify the domain
+using the exact DNS records generated in Sendly's dashboard before switching
+production. Resend DNS records are not interchangeable with Sendly's records.
+The adapter uses `POST https://app.sendly.ge/api/v1/email/send`, requires a
+202 response with an ID and `queued` status, and has a 15-second timeout.
+Queued means accepted, not delivered; check Email Logs and the recipient inbox.
+Provider failures retain the existing `EMAIL_UNAVAILABLE` behavior. Do not
+automatically retry through another provider: a timeout may follow acceptance.
+Keep the existing provider active until Sendly credentials and DNS are ready.
+
 Set `RESEND_API_KEY` and `EMAIL_FROM` in the server's ignored `backend/.env`.
 Use a sender on a verified Resend domain, for example
 `BuildUp <noreply@buildup.ge>`. The `onboarding@resend.dev` sender only sends to

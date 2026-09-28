@@ -16,13 +16,25 @@ import {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly resend: Resend;
+  private readonly resend?: Resend;
+  private readonly provider: 'resend' | 'sendly';
+  private readonly sendlyKey?: string;
   private readonly from: string;
   private readonly adminEmail: string | null;
 
   constructor(private readonly config: ConfigService) {
-    this.resend = new Resend(config.getOrThrow<string>('RESEND_API_KEY'));
-    this.from = config.get<string>('EMAIL_FROM') ?? 'onboarding@resend.dev';
+    const provider = config.get<string>('EMAIL_PROVIDER') ?? 'resend';
+    if (provider !== 'resend' && provider !== 'sendly') {
+      throw new Error('EMAIL_PROVIDER must be resend or sendly');
+    }
+    this.provider = provider;
+    if (provider === 'sendly') {
+      this.sendlyKey = config.getOrThrow<string>('SENDLY_EMAIL_KEY');
+      this.from = config.getOrThrow<string>('EMAIL_FROM');
+    } else {
+      this.resend = new Resend(config.getOrThrow<string>('RESEND_API_KEY'));
+      this.from = config.get<string>('EMAIL_FROM') ?? 'onboarding@resend.dev';
+    }
     this.adminEmail =
       config.get<string>('ADMIN_NOTIFY_EMAIL') ??
       config.get<string>('ADMIN_EMAIL') ??
@@ -103,18 +115,44 @@ export class EmailService {
 
   private async send(to: string, subject: string, html: string): Promise<void> {
     try {
-      const { error } = await this.resend.emails.send({
-        from: this.from,
-        to,
-        subject,
-        html,
-      });
-      if (error) throw new Error(error.message);
-      this.logger.log(`Email sent: "${subject}" → ${to}`);
-    } catch (error) {
-      this.logger.error(
-        `Email delivery failed: ${error instanceof Error ? error.message : 'provider error'}`,
-      );
+      const message = { from: this.from, to, subject, html };
+      if (this.provider === 'sendly') {
+        const response = await fetch(
+          'https://app.sendly.ge/api/v1/email/send',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${this.sendlyKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message),
+            signal: AbortSignal.timeout(15_000),
+            redirect: 'error',
+          },
+        );
+        if (response.status !== 202) {
+          this.logger.warn(`Sendly rejected email: HTTP ${response.status}`);
+          throw new Error('Sendly rejected email');
+        }
+        const result = (await response.json()) as {
+          id?: unknown;
+          status?: unknown;
+        } | null;
+        if (
+          !result ||
+          typeof result.id !== 'string' ||
+          !result.id ||
+          result.status !== 'queued'
+        ) {
+          throw new Error('Unexpected Sendly response');
+        }
+      } else {
+        const { error } = await this.resend!.emails.send(message);
+        if (error) throw new Error('Resend rejected email');
+      }
+      this.logger.log(`Email accepted by ${this.provider}: "${subject}"`);
+    } catch {
+      this.logger.error(`Email submission failed (${this.provider})`);
       throw new ServiceUnavailableException({
         code: 'EMAIL_UNAVAILABLE',
         message:
