@@ -121,9 +121,12 @@ export class UserAccountService {
           isVerified: true,
           emailVerificationToken: null,
           emailVerificationExpires: null,
-          ...(user.method === AuthMethod.CREDENTIALS && {
+          ...(user.isVerified && user.method === AuthMethod.CREDENTIALS && {
             method: AuthMethod.BOTH,
           }),
+          // An unverified signup may have been made by somebody else. Google
+          // proves email ownership, but must not activate that unknown password.
+          ...(!user.isVerified && { password: null, method: AuthMethod.GOOGLE }),
         },
       });
     } else {

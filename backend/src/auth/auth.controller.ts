@@ -128,7 +128,7 @@ export class AuthController {
   @Get('verify-email')
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async verifyEmail(@Query('token') token: string) {
-    if (!token?.trim()) {
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/i.test(token)) {
       throw new BadRequestException('Verification token is required');
     }
     return this.userAccountService.verifyEmail(token);

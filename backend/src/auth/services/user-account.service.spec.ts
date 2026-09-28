@@ -150,4 +150,10 @@ describe('Account recovery and sign-in', () => {
     ).rejects.toThrow('Invalid or expired');
     expect(prisma.user.updateMany).not.toHaveBeenCalled();
   });
+  it('does not activate a password from an unverified signup when Google proves email ownership', async () => {
+    prisma.user.findUnique.mockResolvedValue({ ...account, isVerified: false, password: 'unknown-password-hash' });
+    prisma.user.update.mockResolvedValue({ ...account, method: AuthMethod.GOOGLE, password: null });
+    await service.signupOrLoginWithGoogle({ ...account, googleId: 'g-1' });
+    expect(prisma.user.update.mock.calls[0][0].data).toMatchObject({ isVerified: true, method: AuthMethod.GOOGLE, password: null });
+  });
 });
