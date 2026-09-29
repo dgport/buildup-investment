@@ -1,5 +1,6 @@
 {
   "title": "My Listings",
+  "openAdmin": "Go to admin panel",
   "welcomeBack": "Welcome back, {name}",
   "addProperty": "New Listing",
   "addFirstProperty": "Add your first listing",

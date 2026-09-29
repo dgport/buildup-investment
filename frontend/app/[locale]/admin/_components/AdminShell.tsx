@@ -14,6 +14,7 @@ import {
   Settings,
   ShieldAlert,
   Users,
+  ArrowUpRight,
 } from "lucide-react";
 import { useCurrentUser, useHasToken } from "@/lib/hooks/useAuth";
 import { useAdminStats } from "@/lib/hooks/useAdmin";
@@ -61,22 +62,37 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-[230px_1fr] gap-6">
-        <aside className="lg:sticky lg:top-24 self-start">
+      <div className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-bold text-teal-950">{t("title")}</p>
+          <p className="text-sm text-slate-500 break-words">{user.firstname} {user.lastname}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={ROUTES.DASHBOARD} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-teal-900 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-teal-600">
+            <LayoutDashboard className="h-4 w-4" />{t("nav.dashboard")}
+          </Link>
+          <Link href={ROUTES.HOME} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal-900 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+            {t("nav.backToSite")}<ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)] gap-6 lg:gap-8">
+        <aside className="lg:sticky lg:top-6 self-start min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
           <div className="hidden lg:flex items-center gap-2 px-3 mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-700/60">{t("title")}</p>
           </div>
-          <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0">
+          <nav aria-label={t("title")} className="flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0">
             {items.map(({ href, label, icon: Icon, badge, exact }) => {
               const active = exact ? pathname === href : pathname.startsWith(href);
               return (
                 <Link
                   key={href}
                   href={href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition",
-                    active ? "bg-teal-900 text-white shadow" : "text-teal-900 hover:bg-white",
+                    "flex min-h-11 shrink-0 items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-teal-600",
+                    active ? "bg-teal-900 text-white shadow-sm" : "text-teal-900 hover:bg-slate-100",
                   )}
                 >
                   <Icon className={cn("w-4 h-4", active ? "text-amber-400" : "text-teal-600")} />
@@ -95,13 +111,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <Link
-            href={ROUTES.HOME}
-            className="hidden lg:inline-flex items-center gap-2 px-3 mt-4 text-xs font-medium text-slate-500 hover:text-teal-800"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            {t("nav.backToSite")}
-          </Link>
         </aside>
         <div className="min-w-0">{children}</div>
       </div>

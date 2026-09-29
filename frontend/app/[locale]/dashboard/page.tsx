@@ -16,6 +16,7 @@ import {
   Trash2,
   ExternalLink,
   ImageIcon,
+  ShieldCheck,
 } from "lucide-react";
 import {
   useMyProperties,
@@ -341,6 +342,15 @@ function DashboardContent() {
                 </p>
               )}
             </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {user?.role === "ADMIN" && (
+                <Button asChild size="lg" variant="outline" className="border-teal-200 text-teal-900 hover:bg-teal-50">
+                  <Link href={ROUTES.ADMIN}>
+                    <ShieldCheck className="w-5 h-5 mr-2" />
+                    {t("openAdmin")}
+                  </Link>
+                </Button>
+              )}
             <Button
               asChild
               size="lg"
@@ -351,6 +361,7 @@ function DashboardContent() {
                 {t("addProperty")}
               </Link>
             </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

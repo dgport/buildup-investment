@@ -17,10 +17,10 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
       <div>
-        <h1 className="text-2xl font-bold text-teal-950">{title}</h1>
-        {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+        <h1 className="text-xl sm:text-2xl font-bold text-teal-950">{title}</h1>
+        {subtitle && <p className="text-sm leading-6 text-slate-500 mt-1 max-w-3xl">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -127,7 +127,7 @@ export function StatusPill({ status, label, className }: { status: string; label
 }
 
 export function AdminCard({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden", className)}>{children}</div>;
+  return <div className={cn("min-w-0 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden", className)}>{children}</div>;
 }
 
 export function EmptyRow({ children }: { children: ReactNode }) {

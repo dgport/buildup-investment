@@ -32,13 +32,13 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-5">
       <PageHeader title={t("settings.title")} subtitle={t("settings.subtitle")} />
 
       {isLoading || !data ? (
         <Skeleton className="h-64 rounded-2xl" />
       ) : (
-        <>
+        <div className="grid items-start gap-5 xl:grid-cols-2">
           <AdminCard className="p-6">
             <div className="flex items-start gap-4">
               <div className="rounded-xl bg-teal-900 text-amber-300 p-2.5 shrink-0">
@@ -92,7 +92,7 @@ export default function AdminSettingsPage() {
               </div>
             </form>
           </AdminCard>
-        </>
+        </div>
       )}
     </div>
   );
