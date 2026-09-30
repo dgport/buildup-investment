@@ -140,7 +140,7 @@ export function ProjectForm({ data, onChange, developers, errors = {} }: Props) 
   );
 
   return (
-    <div className="space-y-10">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start [&>*]:min-w-0 [&>*]:rounded-xl [&>*]:border [&>*]:border-slate-100 [&>*]:p-4">
       {/* Basics */}
       <div className="space-y-5">
         <SectionTitle>{t("projects.sections.basics")}</SectionTitle>
@@ -282,8 +282,17 @@ export function ProjectForm({ data, onChange, developers, errors = {} }: Props) 
         )}
       </div>
 
-      {/* Amenities */}
+      {/* Media */}
       <div className="space-y-5">
+        <SectionTitle>{t("projects.sections.media")}</SectionTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FieldInput label={t("projects.fields.videoUrl")} type="url" value={data.videoUrl ?? ""} onChange={(e) => onChange("videoUrl", e.target.value)} placeholder="https://www.youtube.com/watch?v=…" error={errors.videoUrl} />
+          <FieldInput label={t("projects.fields.tourUrl")} type="url" value={data.tourUrl ?? ""} onChange={(e) => onChange("tourUrl", e.target.value)} placeholder="https://…" error={errors.tourUrl} />
+        </div>
+      </div>
+
+      {/* Amenities */}
+      <div className="space-y-5 xl:col-span-2">
         <SectionTitle>{t("projects.sections.amenities")}</SectionTitle>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
           {PROJECT_AMENITIES.map((key) => {
@@ -303,14 +312,6 @@ export function ProjectForm({ data, onChange, developers, errors = {} }: Props) 
         </div>
       </div>
 
-      {/* Media */}
-      <div className="space-y-5">
-        <SectionTitle>{t("projects.sections.media")}</SectionTitle>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FieldInput label={t("projects.fields.videoUrl")} type="url" value={data.videoUrl ?? ""} onChange={(e) => onChange("videoUrl", e.target.value)} placeholder="https://www.youtube.com/watch?v=…" error={errors.videoUrl} />
-          <FieldInput label={t("projects.fields.tourUrl")} type="url" value={data.tourUrl ?? ""} onChange={(e) => onChange("tourUrl", e.target.value)} placeholder="https://…" error={errors.tourUrl} />
-        </div>
-      </div>
     </div>
   );
 }

@@ -252,8 +252,8 @@ export default function EditPropertyPage() {
                 <BasicsSection data={formData} onChange={updateField} errors={errors} />
                 <TextsSection data={formData} onChange={updateField} errors={errors} />
                 <LocationSection data={formData} onChange={updateField} />
-                <div className="space-y-8">
-                  <DetailsSection data={formData} onChange={updateField} />
+                <DetailsSection data={formData} onChange={updateField} />
+                <div className="xl:col-span-2">
                   <AmenitiesSection data={formData} onChange={updateField} />
                 </div>
               </div>

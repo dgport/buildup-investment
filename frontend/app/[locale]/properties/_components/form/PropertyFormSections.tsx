@@ -449,7 +449,7 @@ export function AmenitiesSection({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-6">
       <SectionTitle>{t("sections.amenities")}</SectionTitle>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,210px),1fr))] gap-3">
         {visible.map(({ key, label }) => {
           const checked = data[key] === true;
           return (
