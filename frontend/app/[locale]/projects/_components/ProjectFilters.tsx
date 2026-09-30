@@ -196,11 +196,11 @@ export function ProjectFilters() {
                 )}
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:w-[420px] flex flex-col p-0">
+            <SheetContent side="right" className="w-full max-w-full sm:w-[440px] sm:max-w-[440px] flex flex-col gap-0 p-0">
               <div className="px-6 py-5 border-b border-slate-100 bg-teal-950">
                 <SheetTitle className="text-white font-semibold text-base m-0">{t("filters.heading")}</SheetTitle>
               </div>
-              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 space-y-6">
                 <Field label={t("filters.rooms")}>
                   <div className="flex flex-wrap gap-2">
                     {[ALL, "0", "1", "2", "3", "4"].map((r) => (
@@ -240,12 +240,12 @@ export function ProjectFilters() {
                   </div>
                 </Field>
               </div>
-              <div className="px-6 py-4 border-t border-slate-100 flex gap-2">
-                <button type="button" onClick={clear} className="h-11 px-4 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+              <div className="shrink-0 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-200 bg-white flex flex-col gap-2">
+                <button type="button" onClick={clear} className="min-h-11 w-full px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
                   {t("filters.clear")}
                 </button>
-                <button type="button" onClick={apply} className="flex-1 h-11 rounded-xl bg-teal-900 hover:bg-teal-800 text-white font-semibold text-sm inline-flex items-center justify-center gap-2">
-                  <Search className="w-4 h-4" />
+                <button type="button" onClick={apply} className="order-first min-h-12 w-full px-4 py-3 rounded-xl bg-teal-900 hover:bg-teal-800 text-white font-semibold text-sm inline-flex items-center justify-center gap-2">
+                  <Search className="w-4 h-4 shrink-0" />
                   {t("filters.apply")}
                 </button>
               </div>
@@ -257,7 +257,7 @@ export function ProjectFilters() {
             onClick={apply}
             className="col-span-2 md:col-span-2 xl:col-span-1 h-11 rounded-xl bg-amber-400 hover:bg-amber-300 text-teal-950 font-bold text-sm px-5 inline-flex items-center justify-center gap-2 transition active:scale-[0.98]"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-4 h-4 shrink-0" />
             {t("filters.go")}
           </button>
         </div>
