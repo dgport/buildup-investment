@@ -1,6 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { Link, usePathname } from "@/i18n/routing";
+import { useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,16 +19,15 @@ export function Pagination({
   hasNextPage,
   hasPreviousPage,
 }: PaginationProps) {
-  const router = useRouter();
+  const ka = useLocale() === "ka";
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages || page === currentPage) return;
+  const pageHref = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("page", page.toString());
-    router.push(`${pathname}?${params.toString()}`, { scroll: true });
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    if (page === 1) params.delete("page");
+    else params.set("page", page.toString());
+    return `${pathname}${params.size ? `?${params}` : ""}`;
   };
 
   const getPageNumbers = (): (number | "...")[] => {
@@ -53,16 +54,16 @@ export function Pagination({
   };
 
   return (
-    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+    <nav aria-label={ka ? "გვერდები" : "Pagination"} className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
       <Button
         variant="outline"
         size="icon"
-        onClick={() => goToPage(currentPage - 1)}
+        asChild={hasPreviousPage}
         disabled={!hasPreviousPage}
         className="h-10 w-10"
-        aria-label="Previous page"
+        aria-label={ka ? "წინა გვერდი" : "Previous page"}
       >
-        <ChevronLeft className="h-4 w-4" />
+        {hasPreviousPage ? <Link href={pageHref(currentPage - 1)} rel="prev"><ChevronLeft className="h-4 w-4" /></Link> : <ChevronLeft className="h-4 w-4" />}
       </Button>
 
       <div className="flex items-center gap-1">
@@ -79,9 +80,8 @@ export function Pagination({
               key={page}
               variant={page === currentPage ? "default" : "outline"}
               size="icon"
-              onClick={() => goToPage(page)}
-              disabled={page === currentPage}
-              aria-label={`Page ${page}`}
+              asChild
+              aria-label={`${ka ? "გვერდი" : "Page"} ${page}`}
               aria-current={page === currentPage ? "page" : undefined}
               className={`h-10 w-10 ${
                 page === currentPage
@@ -89,7 +89,7 @@ export function Pagination({
                   : "hover:bg-gray-100"
               }`}
             >
-              {page}
+              <Link href={pageHref(page)}>{page}</Link>
             </Button>
           ),
         )}
@@ -98,12 +98,12 @@ export function Pagination({
       <Button
         variant="outline"
         size="icon"
-        onClick={() => goToPage(currentPage + 1)}
+        asChild={hasNextPage}
         disabled={!hasNextPage}
         className="h-10 w-10"
-        aria-label="Next page"
+        aria-label={ka ? "შემდეგი გვერდი" : "Next page"}
       >
-        <ChevronRight className="h-4 w-4" />
+        {hasNextPage ? <Link href={pageHref(currentPage + 1)} rel="next"><ChevronRight className="h-4 w-4" /></Link> : <ChevronRight className="h-4 w-4" />}
       </Button>
     </nav>
   );

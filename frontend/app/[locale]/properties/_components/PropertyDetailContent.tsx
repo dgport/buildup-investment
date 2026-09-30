@@ -1,4 +1,5 @@
 "use client";
+import type { Property } from "@/lib/types/properties";
 
 
 import { useState, useCallback, useEffect } from "react";
@@ -27,7 +28,7 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/routes";
 import { useProperty } from "@/lib/hooks/useProperties";
@@ -69,7 +70,7 @@ function InfoRow({
   );
 }
 
-export function PropertyDetailContent() {
+export function PropertyDetailContent({ initialData }: { initialData?: Property }) {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const t = useTranslations("properties");
@@ -84,7 +85,7 @@ export function PropertyDetailContent() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [shared, setShared] = useState(false);
 
-  const { data: property, isLoading, error } = useProperty(id, locale);
+  const { data: property, isLoading, error } = useProperty(id, locale, initialData);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [thumbsRef, thumbsApi] = useEmblaCarousel({

@@ -1,4 +1,5 @@
 "use client";
+import type { ProjectsResponse } from "@/lib/types/projects";
 
 import { PageLoader } from "@/components/shared/PageLoader";
 
@@ -47,7 +48,7 @@ function parse(params: URLSearchParams): Filters {
   };
 }
 
-export function ProjectsContent() {
+export function ProjectsContent({ initialData, initialSearch }: { initialData?: ProjectsResponse; initialSearch?: string }) {
   const t = useTranslations("projects");
   const locale = useLocale();
   const router = useRouter();
@@ -56,7 +57,7 @@ export function ProjectsContent() {
   const filters = parse(searchParams);
   const view = searchParams.get("view") === "map" ? "map" : "list";
 
-  const { data, isLoading, error } = useProjects({ ...filters, lang: locale });
+  const { data, isLoading, error } = useProjects({ ...filters, lang: locale }, searchParams.toString() === initialSearch ? initialData : undefined);
   const projects = data?.data ?? [];
   const meta = data?.meta;
 

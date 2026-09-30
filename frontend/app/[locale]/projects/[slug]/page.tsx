@@ -1,11 +1,12 @@
 import { PageLoader } from "@/components/shared/PageLoader";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { localizedUrl } from "@/lib/seo-urls";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { API_BASE_URL, SITE_URL } from "@/lib/constants/env";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
-import { jsonLd } from "@/lib/seo";
+import { jsonLd, publicPageMetadata } from "@/lib/seo";
 import type { Project } from "@/lib/types/projects";
 import { ProjectDetailContent } from "../_components/ProjectDetailContent";
 
@@ -36,18 +37,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     [t(`status.${project.status}`), project.regionName].filter(Boolean).join(" · ");
   const image = resolveImageUrl(project.coverImage);
   return {
-    title,
-    description,
-    robots: project.isDemo ? { index: false, follow: true } : { index: true, follow: true },
-    twitter: { card: "summary_large_image", title, description, images: [image || "/og-image.jpg"] },
-    alternates: { canonical: `/projects/${project.slug}` },
-    openGraph: {
-      title,
-      description,
-      type: "article",
-      url: `${SITE_URL}/projects/${project.slug}`,
-      ...(image && { images: [{ url: image }] }),
-    },
+    ...(await publicPageMetadata(title, description, `/projects/${project.slug}`, image)),
+    robots: { index: !project.isDemo, follow: true },
   };
 }
 
@@ -61,7 +52,7 @@ function projectJsonLd(project: Project, locale: string) {
     "@type": "ApartmentComplex",
     name: project.title ?? project.slug,
     description: project.description ?? undefined,
-    url: `${SITE_URL}/projects/${project.slug}`,
+    url: localizedUrl(`/projects/${project.slug}`, locale),
     inLanguage: locale,
     image: project.images.map((i) => resolveImageUrl(i.imageUrl)).filter(Boolean),
     numberOfAccommodationUnits: project.totalApartments ?? undefined,
@@ -110,7 +101,7 @@ export default async function ProjectPage({ params }: PageProps) {
         />
       )}
       <Suspense fallback={<PageLoader />}>
-        <ProjectDetailContent />
+        <ProjectDetailContent initialData={project} />
       </Suspense>
     </>
   );

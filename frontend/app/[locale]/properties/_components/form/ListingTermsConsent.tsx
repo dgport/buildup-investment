@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { BadgeCheck, ShieldCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";

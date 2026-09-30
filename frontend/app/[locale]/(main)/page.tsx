@@ -8,6 +8,7 @@ import AboutParallax from "./_components/AboutParallax";
 import PropertyCarousel from "./_components/PropertyCarousel";
 import ProjectsCarousel from "./_components/ProjectsCarousel";
 import ListPropertyCta from "./_components/ListPropertyCta";
+import { socialImage } from "@/lib/seo-urls";
 import { jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/constants/env";
 import { CONTACT_EMAIL, CONTACT_FACEBOOK, CONTACT_INSTAGRAM, CONTACT_PHONE, HAS_CONTACT_PHONE } from "@/lib/constants/contact";
@@ -23,7 +24,7 @@ function homeJsonLd(locale: string) {
       name: IS_RENT_SITE ? "BuildUp Rent" : "Build Up Investment",
       url: SITE_URL,
       logo: `${SITE_URL}/icons/icon-512.png`,
-      image: `${SITE_URL}/og-image.jpg`,
+      image: `${SITE_URL}${socialImage(locale)}`,
       ...(HAS_CONTACT_PHONE && { telephone: CONTACT_PHONE.replace(/\s/g, "") }),
       email: CONTACT_EMAIL,
       address: { "@type": "PostalAddress", addressLocality: "Batumi", addressCountry: "GE" },
@@ -38,11 +39,7 @@ function homeJsonLd(locale: string) {
       name: IS_RENT_SITE ? "BuildUp Rent" : "Build Up Investment",
       inLanguage: locale,
       publisher: { "@id": `${SITE_URL}/#organization` },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/properties?region={search_term_string}` },
-        "query-input": "required name=search_term_string",
-      },
+
     },
   ];
 }

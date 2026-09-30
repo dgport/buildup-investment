@@ -9,7 +9,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
 } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";

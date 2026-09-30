@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { ExternalLink, ImageIcon, Pencil, Plus, Save, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/routing";
+
 import { useState, useEffect } from "react";
 import {
   Menu,
@@ -45,10 +45,7 @@ function LocaleSwitcher() {
 
   const handleLocaleChange = (newLocale: Locale) => {
     if (newLocale === currentLocale) return;
-    // With localePrefix "never" next-intl navigates to /<locale>/<path>; the
-    // middleware stores the choice in the NEXT_LOCALE cookie and redirects back
-    // to the unprefixed URL, re-rendering everything in the new language.
-    router.replace(pathname, { locale: newLocale });
+    router.replace(`${pathname}${window.location.search}`, { locale: newLocale });
   };
 
   const currentFlag = LanguageFlags[currentLocale];

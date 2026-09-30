@@ -2,12 +2,13 @@ import { PageLoader } from "@/components/shared/PageLoader";
 import { IS_RENT_SITE, propertySiteUrl } from "@/lib/market";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
+import { localizedUrl } from "@/lib/seo-urls";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { PropertyDetailContent } from "../_components/PropertyDetailContent";
 import { API_BASE_URL } from "@/lib/constants/env";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
-import { jsonLd } from "@/lib/seo";
+import { jsonLd, publicPageMetadata } from "@/lib/seo";
 import type { Property } from "@/lib/types/properties";
 
 interface PageProps {
@@ -47,18 +48,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const image = resolveImageUrl(property.galleryImages?.[0]?.imageUrl);
 
   return {
-    title,
-    description,
-    robots: property.isDemo ? { index: false, follow: true } : { index: true, follow: true },
-    twitter: { card: "summary_large_image", title, description, images: [image || "/og-image.jpg"] },
-    alternates: { canonical: propertySiteUrl(property) },
-    openGraph: {
-      title,
-      description,
-      type: "article",
-      url: propertySiteUrl(property),
-      ...(image && { images: [{ url: image }] }),
-    },
+    ...(await publicPageMetadata(title, description, propertySiteUrl(property), image)),
+    robots: { index: !property.isDemo, follow: true },
   };
 }
 
@@ -73,7 +64,7 @@ function propertyJsonLd(property: Property, locale: string) {
     "@type": "RealEstateListing",
     name: property.translation?.title ?? `#${property.externalId}`,
     description: property.translation?.description ?? undefined,
-    url: propertySiteUrl(property),
+    url: localizedUrl(propertySiteUrl(property), locale),
     datePosted: property.createdAt,
     inLanguage: locale,
     image,
@@ -123,7 +114,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         />
       )}
       <Suspense fallback={<PageLoader />}>
-        <PropertyDetailContent />
+        <PropertyDetailContent initialData={property} />
       </Suspense>
     </>
   );

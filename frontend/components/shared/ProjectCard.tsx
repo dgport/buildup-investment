@@ -1,7 +1,7 @@
 "use client";
 
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Building2, CalendarClock, ImageIcon, Layers, MapPin } from "lucide-react";
 import { fallbackToFullImage, resolveImageUrl, thumbnailUrl } from "@/lib/utils/image-utils";

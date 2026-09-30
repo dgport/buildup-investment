@@ -4,7 +4,7 @@ import { PageLoader } from "@/components/shared/PageLoader";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import {
   Plus,
   Building2,

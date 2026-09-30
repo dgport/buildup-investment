@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { Building2, Check, Flame, Home, Inbox, ImageIcon, Phone, Users, X } from "lucide-react";
 import { toast } from "sonner";

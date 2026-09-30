@@ -1,8 +1,9 @@
 "use client";
+import type { Developer } from "@/lib/types/projects";
 
 import { PageLoader } from "@/components/shared/PageLoader";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { Building2, Globe, Phone } from "lucide-react";
 import { useDevelopers } from "@/lib/hooks/useProjects";
@@ -10,10 +11,10 @@ import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { ROUTES } from "@/lib/constants/routes";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function DevelopersContent() {
+export function DevelopersContent({ initialData }: { initialData?: Developer[] }) {
   const t = useTranslations("projects.developers");
   const locale = useLocale();
-  const { data: developers = [], isLoading } = useDevelopers(locale);
+  const { data: developers = [], isLoading } = useDevelopers(locale, initialData);
 
   if (isLoading) return <PageLoader />;
 

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import { Building2, Home } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";

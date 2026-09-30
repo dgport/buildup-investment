@@ -31,9 +31,10 @@ export const propertyKeys = {
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 /** Public, approved listings. */
-export const useProperties = (filters?: PropertyFilters) =>
+export const useProperties = (filters?: PropertyFilters, initialData?: PropertiesResponse) =>
   useQuery<PropertiesResponse>({
     queryKey: propertyKeys.public(filters),
+    initialData,
     queryFn: async () => (await propertiesService.getAll(filters)).data,
   });
 
@@ -72,9 +73,10 @@ export const useSetPropertyStatus = () => {
 };
 
 /** Public property detail. */
-export const useProperty = (id: string, lang?: string) =>
+export const useProperty = (id: string, lang?: string, initialData?: Property) =>
   useQuery<Property>({
     queryKey: propertyKeys.detail(id, lang),
+    initialData,
     queryFn: async () => (await propertiesService.getById(id, lang)).data,
     enabled: !!id,
     retry: false,

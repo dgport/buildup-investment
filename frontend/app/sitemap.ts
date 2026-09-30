@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { API_BASE_URL, SITE_URL } from "@/lib/constants/env";
 import { IS_RENT_SITE, MARKET } from "@/lib/market";
 
+import { languageAlternates, localizedUrl } from "@/lib/seo-urls";
+
 interface Listing {
   id: string;
   updatedAt: string;
@@ -53,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     ...staticPages.filter((p) => !IS_RENT_SITE || p.url === `${SITE_URL}/` || p.url === `${SITE_URL}/properties`),
     ...properties.filter((p) => !p.isDemo).map((p) => ({
       url: `${SITE_URL}/properties/${p.id}`,
@@ -74,4 +76,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     })),
   ];
+  return entries.flatMap((entry) => ["ka", "en"].map((locale) => ({
+    ...entry,
+    url: localizedUrl(entry.url, locale),
+    alternates: { languages: languageAlternates(entry.url) },
+  })));
 }

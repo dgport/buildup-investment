@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     });
     if (!res.ok) return { title: t("notFound"), robots: { index: false, follow: false } };
     const dev = (await res.json()) as Developer;
-    return { ...publicPageMetadata(dev.name, dev.description?.slice(0, 160) ?? t("subtitle"), `/developers/${dev.slug}`), robots: { index: !dev.isDemo, follow: true } };
+    return { ...(await publicPageMetadata(dev.name, dev.description?.slice(0, 160) ?? t("subtitle"), `/developers/${dev.slug}`)), robots: { index: !dev.isDemo, follow: true } };
   } catch {
     return { title: t("title") };
   }
@@ -33,5 +33,5 @@ export default async function DeveloperPage({ params }: PageProps) {
   if (res.status === 404) notFound();
   if (!res.ok) throw new Error(`Developer request failed: ${res.status}`);
   const developer = await res.json() as Developer;
-  return <><DeveloperDetailContent /></>;
+  return <><DeveloperDetailContent initialData={developer} /></>;
 }

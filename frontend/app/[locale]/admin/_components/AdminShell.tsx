@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { PageLoader } from "@/components/shared/PageLoader";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

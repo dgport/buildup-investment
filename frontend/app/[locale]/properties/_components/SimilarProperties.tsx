@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { useProperties } from "@/lib/hooks/useProperties";
 import PropertyCard from "@/components/shared/PropertyCard";

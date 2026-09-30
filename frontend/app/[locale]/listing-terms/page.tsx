@@ -1,5 +1,6 @@
+import { publicPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import {
   BadgeDollarSign,
@@ -18,11 +19,7 @@ const ICONS: LucideIcon[] = [ShieldCheck, BadgeDollarSign, ImageIcon, ClipboardC
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("terms");
-  return {
-    title: t("meta.title"),
-    description: t("meta.description"),
-    alternates: { canonical: ROUTES.LISTING_TERMS },
-  };
+  return publicPageMetadata(t("meta.title"), t("meta.description"), ROUTES.LISTING_TERMS);
 }
 
 export default async function ListingTermsPage() {

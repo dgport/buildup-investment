@@ -19,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
           "/google-auth-error",
           "/properties/new",
           "/properties/*/edit",
-        ],
+        ].flatMap((path) => [path, `/en${path}`, `/ka${path}`]),
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

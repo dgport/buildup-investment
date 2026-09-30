@@ -2,6 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { projectsService } from "../services/projects.service";
 import type {
   DeveloperInput,
+  Developer,
+  Project,
+  ProjectsResponse,
   LeadInput,
   ProjectFilters,
   ProjectInput,
@@ -23,9 +26,10 @@ export const projectKeys = {
 
 // ─── public ──────────────────────────────────────────────────────────────────
 
-export const useProjects = (filters?: ProjectFilters) =>
+export const useProjects = (filters?: ProjectFilters, initialData?: ProjectsResponse) =>
   useQuery({
     queryKey: projectKeys.list(filters),
+    initialData,
     queryFn: async () => (await projectsService.getAll(filters)).data,
   });
 
@@ -36,23 +40,26 @@ export const useProjectsMap = (lang?: string, enabled = true) =>
     enabled,
   });
 
-export const useProject = (idOrSlug: string, lang?: string) =>
+export const useProject = (idOrSlug: string, lang?: string, initialData?: Project) =>
   useQuery({
     queryKey: projectKeys.detail(idOrSlug, lang),
+    initialData,
     queryFn: async () => (await projectsService.getOne(idOrSlug, lang)).data,
     enabled: !!idOrSlug,
     retry: false,
   });
 
-export const useDevelopers = (lang?: string) =>
+export const useDevelopers = (lang?: string, initialData?: Developer[]) =>
   useQuery({
     queryKey: projectKeys.developers(lang),
+    initialData,
     queryFn: async () => (await projectsService.getDevelopers(lang)).data,
   });
 
-export const useDeveloper = (idOrSlug: string, lang?: string) =>
+export const useDeveloper = (idOrSlug: string, lang?: string, initialData?: Developer) =>
   useQuery({
     queryKey: projectKeys.developer(idOrSlug, lang),
+    initialData,
     queryFn: async () => (await projectsService.getDeveloper(idOrSlug, lang)).data,
     enabled: !!idOrSlug,
     retry: false,

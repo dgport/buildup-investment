@@ -1,6 +1,7 @@
+import { API_BASE_URL } from "@/lib/constants/env";
 import { publicPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { DevelopersContent } from "./_components/DevelopersContent";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -8,6 +9,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return publicPageMetadata(t("title"), t("subtitle"), "/developers");
 }
 
-export default function DevelopersPage() {
-  return <DevelopersContent />;
+export default async function DevelopersPage() {
+  const locale = await getLocale();
+  const response = await fetch(`${API_BASE_URL}/developers?lang=${locale}`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error(`Developers request failed: ${response.status}`);
+  return <DevelopersContent initialData={await response.json()} />;
 }

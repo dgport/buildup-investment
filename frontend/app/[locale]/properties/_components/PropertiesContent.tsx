@@ -1,4 +1,5 @@
 "use client";
+import type { PropertiesResponse } from "@/lib/types/properties";
 
 import { PageLoader } from "@/components/shared/PageLoader";
 
@@ -52,7 +53,7 @@ function parseSearchParams(searchParams: URLSearchParams): PropertyFiltersType {
   };
 }
 
-export function PropertiesContent() {
+export function PropertiesContent({ initialData, initialSearch }: { initialData?: PropertiesResponse; initialSearch?: string }) {
   const t = useTranslations("properties");
   const locale = useLocale();
   const searchParams = useSearchParams();
@@ -69,7 +70,7 @@ export function PropertiesContent() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const { data: response, isLoading, isFetching, error } = useProperties({ ...filters, lang: locale });
+  const { data: response, isLoading, isFetching, error } = useProperties({ ...filters, lang: locale }, searchParams.toString() === initialSearch ? initialData : undefined);
 
   const properties = response?.data ?? [];
   const meta = response?.meta;

@@ -1,9 +1,10 @@
 "use client";
+import type { Developer } from "@/lib/types/projects";
 
 import { PageLoader } from "@/components/shared/PageLoader";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, Globe, Mail, Phone } from "lucide-react";
 import { useDeveloper, useProjects } from "@/lib/hooks/useProjects";
@@ -11,11 +12,11 @@ import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { ROUTES } from "@/lib/constants/routes";
 import ProjectCard from "@/components/shared/ProjectCard";
 
-export function DeveloperDetailContent() {
+export function DeveloperDetailContent({ initialData }: { initialData?: Developer }) {
   const { slug } = useParams<{ slug: string }>();
   const t = useTranslations("projects.developers");
   const locale = useLocale();
-  const { data: dev, isLoading, error } = useDeveloper(slug, locale);
+  const { data: dev, isLoading, error } = useDeveloper(slug, locale, initialData);
   const { data: projects } = useProjects({ developer: slug, lang: locale, limit: 48 });
 
   if (isLoading) return <PageLoader />;

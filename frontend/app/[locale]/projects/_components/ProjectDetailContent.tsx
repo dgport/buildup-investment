@@ -1,9 +1,10 @@
 "use client";
+import type { Project } from "@/lib/types/projects";
 
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import useEmblaCarousel from "embla-carousel-react";
 import Lightbox from "yet-another-react-lightbox";
@@ -60,13 +61,13 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-export function ProjectDetailContent() {
+export function ProjectDetailContent({ initialData }: { initialData?: Project }) {
   const { slug } = useParams<{ slug: string }>();
   const t = useTranslations("projects");
   const locale = useLocale();
   const { currency, exchangeRate } = useCurrency();
   const money = (usd: number | null | undefined) => formatMoney(usd, currency, exchangeRate) ?? "";
-  const { data: project, isLoading, error } = useProject(slug, locale);
+  const { data: project, isLoading, error } = useProject(slug, locale, initialData);
 
   const [selected, setSelected] = useState(0);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
