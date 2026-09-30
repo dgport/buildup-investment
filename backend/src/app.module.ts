@@ -9,6 +9,7 @@ import { AdminModule } from './admin/admin.module';
 import { PropertiesModule } from './properties/properties.module';
 import { ProjectsModule } from './projects/projects.module';
 import { HealthController } from './health/health.controller';
+import { ContactController } from './contact/contact.controller';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { HealthController } from './health/health.controller';
     ProjectsModule,
     AuthModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, ContactController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

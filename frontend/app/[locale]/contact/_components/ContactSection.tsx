@@ -5,7 +5,7 @@ import { Facebook, Mail, Phone, MapPin, ArrowRight, Send, AlertCircle } from "lu
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "next-intl";
-import { WEB3FORMS_ACCESS_KEY } from "@/lib/constants/env";
+import { API_BASE_URL } from "@/lib/constants/env";
 import {
   CONTACT_EMAIL,
   CONTACT_FACEBOOK,
@@ -39,20 +39,10 @@ const ContactSection = () => {
     setState("sending");
 
     try {
-      if (!WEB3FORMS_ACCESS_KEY) throw new Error("Contact form is not configured");
-
-      const res = await fetch("https://api.web3forms.com/submit", {
+      const res = await fetch(`${API_BASE_URL}/contact`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `BuildUp contact form: ${formData.fullName}`,
-          from_name: "buildup.ge",
-          name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          message: formData.message,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message);

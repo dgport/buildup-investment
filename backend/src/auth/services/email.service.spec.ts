@@ -85,6 +85,18 @@ describe('Email provider delivery contract', () => {
     expect(mockResendSend).toHaveBeenCalledTimes(1);
     expect(fetchMock).not.toHaveBeenCalled();
   });
+  it('routes required website messages to the configured recipient', async () => {
+    mockResendSend.mockResolvedValue({ data: { id: 'msg-1' }, error: null });
+    await make({ EMAIL_PROVIDER: 'resend', RESEND_API_KEY: 'test', ADMIN_NOTIFY_EMAIL: 'info@buildup.ge' })
+      .sendAdminAlert('Contact', [{ label: 'Message', value: '<script>alert(1)</script>' }], 'Reply', 'mailto:sender@example.com', true);
+    expect(mockResendSend.mock.calls[0][0].to).toBe('info@buildup.ge');
+    expect(mockResendSend.mock.calls[0][0].html).not.toContain('<script>');
+  });
+  it('does not report success when the contact recipient is missing', async () => {
+    await expect(make().sendAdminAlert('Contact', [], 'Reply', 'mailto:a@example.com', true))
+      .rejects.toBeInstanceOf(ServiceUnavailableException);
+    expect(mockResendSend).not.toHaveBeenCalled();
+  });
   it('fails startup on an unknown provider', () => {
     expect(() => make({ EMAIL_PROVIDER: 'typo' })).toThrow('EMAIL_PROVIDER');
   });

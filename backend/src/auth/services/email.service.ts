@@ -104,8 +104,12 @@ export class EmailService {
     rows: { label: string; value: string }[],
     actionLabel: string,
     actionUrl: string,
+    required = false,
   ): Promise<void> {
-    if (!this.adminEmail) return;
+    if (!this.adminEmail) {
+      if (required) throw new ServiceUnavailableException('Contact email is not configured');
+      return;
+    }
     await this.send(
       this.adminEmail,
       subject,
