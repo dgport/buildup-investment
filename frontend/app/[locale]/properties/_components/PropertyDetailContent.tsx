@@ -249,8 +249,8 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Carousel */}
-          <div className="lg:col-span-2 h-[350px] lg:h-[500px]">
-            <div className="card overflow-hidden h-full relative">
+          <div className="lg:col-span-2 min-w-0 flex flex-col gap-3">
+            <div className="card overflow-hidden h-[350px] lg:h-[500px] shrink-0 relative">
               <div className="overflow-hidden h-full" ref={emblaRef}>
                 <div className="flex h-full">
                   {images.length > 0 ? (
@@ -293,36 +293,32 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
                   >
                     <ChevronRight className="w-5 h-5 text-teal-900" />
                   </button>
-                  <div className="absolute bottom-2 left-0 right-0 z-20 px-4">
-                    <div className="bg-teal-950/60 backdrop-blur-sm rounded-xl p-2.5">
-                      <div className="overflow-hidden" ref={thumbsRef}>
-                        <div className="flex gap-2">
-                          {images.map((img, i) => (
-                            <div
-                              key={img}
-                              onClick={() => handleThumbClick(i)}
-                              style={{ width: 64, height: 48 }}
-                              className={`flex-[0_0_auto] cursor-pointer rounded-lg overflow-hidden transition-all border-2 ${
-                                i === selectedIndex
-                                  ? "border-amber-400 scale-105"
-                                  : "border-transparent opacity-60 hover:opacity-100"
-                              }`}
-                            >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={img}
-                                alt={`${t("thumb")} ${i + 1}`}
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </>
               )}
             </div>
+            {images.length > 1 && (
+              <div className="card mt-auto p-3">
+                <div className="overflow-hidden" ref={thumbsRef}>
+                  <div className="flex gap-2.5">
+                    {images.map((img, i) => (
+                      <button
+                        type="button"
+                        key={img}
+                        onClick={() => handleThumbClick(i)}
+                        aria-label={`${t("thumb")} ${i + 1}`}
+                        aria-pressed={i === selectedIndex}
+                        className={`h-16 w-24 shrink-0 cursor-pointer rounded-lg overflow-hidden transition-colors border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                          i === selectedIndex ? "border-amber-400" : "border-transparent opacity-70 hover:opacity-100"
+                        }`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img} alt={`${title} — ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Info card */}
