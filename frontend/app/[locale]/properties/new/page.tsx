@@ -154,7 +154,7 @@ function CreatePropertyContent() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         <button
           type="button"
           onClick={goBack}
@@ -177,7 +177,7 @@ function CreatePropertyContent() {
             <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-900 via-amber-400 to-teal-900" />
 
             {step === 1 && (
-              <div className="space-y-8">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start [&>*]:min-w-0">
                 <BasicsSection data={formData} onChange={updateField} errors={errors} />
                 <TextsSection data={formData} onChange={updateField} errors={errors} />
               </div>

@@ -188,7 +188,7 @@ export default function EditPropertyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         <div className="mb-8">
           <button
             type="button"
@@ -248,11 +248,15 @@ export default function EditPropertyPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
           {tab === "details" && (
             <div className="space-y-10">
-              <BasicsSection data={formData} onChange={updateField} errors={errors} />
-              <TextsSection data={formData} onChange={updateField} errors={errors} />
-              <LocationSection data={formData} onChange={updateField} />
-              <DetailsSection data={formData} onChange={updateField} />
-              <AmenitiesSection data={formData} onChange={updateField} />
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start [&>*]:min-w-0 [&>*]:rounded-xl [&>*]:border [&>*]:border-slate-100 [&>*]:p-4 sm:[&>*]:p-6">
+                <BasicsSection data={formData} onChange={updateField} errors={errors} />
+                <TextsSection data={formData} onChange={updateField} errors={errors} />
+                <LocationSection data={formData} onChange={updateField} />
+                <div className="space-y-8">
+                  <DetailsSection data={formData} onChange={updateField} />
+                  <AmenitiesSection data={formData} onChange={updateField} />
+                </div>
+              </div>
 
               {(submitError || errors.title) && (
                 <Alert variant="destructive">

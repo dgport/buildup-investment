@@ -326,7 +326,7 @@ export function PropertyDetailContent() {
 
           {/* Info card */}
           <div className="lg:col-span-1">
-            <div className="card p-5 h-auto lg:h-[500px] flex flex-col justify-between lg:sticky lg:top-28">
+            <div className="card p-5 h-auto lg:min-h-[500px] flex flex-col justify-between gap-4 lg:sticky lg:top-28">
               <div>
                 <div className="relative overflow-hidden bg-teal-950 rounded-2xl px-4 py-4 mb-4">
                   <span
