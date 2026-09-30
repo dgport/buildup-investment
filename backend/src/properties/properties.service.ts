@@ -15,6 +15,7 @@ import { FileUtils } from '@/common/utils/file.utils';
 import { TranslationSyncUtil } from '@/common/utils/translation-sync.util';
 import { LANGUAGES, Language } from '@/common/constants/language';
 import { LISTING_TERMS_VERSION } from '@/common/constants/listing-terms';
+import { enforceListingQuota } from './listing-quota';
 import {
   Region,
   UserRole,
@@ -404,8 +405,16 @@ export class PropertiesService {
       if (!['sale', 'rent'].includes(params.market)) {
         throw new BadRequestException('market must be sale or rent');
       }
-      where.AND = [{ dealType: { in: params.market === 'rent'
-        ? [DealType.RENT, DealType.DAILY_RENT] : [DealType.SALE] } }];
+      where.AND = [
+        {
+          dealType: {
+            in:
+              params.market === 'rent'
+                ? [DealType.RENT, DealType.DAILY_RENT]
+                : [DealType.SALE],
+          },
+        },
+      ];
     }
 
     if (!includePrivate) where.public = true;
@@ -566,6 +575,10 @@ export class PropertiesService {
 
   /** Per-status counts for the dashboard header. */
   async getUserStats(userId: string) {
+    const owner = await this.prismaService.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { listingLimit: true },
+    });
     const grouped = await this.prismaService.property.groupBy({
       by: ['status'],
       where: { userId },
@@ -580,6 +593,8 @@ export class PropertiesService {
 
     return {
       total,
+      listingLimit: owner.listingLimit,
+      remaining: Math.max(0, owner.listingLimit - total),
       approved: byStatus.APPROVED ?? 0,
       pending: byStatus.PENDING ?? 0,
       rejected: byStatus.REJECTED ?? 0,
@@ -736,68 +751,81 @@ export class PropertiesService {
       this.isModerationOn(),
     ]);
 
-    const property = await this.prismaService.property.create({
-      data: {
-        externalId,
-        propertyType: dto.propertyType,
-        dealType: dto.dealType,
-        location: dto.location ?? null,
-        region: dto.region ?? null,
-        address: dto.address ?? null,
-        // Only admins can mark a listing VIP
-        hotSale: userRole === UserRole.ADMIN ? (dto.hotSale ?? false) : false,
-        public: dto.public ?? true,
-        userId,
-        status: moderation ? PropertyStatus.PENDING : PropertyStatus.APPROVED,
-        contactPhone: dto.contactPhone ?? null,
-        price: dto.price ?? null,
-        totalArea: dto.totalArea ?? null,
-        rooms: dto.rooms ?? null,
-        bedrooms: dto.bedrooms ?? null,
-        bathrooms: dto.bathrooms ?? null,
-        floors: dto.floors ?? null,
-        floorsTotal: dto.floorsTotal ?? null,
-        ceilingHeight: dto.ceilingHeight ?? null,
-        balconyArea: dto.balconyArea ?? null,
-        isNonStandard: dto.isNonStandard ?? false,
-        occupancy: dto.occupancy ?? null,
-        heating: dto.heating ?? null,
-        hotWater: dto.hotWater ?? null,
-        parking: dto.parking ?? null,
-        hasConditioner: dto.hasConditioner ?? false,
-        hasFurniture: dto.hasFurniture ?? false,
-        hasBed: dto.hasBed ?? false,
-        hasSofa: dto.hasSofa ?? false,
-        hasTable: dto.hasTable ?? false,
-        hasChairs: dto.hasChairs ?? false,
-        hasStove: dto.hasStove ?? false,
-        hasRefrigerator: dto.hasRefrigerator ?? false,
-        hasOven: dto.hasOven ?? false,
-        hasWashingMachine: dto.hasWashingMachine ?? false,
-        hasKitchenAppliances: dto.hasKitchenAppliances ?? false,
-        hasBalcony: dto.hasBalcony ?? false,
-        hasNaturalGas: dto.hasNaturalGas ?? false,
-        hasInternet: dto.hasInternet ?? false,
-        hasTV: dto.hasTV ?? false,
-        hasSewerage: dto.hasSewerage ?? false,
-        isFenced: dto.isFenced ?? false,
-        hasYardLighting: dto.hasYardLighting ?? false,
-        hasGrill: dto.hasGrill ?? false,
-        hasAlarm: dto.hasAlarm ?? false,
-        hasVentilation: dto.hasVentilation ?? false,
-        hasWater: dto.hasWater ?? false,
-        hasElectricity: dto.hasElectricity ?? false,
-        hasGate: dto.hasGate ?? false,
-      },
-    });
+    const property = await this.prismaService
+      .$transaction(async (tx) => {
+        await enforceListingQuota(tx, userId);
+        const property = await tx.property.create({
+          data: {
+            externalId,
+            propertyType: dto.propertyType,
+            dealType: dto.dealType,
+            location: dto.location ?? null,
+            region: dto.region ?? null,
+            address: dto.address ?? null,
+            // Only admins can mark a listing VIP
+            hotSale:
+              userRole === UserRole.ADMIN ? (dto.hotSale ?? false) : false,
+            public: dto.public ?? true,
+            userId,
+            status: moderation
+              ? PropertyStatus.PENDING
+              : PropertyStatus.APPROVED,
+            contactPhone: dto.contactPhone ?? null,
+            price: dto.price ?? null,
+            totalArea: dto.totalArea ?? null,
+            rooms: dto.rooms ?? null,
+            bedrooms: dto.bedrooms ?? null,
+            bathrooms: dto.bathrooms ?? null,
+            floors: dto.floors ?? null,
+            floorsTotal: dto.floorsTotal ?? null,
+            ceilingHeight: dto.ceilingHeight ?? null,
+            balconyArea: dto.balconyArea ?? null,
+            isNonStandard: dto.isNonStandard ?? false,
+            occupancy: dto.occupancy ?? null,
+            heating: dto.heating ?? null,
+            hotWater: dto.hotWater ?? null,
+            parking: dto.parking ?? null,
+            hasConditioner: dto.hasConditioner ?? false,
+            hasFurniture: dto.hasFurniture ?? false,
+            hasBed: dto.hasBed ?? false,
+            hasSofa: dto.hasSofa ?? false,
+            hasTable: dto.hasTable ?? false,
+            hasChairs: dto.hasChairs ?? false,
+            hasStove: dto.hasStove ?? false,
+            hasRefrigerator: dto.hasRefrigerator ?? false,
+            hasOven: dto.hasOven ?? false,
+            hasWashingMachine: dto.hasWashingMachine ?? false,
+            hasKitchenAppliances: dto.hasKitchenAppliances ?? false,
+            hasBalcony: dto.hasBalcony ?? false,
+            hasNaturalGas: dto.hasNaturalGas ?? false,
+            hasInternet: dto.hasInternet ?? false,
+            hasTV: dto.hasTV ?? false,
+            hasSewerage: dto.hasSewerage ?? false,
+            isFenced: dto.isFenced ?? false,
+            hasYardLighting: dto.hasYardLighting ?? false,
+            hasGrill: dto.hasGrill ?? false,
+            hasAlarm: dto.hasAlarm ?? false,
+            hasVentilation: dto.hasVentilation ?? false,
+            hasWater: dto.hasWater ?? false,
+            hasElectricity: dto.hasElectricity ?? false,
+            hasGate: dto.hasGate ?? false,
+          },
+        });
 
-    await this.prismaService.propertyTranslations.createMany({
-      data: this.buildTranslationRows(property.id, dto).map((row) => ({
-        ...row,
-        address: dto.address ?? null,
-      })),
-      skipDuplicates: true,
-    });
+        await tx.propertyTranslations.createMany({
+          data: this.buildTranslationRows(property.id, dto).map((row) => ({
+            ...row,
+            address: dto.address ?? null,
+          })),
+          skipDuplicates: true,
+        });
+
+        return property;
+      })
+      .catch(async (error) => {
+        await this.discardUploadedFiles(images);
+        throw error;
+      });
 
     if (images?.length) {
       await this.saveGalleryImages(property.id, images, 0);

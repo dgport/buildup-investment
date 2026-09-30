@@ -1,5 +1,18 @@
 # Authentication
 
+## Listing limits
+
+Every account, including admins, starts with `users.listing_limit = 3`.
+All existing property rows for that owner count (all statuses, sale and rental).
+Deletion frees a slot; lowering a limit preserves existing listings. Admins can
+change each user's nonnegative integer limit in Admin > Users; zero blocks new
+listings. Only the guarded admin update endpoint accepts `listingLimit`.
+Creation locks the owner row with `FOR UPDATE` and counts/inserts within the same
+transaction, so concurrent requests cannot claim the same final slot.
+Run `node scripts/test-listing-quota.cjs` against the investment database after
+the migration. Most fixtures roll back; the concurrency fixture is private,
+uses an `example.invalid` account, sends no email, and is removed in `finally`.
+
 Accounts remain on `https://buildup.ge`; rental account links redirect there.
 The API lives at `https://api.buildup.ge/api`.
 

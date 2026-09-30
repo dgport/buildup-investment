@@ -115,7 +115,8 @@
       "imageTooLarge": "{name} is larger than 10MB",
       "notImage": "{name} is not an image"
     },
-    "contactPhoneHint": "This number is not shown on the site — BuildUp uses it to reach you when someone is interested."
+    "contactPhoneHint": "This number is not shown on the site — BuildUp uses it to reach you when someone is interested.",
+    "limitReached": "Your listing limit has been reached. Contact an administrator to increase it."
   },
   "images": {
     "title": "Photos",
@@ -161,5 +162,8 @@
     "noToken": "Map unavailable: NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN is not configured."
   },
   "deleted": "Listing deleted",
-  "pendingHint": "This listing is under review — it goes live once approved. You will get an e-mail with the result."
+  "pendingHint": "This listing is under review — it goes live once approved. You will get an e-mail with the result.",
+  "quotaReached": "Listing limit reached",
+  "quotaUsage": "Listings: {used} / {limit}",
+  "quotaHint": "All sale and rental listings count, regardless of status. Contact an administrator to increase your limit. Deleting a listing frees a slot."
 }

@@ -302,6 +302,7 @@ function DashboardContent() {
   const properties = propertiesResponse?.data ?? [];
   const meta = propertiesResponse?.meta;
   const hiddenCount = properties.filter((p) => !p.public).length;
+  const limitReached = !!stats && stats.total >= stats.listingLimit;
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -351,7 +352,9 @@ function DashboardContent() {
                   </Link>
                 </Button>
               )}
-            <Button
+            {limitReached ? (
+              <Button size="lg" disabled>{t("quotaReached")}</Button>
+            ) : <Button
               asChild
               size="lg"
               className="bg-teal-900 hover:bg-teal-800 shadow-lg hover:shadow-xl transition-all duration-200"
@@ -360,10 +363,16 @@ function DashboardContent() {
                 <Plus className="w-5 h-5 mr-2" />
                 {t("addProperty")}
               </Link>
-            </Button>
+            </Button>}
             </div>
           </div>
 
+          {stats && (
+            <div className="mb-4 rounded-xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm text-teal-950">
+              <p className="font-semibold">{t("quotaUsage", { used: stats.total, limit: stats.listingLimit })}</p>
+              <p className="mt-1">{t("quotaHint")}</p>
+            </div>
+          )}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               label={t("totalProperties")}

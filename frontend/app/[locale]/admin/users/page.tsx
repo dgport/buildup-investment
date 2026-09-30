@@ -11,6 +11,7 @@ import type { AdminUser } from "@/lib/types/admin";
 import type { UserRole } from "@/lib/types/auth";
 import { getErrorMessage } from "@/lib/api/api";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Pagination } from "@/components/shared/Pagination";
 import { TableSkeleton } from "@/components/shared/Skeletons";
@@ -18,6 +19,22 @@ import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { AdminCard, EmptyRow, FilterChips, PageHeader, StatusPill, formatDate, initials } from "../_components/AdminUi";
 
 const ROLES = ["", "ADMIN", "REGULAR"] as const;
+
+function ListingLimitControl({ user, pending, onSave }: { user: AdminUser; pending: boolean; onSave: (limit: number) => void }) {
+  const t = useTranslations("admin");
+  const [value, setValue] = useState(String(user.listingLimit));
+  const limit = Number(value);
+  const valid = value.trim() !== "" && Number.isInteger(limit) && limit >= 0 && limit <= 1000000;
+  return (
+    <form className="min-w-[190px] space-y-2" onSubmit={(event) => { event.preventDefault(); if (valid) onSave(limit); }}>
+      <p className="text-xs text-slate-500">{t("users.quotaUsed", { count: user.propertiesCount })}</p>
+      <div className="flex items-center gap-2">
+        <Input type="number" min={0} max={1000000} step={1} required value={value} onChange={(event) => setValue(event.target.value)} aria-label={t("users.quotaLabel", { email: user.email })} className="w-24" />
+        <Button size="sm" type="submit" disabled={pending || !valid || limit === user.listingLimit}>{t("common.save")}</Button>
+      </div>
+    </form>
+  );
+}
 
 export default function AdminUsersPage() {
   const t = useTranslations("admin");
@@ -45,7 +62,7 @@ export default function AdminUsersPage() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const change = async (u: AdminUser, patch: { role?: UserRole; isActive?: boolean }) => {
+  const change = async (u: AdminUser, patch: { role?: UserRole; isActive?: boolean; listingLimit?: number }) => {
     if (patch.role === "ADMIN" && !(await confirm({ description: t("users.promoteConfirm", { name: `${u.firstname} ${u.lastname}` }) }))) return;
     if (patch.isActive === false && !(await confirm({ description: t("users.deactivateConfirm", { name: `${u.firstname} ${u.lastname}` }), destructive: true }))) return;
     try {
@@ -59,6 +76,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-5">
       <PageHeader title={t("users.title")} subtitle={t("users.subtitle", { total })} />
+      <p className="rounded-xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-950">{t("users.quotaHelp")}</p>
 
       <div className="flex flex-wrap items-center gap-3">
         <FilterChips
@@ -91,7 +109,7 @@ export default function AdminUsersPage() {
                   <th className="text-left px-4 py-3">{t("users.columns.user")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.contact")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.role")}</th>
-                  <th className="text-left px-4 py-3">{t("users.columns.listings")}</th>
+                  <th className="text-left px-4 py-3">{t("users.quotaTitle")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.terms")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.joined")}</th>
                   <th className="text-left px-4 py-3">{t("users.columns.active")}</th>
@@ -137,7 +155,9 @@ export default function AdminUsersPage() {
                           <option value="ADMIN">{t("users.roles.ADMIN")}</option>
                         </select>
                       </td>
-                      <td className="px-4 py-3 tabular-nums">{u.propertiesCount}</td>
+                      <td className="px-4 py-3 tabular-nums">
+                        <ListingLimitControl key={`${u.id}:${u.listingLimit}`} user={u} pending={update.isPending} onSave={(listingLimit) => change(u, { listingLimit })} />
+                      </td>
                       <td className="px-4 py-3 text-xs whitespace-nowrap">
                         {u.listingTermsAcceptedAt ? (
                           <>

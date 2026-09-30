@@ -21,6 +21,7 @@ const USER_SELECT = {
   email: true,
   phone: true,
   role: true,
+  listingLimit: true,
   method: true,
   isVerified: true,
   isActive: true,
@@ -228,6 +229,7 @@ export class AdminService {
     }
 
     const data: Prisma.UserUpdateInput = {};
+    if (dto.listingLimit !== undefined) data.listingLimit = dto.listingLimit;
     if (dto.role !== undefined) data.role = dto.role;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
 

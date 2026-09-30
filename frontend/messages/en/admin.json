@@ -246,7 +246,11 @@
     "blocked": "Blocked",
     "promoteConfirm": "Give {name} admin rights? They will be able to manage everything.",
     "deactivateConfirm": "Block {name}? They will no longer be able to sign in and their sessions will be closed.",
-    "termsVersion": "version {version}"
+    "termsVersion": "version {version}",
+    "quotaTitle": "Listing limit",
+    "quotaUsed": "Used: {count}",
+    "quotaLabel": "Listing limit for {email}",
+    "quotaHelp": "Everyone starts with a limit of 3 listings. Change a user’s limit and select Save. Zero prevents new listings. Lowering the limit never deletes existing listings; new ones require an available slot."
   },
   "settings": {
     "title": "Settings",

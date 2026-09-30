@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { authKeys, useCurrentUser } from "@/lib/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, ChevronRight, Save } from "lucide-react";
-import { useCreateProperty } from "@/lib/hooks/useProperties";
+import { useCreateProperty, useMyPropertyStats } from "@/lib/hooks/useProperties";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getErrorMessage } from "@/lib/api/api";
@@ -41,6 +41,7 @@ function CreatePropertyContent() {
   const params = useSearchParams();
   const router = useRouter();
   const t = useTranslations("dashboard.form");
+  const { data: quota } = useMyPropertyStats();
   const createProperty = useCreateProperty();
   const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser();
@@ -95,6 +96,10 @@ function CreatePropertyContent() {
   };
 
   const handleSubmit = async () => {
+    if (quota && quota.total >= quota.listingLimit) {
+      setSubmitError(t("limitReached"));
+      return;
+    }
     if (!validateStep(1)) {
       goTo(1);
       return;
@@ -132,11 +137,20 @@ function CreatePropertyContent() {
         queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
         return;
       }
-      setSubmitError(getErrorMessage(err, t("createFailed")));
+      setSubmitError(code === "LISTING_LIMIT_REACHED" ? t("limitReached") : getErrorMessage(err, t("createFailed")));
     }
   };
 
   const isLastStep = step === STEP_KEYS.length;
+
+  if (quota && quota.total >= quota.listingLimit) {
+    return <div className="min-h-[60vh] p-6 flex items-center justify-center">
+      <div className="max-w-lg space-y-5 rounded-2xl border bg-white p-6 text-center">
+        <p role="status" className="text-teal-950 leading-7">{t("limitReached")}</p>
+        <Button onClick={() => router.push(ROUTES.DASHBOARD)}>{t("backToDashboard")}</Button>
+      </div>
+    </div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

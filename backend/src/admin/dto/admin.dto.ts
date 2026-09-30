@@ -7,6 +7,8 @@ import {
   IsString,
   MaxLength,
   Min,
+  Max,
+  ValidateIf,
 } from 'class-validator';
 import { UserRole } from '@prisma/client';
 import {
@@ -23,6 +25,11 @@ export class ListUsersQueryDto {
 }
 
 export class UpdateUserDto {
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsInt()
+  @Min(0)
+  @Max(1000000)
+  listingLimit?: number;
   @IsOptional() @IsEnum(UserRole) role?: UserRole;
   @IsOptional() @ToBoolean() @IsBoolean() isActive?: boolean;
 }

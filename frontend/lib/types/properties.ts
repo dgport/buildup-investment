@@ -257,6 +257,8 @@ export interface PropertiesResponse {
 }
 
 export interface PropertyStats {
+  listingLimit: number;
+  remaining: number;
   total: number;
   approved: number;
   pending: number;

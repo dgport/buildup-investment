@@ -51,6 +51,7 @@ export interface AdminUser {
   listingTermsVersion: string | null;
   listingTermsAcceptedAt: string | null;
   propertiesCount: number;
+  listingLimit: number;
 }
 
 export interface AdminUsersResponse {

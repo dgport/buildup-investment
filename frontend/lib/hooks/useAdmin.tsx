@@ -26,11 +26,12 @@ export const useAdminUsers = (query?: AdminUsersQuery) =>
 export const useUpdateAdminUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { role?: AdminUser["role"]; isActive?: boolean } }) =>
+    mutationFn: async ({ id, data }: { id: string; data: { role?: AdminUser["role"]; isActive?: boolean; listingLimit?: number } }) =>
       (await adminService.updateUser(id, data)).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+      queryClient.invalidateQueries({ queryKey: ["properties", "my-stats"] });
     },
   });
 };

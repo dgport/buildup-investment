@@ -23,7 +23,7 @@ export const adminService = {
   getUsers: (query?: AdminUsersQuery) =>
     api.get<AdminUsersResponse>(API_ENDPOINTS.ADMIN.USERS, { params: clean(query) }),
 
-  updateUser: (id: string, data: { role?: AdminUser["role"]; isActive?: boolean }) =>
+  updateUser: (id: string, data: { role?: AdminUser["role"]; isActive?: boolean; listingLimit?: number }) =>
     api.patch<AdminUser>(API_ENDPOINTS.ADMIN.USER_BY_ID(id), data),
 
   getSettings: () => api.get<SiteSettings>(API_ENDPOINTS.ADMIN.SETTINGS),
