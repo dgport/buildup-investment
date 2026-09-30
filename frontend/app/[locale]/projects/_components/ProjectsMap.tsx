@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/constants/env";
 import { useProjectsMap } from "@/lib/hooks/useProjects";
 import { thumbnailUrl } from "@/lib/utils/image-utils";
-import { formatUsd } from "@/lib/utils/format";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants/routes";
 import { parseLocation } from "@/app/[locale]/properties/_components/form/PropertyFormSections";
 
@@ -18,6 +18,7 @@ const escapeHtml = (s: string) =>
 
 /** All published projects with a pin on one Mapbox map, with popups. */
 export function ProjectsMap() {
+  const { currency, exchangeRate } = useCurrency();
   const t = useTranslations("projects");
   const locale = useLocale();
   const { data: items = [], isLoading } = useProjectsMap(locale);
@@ -53,7 +54,7 @@ export function ProjectsMap() {
       if (!coords) continue;
       const cover = thumbnailUrl(item.coverImage);
       const price = item.pricePerSqmFrom
-        ? t("priceFromSqm", { price: formatUsd(item.pricePerSqmFrom) })
+        ? t("priceFromSqm", { price: formatMoney(item.pricePerSqmFrom, currency, exchangeRate)! })
         : t("priceOnRequest");
       const popup = new mapboxgl.Popup({ offset: 24, maxWidth: "260px" }).setHTML(
         `<a href="${ROUTES.PROJECT(item.slug)}" style="display:block;text-decoration:none;color:#042f2e;font-family:inherit">
@@ -66,7 +67,7 @@ export function ProjectsMap() {
       const el = document.createElement("div");
       el.className = "buildup-marker";
       el.style.cssText = `background:${item.hotSale ? "#ef4444" : "#134e4a"};color:#fbbf24;border:2px solid #fbbf24;border-radius:999px;padding:4px 8px;font:700 11px/1 system-ui;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap`;
-      el.textContent = item.pricePerSqmFrom ? `$${Math.round(item.pricePerSqmFrom / 100) / 10}k` : "•";
+      el.textContent = formatMoney(item.pricePerSqmFrom, currency, exchangeRate) ?? "•";
       const marker = new mapboxgl.Marker({ element: el })
         .setLngLat([coords.lng, coords.lat])
         .setPopup(popup)
@@ -77,7 +78,7 @@ export function ProjectsMap() {
     if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 600 });
     }
-  }, [items, t]);
+  }, [items, t, currency, exchangeRate]);
 
   if (!MAPBOX_ACCESS_TOKEN) return null;
 

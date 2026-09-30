@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { useCurrentUser, useLogout } from "@/lib/hooks/useAuth";
 import { IS_RENT_SITE, RENT_URL, SALES_URL } from "@/lib/market";
 import { ROUTES } from "@/lib/constants/routes";
+import { CurrencySwitcher } from "@/components/shared/CurrencySwitcher";
 
 const LanguageFlags: Record<Locale, { src: string; alt: string }> = {
   en: { src: "/svg/English.svg", alt: "English" },
@@ -309,7 +310,7 @@ export default function Header() {
               priority
               className="h-10 sm:h-14 lg:h-20 w-auto shrink-0 transition-transform duration-300 group-hover:scale-105"
             />
-            <div className="flex flex-col">
+            <div className="hidden sm:flex flex-col">
               <span className="text-sm sm:text-base lg:text-lg font-bold text-amber-400 leading-tight tracking-wide">
                 {t("brand")}
               </span>
@@ -319,7 +320,7 @@ export default function Header() {
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center">
+          <nav className="hidden 2xl:flex items-center">
             {navItems.map((item, i) => (
               <div key={item.href} className="flex items-center">
                 {i > 0 && <div className="w-px h-4 bg-amber-400/20 mx-1" />}
@@ -343,14 +344,15 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-3">
+            <CurrencySwitcher dark />
+            <div className="hidden 2xl:flex items-center gap-3">
               <LocaleSwitcher />
               {!authLoading && (user ? <ProfileDropdown /> : <AuthButtons />)}
             </div>
 
             <button
               onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden p-2 text-amber-400 hover:bg-white/[0.06] rounded-lg transition-colors border border-amber-400/20"
+              className="2xl:hidden p-2 text-amber-400 hover:bg-white/[0.06] rounded-lg transition-colors border border-amber-400/20"
               aria-label={t("nav.toggleMenu")}
               aria-expanded={mobileOpen}
             >
@@ -369,7 +371,7 @@ export default function Header() {
         inert={!mobileOpen}
         aria-hidden={!mobileOpen}
         className={cn(
-          "lg:hidden overflow-hidden transition-all duration-300 bg-teal-950/98 backdrop-blur-md border-t border-amber-400/10",
+          "2xl:hidden overflow-hidden transition-all duration-300 bg-teal-950/98 backdrop-blur-md border-t border-amber-400/10",
           mobileOpen ? "max-h-[calc(100dvh-5rem)] overflow-y-auto opacity-100" : "max-h-0 opacity-0",
         )}
       >

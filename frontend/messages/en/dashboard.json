@@ -60,7 +60,7 @@
     "titlePlaceholder": "e.g. 2-bedroom apartment with sea view",
     "descriptionPlaceholder": "Describe the property: condition, view, infrastructure...",
     "textsHint": "Fill in at least one language. You can add other languages later.",
-    "price": "Price (USD)",
+    "price": "Price",
     "pricePlaceholder": "e.g. 120000",
     "contactPhone": "Contact phone",
     "contactPhonePlaceholder": "Leave empty to use your profile phone",

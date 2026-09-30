@@ -1,4 +1,6 @@
 "use client";
+import { MoneyInput } from "@/components/shared/MoneyInput";
+import { formatMoney, useCurrency } from "@/lib/currency";
 
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -58,12 +60,12 @@ const read = (p: URLSearchParams): State => ({
 });
 
 const isSet = (key: Key, value: string) => (SELECTS.includes(key) ? value !== ALL : value.trim() !== "");
-const digits = (v: string) => v.replace(/[^\d]/g, "");
 const control =
   "h-11 w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-sm text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 [&>span]:truncate";
 
 /** Inline toolbar + "more" sheet + removable chips, matching the listings page. */
 export function ProjectFilters() {
+  const { currency, exchangeRate } = useCurrency();
   const t = useTranslations("projects");
   const tp = useTranslations("properties");
   const locale = useLocale();
@@ -118,9 +120,9 @@ export function ProjectFilters() {
       case "rooms":
         return roomsLabel(t, Number(value));
       case "sqmFrom":
-        return `$${Number(value).toLocaleString()}+ / m²`;
+        return `${formatMoney(Number(value), currency, exchangeRate)}+ / m²`;
       case "sqmTo":
-        return `≤ $${Number(value).toLocaleString()} / m²`;
+        return `≤ ${formatMoney(Number(value), currency, exchangeRate)} / m²`;
       case "year":
         return `${t("filters.deliveryYear")}: ${value}`;
     }
@@ -231,10 +233,10 @@ export function ProjectFilters() {
                     ))}
                   </div>
                 </Field>
-                <Field label={t("filters.pricePerSqm")}>
+                <Field label={`${t("filters.pricePerSqm")} (${currency})`}>
                   <div className="grid grid-cols-2 gap-3">
-                    <Input inputMode="numeric" value={state.sqmFrom} onChange={(e) => set("sqmFrom", digits(e.target.value))} onKeyDown={onEnter} placeholder={t("filters.priceFrom")} className="h-11 rounded-xl bg-slate-50" />
-                    <Input inputMode="numeric" value={state.sqmTo} onChange={(e) => set("sqmTo", digits(e.target.value))} onKeyDown={onEnter} placeholder={t("filters.priceTo")} className="h-11 rounded-xl bg-slate-50" />
+                    <MoneyInput value={state.sqmFrom === "" ? "" : Number(state.sqmFrom)} onValueChange={(value) => set("sqmFrom", String(value))} onKeyDown={onEnter} placeholder={t("filters.priceFrom")} className="h-11 rounded-xl bg-slate-50" />
+                    <MoneyInput value={state.sqmTo === "" ? "" : Number(state.sqmTo)} onValueChange={(value) => set("sqmTo", String(value))} onKeyDown={onEnter} placeholder={t("filters.priceTo")} className="h-11 rounded-xl bg-slate-50" />
                   </div>
                 </Field>
               </div>

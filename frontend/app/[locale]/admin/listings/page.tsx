@@ -13,7 +13,6 @@ import { propertySiteUrl, parseMarket } from "@/lib/market";
 import { MarketTabs } from "@/components/shared/MarketTabs";
 import { ROUTES } from "@/lib/constants/routes";
 import { thumbnailUrl } from "@/lib/utils/image-utils";
-import { formatUsd } from "@/lib/utils/format";
 import { getErrorMessage } from "@/lib/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,7 +111,6 @@ export default function AdminListingsPage() {
                 <tr>
                   <th className="text-left px-4 py-3">{t("listings.columns.listing")}</th>
                   <th className="text-left px-4 py-3">{t("listings.columns.owner")}</th>
-                  <th className="text-left px-4 py-3">{t("listings.columns.price")}</th>
                   <th className="text-left px-4 py-3">{t("listings.columns.status")}</th>
                   <th className="text-left px-4 py-3">{t("listings.columns.created")}</th>
                   <th className="px-4 py-3" />
@@ -157,7 +155,6 @@ export default function AdminListingsPage() {
                           <span className="text-gray-400">{t("common.none")}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 font-semibold text-teal-950 whitespace-nowrap">{p.price ? formatUsd(p.price) : t("common.none")}</td>
                       <td className="px-4 py-3">
                         <StatusPill status={p.status} label={tp(`enums.status.${p.status}`)} />
                         {p.status === PropertyStatus.REJECTED && p.rejectionReason && (

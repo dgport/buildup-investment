@@ -9,7 +9,7 @@ import { useSetPropertyStatus } from "@/lib/hooks/useProperties";
 import { PropertyStatus } from "@/lib/types/properties";
 import { ROUTES } from "@/lib/constants/routes";
 import { thumbnailUrl } from "@/lib/utils/image-utils";
-import { formatUsd } from "@/lib/utils/format";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { getErrorMessage } from "@/lib/api/api";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +18,8 @@ import { RejectDialog } from "./RejectDialog";
 import { useState } from "react";
 
 export function AdminOverview() {
+  const { currency, exchangeRate } = useCurrency();
+  const money = (value: number) => formatMoney(value, currency, exchangeRate);
   const t = useTranslations("admin");
   const tp = useTranslations("properties");
   const locale = useLocale();
@@ -112,7 +114,7 @@ export function AdminOverview() {
                           </Link>
                           <p className="text-xs text-slate-500 truncate">
                             {tp(`enums.propertyType.${p.propertyType}`)} · {tp(`enums.dealType.${p.dealType}`)}
-                            {p.price ? ` · ${formatUsd(p.price)}` : ""}
+                            {p.price ? ` · ${money(p.price)}` : ""}
                             {p.owner ? ` · ${p.owner}` : ""} · {formatDate(p.createdAt, locale)}
                           </p>
                         </div>

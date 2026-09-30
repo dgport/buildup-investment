@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { Slider } from "@/components/ui/slider";
 import { ROUTES } from "@/lib/constants/routes";
 
-const EXCHANGE_RATE = 2.7;
+import { useCurrency } from "@/lib/currency";
 
 /** Standard annuity payment: P * r / (1 - (1 + r)^-n). Falls back to P / n at 0%. */
 function annuity(principal: number, annualRatePct: number, months: number) {
@@ -19,7 +19,7 @@ function annuity(principal: number, annualRatePct: number, months: number) {
 
 const MortgageCalculator = ({ initialPrice = null }: { initialPrice?: number | null }) => {
   const t = useTranslations("main");
-  const [currency, setCurrency] = useState<"GEL" | "USD">("GEL");
+  const { currency, setCurrency, exchangeRate } = useCurrency();
 
   const [price, setPrice] = useState<number>(initialPrice || 100000);
   const [downPct, setDownPct] = useState<number>(20);
@@ -36,7 +36,7 @@ const MortgageCalculator = ({ initialPrice = null }: { initialPrice?: number | n
     new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(v);
 
   const display = (v: number) =>
-    currency === "GEL" ? `${formatValue(v)} ₾` : `$${formatValue(v / EXCHANGE_RATE)}`;
+    currency === "GEL" ? `${formatValue(v)} ₾` : `$${formatValue(v / exchangeRate)}`;
 
   return (
     <section className="relative w-full py-16 lg:py-24 overflow-hidden bg-[#f3f5f4]">

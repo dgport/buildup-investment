@@ -69,8 +69,8 @@ export default async function LocaleLayout({
               <Suspense fallback={null}>
                 <NavigationProgress />
               </Suspense>
-              <Header />
               <CurrencyProvider>
+                <Header />
                 <main id="main-content" className="min-h-screen min-h-[100svh]">{children}</main>
               </CurrencyProvider>
               <Footer />

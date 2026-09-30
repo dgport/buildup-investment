@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/shared/Pagination";
 import { TableSkeleton } from "@/components/shared/Skeletons";
 import { thumbnailUrl } from "@/lib/utils/image-utils";
-import { formatUsd } from "@/lib/utils/format";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants/routes";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
@@ -19,6 +19,8 @@ import { useSearchParams } from "next/navigation";
 import { PageHeader, StatusPill } from "../_components/AdminUi";
 
 export default function AdminProjectsPage() {
+  const { currency, exchangeRate } = useCurrency();
+  const money = (value: number) => formatMoney(value, currency, exchangeRate);
   const t = useTranslations("admin");
   const tp = useTranslations("projects");
   const locale = useLocale();
@@ -104,7 +106,7 @@ export default function AdminProjectsPage() {
                       </td>
                       <td className="px-4 py-3 text-teal-900">{p.developer.name}</td>
                       <td className="px-4 py-3"><StatusPill status={p.status === "COMPLETED" ? "APPROVED" : p.status === "UNDER_CONSTRUCTION" ? "CONTACTED" : "DRAFT"} label={tp(`status.${p.status}`)} /></td>
-                      <td className="px-4 py-3 font-semibold text-teal-950">{p.pricePerSqmFrom ? formatUsd(p.pricePerSqmFrom) : t("common.none")}</td>
+                      <td className="px-4 py-3 font-semibold text-teal-950">{p.pricePerSqmFrom ? money(p.pricePerSqmFrom) : t("common.none")}</td>
                       <td className="px-4 py-3">{p.deliveryYear ? (p.deliveryQuarter ? `Q${p.deliveryQuarter} ` : "") + p.deliveryYear : t("common.none")}</td>
                       <td className="px-4 py-3">{p.leadsCount ?? 0}</td>
                       <td className="px-4 py-3">

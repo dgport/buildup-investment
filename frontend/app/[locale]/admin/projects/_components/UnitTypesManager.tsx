@@ -1,4 +1,6 @@
 "use client";
+import { MoneyField } from "@/components/shared/MoneyInput";
+import { CurrencySwitcher } from "@/components/shared/CurrencySwitcher";
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -13,7 +15,8 @@ import { useProjectMutations } from "@/lib/hooks/useProjects";
 import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
-import { formatAreaRange, formatUsd } from "@/lib/utils/format";
+import { formatAreaRange } from "@/lib/utils/format";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { roomsLabel } from "@/components/shared/ProjectCard";
 import { AdminImageGallery } from "../../_components/AdminImageGallery";
 
@@ -68,6 +71,8 @@ const num = (v: number | "" | undefined) => (v === undefined || v === "" ? "" : 
 const toNum = (raw: string): number | "" => (raw.trim() === "" ? "" : Number(raw));
 
 export function UnitTypesManager({ project }: { project: Project }) {
+  const { currency, exchangeRate } = useCurrency();
+  const money = (value: number) => formatMoney(value, currency, exchangeRate);
   const t = useTranslations("admin");
   const tp = useTranslations("projects");
   const tl = useTranslations("common.language");
@@ -141,7 +146,7 @@ export function UnitTypesManager({ project }: { project: Project }) {
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-teal-950">{u.title || roomsLabel(tp, u.rooms)} <span className="text-gray-400 font-normal">· {roomsLabel(tp, u.rooms)}</span></p>
                   <p className="text-sm text-gray-600">
-                    {formatAreaRange(u.areaFrom, u.areaTo)} m² · {u.pricePerSqm ? `${formatUsd(u.pricePerSqm)}/m²` : "—"} · {u.priceFrom ? formatUsd(u.priceFrom) : "—"} · {tp(`availability.${u.availability}`)}
+                    {formatAreaRange(u.areaFrom, u.areaTo)} m² · {u.pricePerSqm ? `${money(u.pricePerSqm)}/m²` : "—"} · {u.priceFrom ? money(u.priceFrom) : "—"} · {tp(`availability.${u.availability}`)}
                     {u.availableCount != null ? ` (${u.availableCount})` : ""}
                   </p>
                   <p className="text-xs text-gray-400 mt-1">{t("projects.unitTypes.plans")}: {u.images.length}</p>
@@ -192,8 +197,9 @@ export function UnitTypesManager({ project }: { project: Project }) {
                 {numberField("areaFrom", t("projects.unitTypes.areaFrom"), { min: 1, step: "0.1" })}
                 {numberField("areaTo", t("projects.unitTypes.areaTo"), { min: 1, step: "0.1" })}
                 {numberField("availableCount", t("projects.unitTypes.availableCount"), { min: 0 })}
-                {numberField("pricePerSqm", t("projects.unitTypes.pricePerSqm"), { min: 0 })}
-                {numberField("priceFrom", t("projects.unitTypes.priceFrom"), { min: 0 })}
+                <div className="col-span-full"><CurrencySwitcher /></div>
+                <MoneyField label={t("projects.unitTypes.pricePerSqm")} value={editing.form.pricePerSqm} onValueChange={(value) => set("pricePerSqm", value)} />
+                <MoneyField label={t("projects.unitTypes.priceFrom")} value={editing.form.priceFrom} onValueChange={(value) => set("priceFrom", value)} />
                 {numberField("sortOrder", t("projects.fields.sortOrder"))}
                 {numberField("floorsFrom", t("projects.unitTypes.floorsFrom"))}
                 {numberField("floorsTo", t("projects.unitTypes.floorsTo"))}

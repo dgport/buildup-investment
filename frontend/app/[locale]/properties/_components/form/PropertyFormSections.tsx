@@ -28,6 +28,8 @@ import {
 import { usePropertyOptions } from "./usePropertyOptions";
 import { useCurrentUser } from "@/lib/hooks/useAuth";
 import { PropertyLocationPicker } from "../PropertyLocationPicker";
+import { MoneyField } from "@/components/shared/MoneyInput";
+import { CurrencySwitcher } from "@/components/shared/CurrencySwitcher";
 
 export type PropertyFormData = Partial<CreatePropertyDto>;
 
@@ -65,7 +67,7 @@ export function BasicsSection({ data, onChange, errors = {} }: SectionProps) {
 
   return (
     <div className="space-y-6">
-      <SectionTitle>{t("sections.basics")}</SectionTitle>
+      <div className="flex flex-wrap items-center justify-between gap-3"><SectionTitle>{t("sections.basics")}</SectionTitle><CurrencySwitcher /></div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FieldSelect
@@ -90,14 +92,10 @@ export function BasicsSection({ data, onChange, errors = {} }: SectionProps) {
       {data.dealType && <p className="text-sm text-teal-700">{tm("publishOn", { site: data.dealType === DealType.SALE ? "buildup.ge" : "rent.buildup.ge" })}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FieldInput
+        <MoneyField
           label={t("price")}
-          type="number"
-          min={0}
-          inputMode="numeric"
-          value={numberValue(data.price)}
-          onChange={(e) => onChange("price", toNumber(e.target.value))}
-          placeholder={t("pricePlaceholder")}
+          value={data.price}
+          onValueChange={(value) => onChange("price", value)}
           error={errors.price}
         />
         <FieldInput

@@ -1,4 +1,6 @@
 "use client";
+import { MoneyField } from "@/components/shared/MoneyInput";
+import { CurrencySwitcher } from "@/components/shared/CurrencySwitcher";
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -248,6 +250,7 @@ export function ProjectForm({ data, onChange, developers, errors = {} }: Props) 
       {/* Facts */}
       <div className="space-y-5">
         <SectionTitle hint={t("projects.fields.priceHint")}>{t("projects.sections.facts")}</SectionTitle>
+        <CurrencySwitcher />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {numberField("progress", t("projects.fields.progress"), { min: 0, max: 100 })}
           <FieldSelect
@@ -261,8 +264,8 @@ export function ProjectForm({ data, onChange, developers, errors = {} }: Props) 
           {numberField("deliveryYear", t("projects.fields.deliveryYear"), { min: 2000, max: 2100, placeholder: "2027" })}
           {numberField("floors", t("projects.fields.floors"), { min: 1 })}
           {numberField("totalApartments", t("projects.fields.totalApartments"), { min: 1 })}
-          {numberField("pricePerSqmFrom", t("projects.fields.pricePerSqmFrom"), { min: 0, placeholder: "1250" })}
-          {numberField("priceFrom", t("projects.fields.priceFrom"), { min: 0, placeholder: "45000" })}
+          <MoneyField label={t("projects.fields.pricePerSqmFrom")} value={data.pricePerSqmFrom} onValueChange={(value) => onChange("pricePerSqmFrom", value)} />
+          <MoneyField label={t("projects.fields.priceFrom")} value={data.priceFrom} onValueChange={(value) => onChange("priceFrom", value)} />
           {numberField("sortOrder", t("projects.fields.sortOrder"))}
         </div>
       </div>

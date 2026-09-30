@@ -1,4 +1,6 @@
 "use client";
+import { MoneyInput } from "@/components/shared/MoneyInput";
+import { formatMoney, useCurrency } from "@/lib/currency";
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -69,6 +71,7 @@ const control =
 
 /** Inline search toolbar + "more filters" sheet + removable active-filter chips. */
 export function PropertyFilters() {
+  const { currency, exchangeRate } = useCurrency();
   const t = useTranslations("properties");
   const router = useRouter();
   const pathname = usePathname();
@@ -126,9 +129,9 @@ export function PropertyFilters() {
       case "externalId":
         return `ID ${value}`;
       case "priceFrom":
-        return `$${Number(value).toLocaleString()}+`;
+        return `${formatMoney(Number(value), currency, exchangeRate)}+`;
       case "priceTo":
-        return `≤ $${Number(value).toLocaleString()}`;
+        return `≤ ${formatMoney(Number(value), currency, exchangeRate)}`;
       case "areaFrom":
         return `${value}+ m²`;
       case "areaTo":
@@ -190,25 +193,23 @@ export function PropertyFilters() {
 
           {/* Price range */}
           <div className="col-span-2 md:col-span-2 xl:col-span-1 flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 gap-1.5 focus-within:bg-white focus-within:border-teal-500">
-            <span className="text-sm font-semibold text-slate-500 whitespace-nowrap">USD</span>
-            <input
-              inputMode="numeric"
-              value={filters.priceFrom}
-              onChange={(e) => set("priceFrom", digits(e.target.value))}
+            <span className="text-sm font-semibold text-slate-500 whitespace-nowrap">{currency}</span>
+            <MoneyInput
+              value={filters.priceFrom === "" ? "" : Number(filters.priceFrom)}
+              onValueChange={(value) => set("priceFrom", String(value))}
               onKeyDown={onEnter}
               placeholder={t("filters.priceFrom")}
               aria-label={t("filters.priceFrom")}
-              className="w-full min-w-0 bg-transparent text-sm text-teal-950 placeholder:text-slate-400 outline-none"
+              className="h-auto w-full min-w-0 rounded-none border-0 bg-transparent px-0 py-0 text-sm text-teal-950 placeholder:text-slate-400 focus:ring-0"
             />
             <span className="text-slate-300">–</span>
-            <input
-              inputMode="numeric"
-              value={filters.priceTo}
-              onChange={(e) => set("priceTo", digits(e.target.value))}
+            <MoneyInput
+              value={filters.priceTo === "" ? "" : Number(filters.priceTo)}
+              onValueChange={(value) => set("priceTo", String(value))}
               onKeyDown={onEnter}
               placeholder={t("filters.priceTo")}
               aria-label={t("filters.priceTo")}
-              className="w-full min-w-0 bg-transparent text-sm text-teal-950 placeholder:text-slate-400 outline-none"
+              className="h-auto w-full min-w-0 rounded-none border-0 bg-transparent px-0 py-0 text-sm text-teal-950 placeholder:text-slate-400 focus:ring-0"
             />
           </div>
 

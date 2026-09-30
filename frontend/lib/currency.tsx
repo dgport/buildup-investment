@@ -50,6 +50,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     setCurrencyState(next);
     try {
       localStorage.setItem(CURRENCY_KEY, next);
+      const sharedDomain = location.hostname === "buildup.ge" || location.hostname.endsWith(".buildup.ge") ? "; Domain=buildup.ge" : "";
+      document.cookie = `buildup_currency=${next}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}${sharedDomain}`;
     } catch {
       /* storage unavailable – the choice just won't persist */
     }
@@ -57,7 +59,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(CURRENCY_KEY);
+      const cookie = document.cookie.split("; ").find((entry) => entry.startsWith("buildup_currency="))?.split("=")[1];
+      const stored = cookie ?? localStorage.getItem(CURRENCY_KEY);
       if (stored === "USD" || stored === "GEL") setCurrencyState(stored);
     } catch {
       /* ignore */
@@ -74,7 +77,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const response = await fetch(RATE_URL);
+        const response = await fetch(RATE_URL, { signal: AbortSignal.timeout(8000) });
+        if (!response.ok) throw new Error("Rate unavailable");
         const data = (await response.json()) as { rates?: Record<string, number> };
         const rate = data.rates?.GEL;
         if (!cancelled && typeof rate === "number" && rate > 0) {
