@@ -3,8 +3,8 @@
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Phone, Mail, MapPin, ArrowUpRight } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { usePathname } from "@/i18n/routing";
+import { useLocale, useTranslations } from "next-intl";
 import { IS_RENT_SITE, SALES_URL, RENT_URL } from "@/lib/market";
 import { ROUTES } from "@/lib/constants/routes";
 import { CONTACT_EMAIL, CONTACT_PHONE, HAS_CONTACT_PHONE } from "@/lib/constants/contact";
@@ -12,6 +12,7 @@ import { CONTACT_EMAIL, CONTACT_PHONE, HAS_CONTACT_PHONE } from "@/lib/constants
 export default function Footer() {
   const t = useTranslations("common");
   const pathname = usePathname();
+  const locale = useLocale();
 
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
@@ -23,7 +24,7 @@ export default function Footer() {
       { path: ROUTES.PROJECTS, label: t("nav.projects") },
       { path: ROUTES.DEVELOPERS, label: t("nav.developers") },
     ]),
-    { path: IS_RENT_SITE ? SALES_URL : RENT_URL, label: t(IS_RENT_SITE ? "market.sales" : "market.rentals") },
+    { path: `${IS_RENT_SITE ? SALES_URL : RENT_URL}${locale === "en" ? "/en" : "/"}`, label: t(IS_RENT_SITE ? "market.sales" : "market.rentals") },
     { path: ROUTES.CONTACT, label: t("nav.contact") },
     { path: ROUTES.LISTING_TERMS, label: t("nav.listingTerms") },
   ];

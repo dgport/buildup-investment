@@ -235,6 +235,7 @@ const MAIN_PAGE_PATHS = ["/", "/en", "/ka"];
 
 export default function Header() {
   const t = useTranslations("common");
+  const locale = useLocale();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -245,7 +246,7 @@ export default function Header() {
     { href: ROUTES.HOME, label: t("nav.home") },
     { href: ROUTES.PROPERTIES, label: t("nav.properties") },
     ...(IS_RENT_SITE ? [] : [{ href: ROUTES.PROJECTS, label: t("nav.projects") }]),
-    { href: IS_RENT_SITE ? SALES_URL : RENT_URL, label: t(IS_RENT_SITE ? "market.sales" : "market.rentals") },
+    { href: `${IS_RENT_SITE ? SALES_URL : RENT_URL}${locale === "en" ? "/en" : "/"}`, label: t(IS_RENT_SITE ? "market.sales" : "market.rentals") },
     { href: ROUTES.CONTACT, label: t("nav.contact") },
   ];
 

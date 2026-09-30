@@ -3,6 +3,7 @@ import { LOCALE_COOKIE, routing } from "./i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
 import { IS_RENT_SITE, RENT_URL, SALES_URL, propertySiteUrl } from "./lib/market";
 import { API_BASE_URL } from "./lib/constants/env";
+import { missingRecordResponse } from "./lib/http-not-found";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -39,6 +40,7 @@ export async function middleware(request: NextRequest) {
       const response = await fetch(`${API_BASE_URL}/properties/${encodeURIComponent(detailId)}`, {
         signal: AbortSignal.timeout(5000), cache: "no-store",
       });
+      if (response.status === 404) return missingRecordResponse(localePrefix);
       if (response.ok) {
         const property = await response.json() as { id: string; dealType: string };
         if ((property.dealType !== "SALE") !== IS_RENT_SITE) {
@@ -50,6 +52,18 @@ export async function middleware(request: NextRequest) {
       }
     } catch {
       // The detail page owns API error handling and repeats the market check.
+    }
+  }
+
+  const projectOrDeveloper = strippedPath.match(/^\/(projects|developers)\/([^/]+)\/?$/);
+  if (projectOrDeveloper) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${projectOrDeveloper[1]}/${encodeURIComponent(projectOrDeveloper[2])}`, {
+        signal: AbortSignal.timeout(5000), cache: "no-store",
+      });
+      if (response.status === 404) return missingRecordResponse(localePrefix);
+    } catch {
+      // A network failure is not evidence that a record does not exist.
     }
   }
 
