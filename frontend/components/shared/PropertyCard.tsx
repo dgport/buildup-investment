@@ -21,6 +21,7 @@ import { fallbackToFullImage, thumbnailUrl } from "@/lib/utils/image-utils";
 import { ROUTES } from "@/lib/constants/routes";
 import { formatDate } from "@/lib/utils/format";
 import type { Property } from "@/lib/types/properties";
+import { SavePropertyButton } from "./SavePropertyButton";
 
 interface PropertyCardProps {
   property: Property;
@@ -84,20 +85,16 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
         {/* Photo */}
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
           {images.length > 0 ? (
-            images.map((img, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                key={img.src}
-                src={img.src}
-                alt={`${title} – ${i + 1}`}
+                key={images[index % images.length].src}
+                src={images[index % images.length].src}
+                alt={`${title} – ${index + 1}`}
                 loading="lazy"
                 decoding="async"
-                onError={(e) => fallbackToFullImage(e, img.original)}
-                className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03] ${
-                  i === index ? "opacity-100" : "opacity-0"
-                }`}
+                onError={(e) => fallbackToFullImage(e, images[index % images.length].original)}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
               />
-            ))
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-slate-400">
               <ImageIcon className="w-7 h-7" />
@@ -114,7 +111,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                   setIndex((i) => (i - 1 + images.length) % images.length);
                 }}
                 aria-label={locale === "ka" ? "წინა ფოტო" : "Previous image"}
-                className="absolute z-20 left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
+                className="absolute z-20 left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -125,26 +122,22 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
                   setIndex((i) => (i + 1) % images.length);
                 }}
                 aria-label={locale === "ka" ? "შემდეგი ფოტო" : "Next image"}
-                className="absolute z-20 right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
+                className="absolute z-20 right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/90 text-teal-950 shadow flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
-              <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1">
-                {images.slice(0, 6).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all ${i === index ? "w-4 bg-amber-400" : "w-1.5 bg-white/70"}`}
-                  />
-                ))}
-              </div>
+              <span className="absolute bottom-2.5 right-2.5 rounded-lg bg-teal-950/80 px-2 py-1.5 text-xs font-medium tabular-nums text-white" aria-live="polite">
+                {index + 1} / {images.length}
+              </span>
             </>
           )}
 
           <span className="absolute top-2.5 left-2.5 rounded-full bg-white/95 text-teal-950 text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 shadow-sm">
             {t(`enums.dealType.${property.dealType}`)}
           </span>
+          <SavePropertyButton id={property.id} compact className="absolute top-2 right-2" />
           {property.hotSale && (
-            <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-amber-400 text-teal-950 text-[11px] font-black uppercase tracking-wide px-2.5 py-1 shadow">
+            <span className="absolute top-12 left-2.5 inline-flex items-center gap-1 rounded-full bg-amber-400 text-teal-950 text-[11px] font-black uppercase tracking-wide px-2.5 py-1 shadow">
               <Flame className="w-3 h-3" />
               {t("hotSale")}
             </span>
@@ -156,7 +149,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
 
         {/* Body */}
         <div className="px-2 pt-3.5 pb-1.5 flex flex-col flex-1">
-          <h3 className="font-semibold text-teal-950 leading-snug line-clamp-1 group-hover:text-amber-600 transition-colors">
+          <h3 className="min-h-[2.75rem] font-semibold text-teal-950 leading-snug line-clamp-2 group-hover:text-amber-600 transition-colors">
             {title}
           </h3>
           <p className="mt-1 flex items-center gap-1.5 text-[13px] text-slate-500 min-h-5">

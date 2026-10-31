@@ -33,13 +33,13 @@ const imagesForm = (files: File[]) => {
 export const projectsService = {
   // ─── public ────────────────────────────────────────────────────────────────
   getAll: (filters?: ProjectFilters) =>
-    api.get<ProjectsResponse>("/projects", { params: clean(filters) }),
+    api.get<ProjectsResponse>("/projects", { params: clean(filters), timeout: 20000 }),
   getMap: (lang?: string) =>
     api.get<ProjectMapItem[]>("/projects/map", { params: clean({ lang }) }),
   getOne: (idOrSlug: string, lang?: string) =>
-    api.get<Project>(`/projects/${idOrSlug}`, { params: clean({ lang }) }),
+    api.get<Project>(`/projects/${idOrSlug}`, { params: clean({ lang }), timeout: 20000 }),
   createLead: (projectId: string, data: LeadInput) =>
-    api.post<{ id?: string; message: string }>(`/projects/${projectId}/leads`, data),
+    api.post<{ id?: string; message: string }>(`/projects/${projectId}/leads`, data, { timeout: 20000 }),
 
   getDevelopers: (lang?: string) =>
     api.get<Developer[]>("/developers", { params: clean({ lang }) }),

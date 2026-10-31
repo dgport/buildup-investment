@@ -7,6 +7,7 @@ export const ROUTES = {
   PRIVACY: "/privacy",
   TERMS: "/terms",
   PROPERTIES: "/properties",
+  SAVED: "/saved",
   PROPERTY: (id: string) => `/properties/${id}`,
   PROPERTY_NEW: "/properties/new",
   PROPERTY_EDIT: (id: string) => `/properties/${id}/edit`,

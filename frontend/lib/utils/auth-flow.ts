@@ -19,6 +19,15 @@ export const strongPassword = (value: string) =>
   /\d/.test(value) &&
   /[^A-Za-z0-9\s]/.test(value);
 
+/** Return to the same localized protected page after an expired session. */
+export function expiredSessionRedirect(pathname: string, search = ""): string | null {
+  const prefix = pathname.match(/^\/(en|ka)(?=\/|$)/)?.[0] ?? "";
+  const path = pathname.slice(prefix.length) || "/";
+  if (!/^\/(dashboard|admin)(\/|$)/.test(path) && !/^\/properties\/(new|[^/]+\/edit)(\/|$)/.test(path)) return null;
+  const next = safeAuthNext(path + search);
+  return `${prefix}/signin?${new URLSearchParams({ next })}`;
+}
+
 export function authErrorKey(error: unknown): string {
   const response = (
     error as {

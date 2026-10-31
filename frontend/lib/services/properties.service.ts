@@ -47,6 +47,7 @@ const buildFormData = (
 export const propertiesService = {
   getAll: (filters?: PropertyFilters) =>
     api.get<PropertiesResponse>(API_ENDPOINTS.PROPERTIES.PROPERTIES, {
+      timeout: 20000,
       params: { ...cleanFilters(filters), market: MARKET },
     }),
 
@@ -64,6 +65,7 @@ export const propertiesService = {
 
   getById: (id: string, lang?: string) =>
     api.get<Property>(API_ENDPOINTS.PROPERTIES.PROPERTY_BY_ID(id), {
+      timeout: 20000,
       params: lang ? { lang } : {},
     }),
 

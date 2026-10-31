@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,10 @@ export function LeadForm({ projectId, unitTypes, initialUnitTypeId, onSuccess }:
   const t = useTranslations("projects");
   const locale = useLocale();
   const createLead = useCreateLead();
+  const formId = useId();
+  const submitting = useRef(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -54,13 +58,18 @@ export function LeadForm({ projectId, unitTypes, initialUnitTypeId, onSuccess }:
   };
 
   const submit = async () => {
+    if (submitting.current) return;
     const next: Record<string, string> = {};
     if (form.name.trim().length < 2) next.name = t("lead.nameRequired");
     if (!/^[+\d][\d\s()-]{6,24}$/.test(form.phone.trim())) next.phone = t("lead.phoneInvalid");
     setErrors(next);
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length) {
+      (next.name ? nameRef : phoneRef).current?.focus();
+      return;
+    }
 
     setServerError(null);
+    submitting.current = true;
     try {
       await createLead.mutateAsync({
         projectId,
@@ -80,12 +89,14 @@ export function LeadForm({ projectId, unitTypes, initialUnitTypeId, onSuccess }:
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       setServerError(status === 429 ? t("lead.tooMany") : getErrorMessage(err, t("lead.error")));
+    } finally {
+      submitting.current = false;
     }
   };
 
   if (done) {
     return (
-      <div className="text-center py-8 space-y-3">
+      <div role="status" className="text-center py-8 space-y-3">
         <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
           <CheckCircle2 className="w-8 h-8 text-green-600" />
         </div>
@@ -95,44 +106,58 @@ export function LeadForm({ projectId, unitTypes, initialUnitTypeId, onSuccess }:
   }
 
   return (
-    <div className="space-y-4">
+    <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void submit(); }} aria-busy={createLead.isPending}>
       <p className="text-sm text-teal-800/70">{t("lead.subtitle")}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label>{t("lead.name")} <span className="text-red-500">*</span></Label>
+          <Label htmlFor={`${formId}-name`}>{t("lead.name")} <span className="text-red-500">*</span></Label>
           <Input
+            id={`${formId}-name`}
+            ref={nameRef}
+            name="name"
+            autoComplete="name"
+            required
+            minLength={2}
             value={form.name}
             onChange={(e) => set("name", e.target.value)}
             placeholder={t("lead.namePlaceholder")}
             aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? `${formId}-name-error` : undefined}
             maxLength={100}
           />
-          {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+          {errors.name && <p id={`${formId}-name-error`} role="alert" className="text-xs text-red-500">{errors.name}</p>}
         </div>
         <div className="space-y-1.5">
-          <Label>{t("lead.phone")} <span className="text-red-500">*</span></Label>
+          <Label htmlFor={`${formId}-phone`}>{t("lead.phone")} <span className="text-red-500">*</span></Label>
           <Input
+            id={`${formId}-phone`}
+            ref={phoneRef}
+            name="phone"
+            autoComplete="tel"
+            required
+            maxLength={25}
             type="tel"
             value={form.phone}
             onChange={(e) => set("phone", e.target.value)}
             placeholder={t("lead.phonePlaceholder")}
             aria-invalid={!!errors.phone}
+            aria-describedby={errors.phone ? `${formId}-phone-error` : undefined}
           />
-          {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
+          {errors.phone && <p id={`${formId}-phone-error`} role="alert" className="text-xs text-red-500">{errors.phone}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label>{t("lead.email")}</Label>
-          <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+          <Label htmlFor={`${formId}-email`}>{t("lead.email")}</Label>
+          <Input id={`${formId}-email`} name="email" autoComplete="email" maxLength={254} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
         </div>
         {unitTypes.length > 0 && (
           <div className="space-y-1.5">
-            <Label>{t("lead.unitType")}</Label>
+            <Label htmlFor={`${formId}-unit`}>{t("lead.unitType")}</Label>
             <Select value={form.unitTypeId} onValueChange={(v) => set("unitTypeId", v)}>
-              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectTrigger id={`${formId}-unit`} className="w-full"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={ANY}>{t("lead.anyUnit")}</SelectItem>
                 {unitTypes.map((u) => (
@@ -147,8 +172,10 @@ export function LeadForm({ projectId, unitTypes, initialUnitTypeId, onSuccess }:
       </div>
 
       <div className="space-y-1.5">
-        <Label>{t("lead.message")}</Label>
+        <Label htmlFor={`${formId}-message`}>{t("lead.message")}</Label>
         <Textarea
+          id={`${formId}-message`}
+          name="message"
           value={form.message}
           onChange={(e) => set("message", e.target.value)}
           placeholder={t("lead.messagePlaceholder")}
@@ -176,13 +203,13 @@ export function LeadForm({ projectId, unitTypes, initialUnitTypeId, onSuccess }:
       )}
 
       <Button
-        onClick={submit}
+        type="submit"
         disabled={createLead.isPending}
         className="w-full h-11 bg-amber-400 hover:bg-amber-300 text-teal-950 font-bold"
       >
         <Send className="w-4 h-4 mr-2" />
         {createLead.isPending ? t("lead.sending") : t("lead.submit")}
       </Button>
-    </div>
+    </form>
   );
 }

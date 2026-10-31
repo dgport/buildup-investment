@@ -64,10 +64,11 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 export function ProjectDetailContent({ initialData }: { initialData?: Project }) {
   const { slug } = useParams<{ slug: string }>();
   const t = useTranslations("projects");
+  const tc = useTranslations("common");
   const locale = useLocale();
   const { currency, exchangeRate } = useCurrency();
   const money = (usd: number | null | undefined) => formatMoney(usd, currency, exchangeRate) ?? "";
-  const { data: project, isLoading, error } = useProject(slug, locale, initialData);
+  const { data: project, isLoading, error, refetch, isFetching } = useProject(slug, locale, initialData);
 
   const [selected, setSelected] = useState(0);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
@@ -99,11 +100,16 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
   if (isLoading) {
     return <PageLoader />;
   }
-  if (error || !project) {
+  const missing = (error as { response?: { status?: number } } | null)?.response?.status === 404;
+  if (!project || missing) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
-          <p className="text-red-600 font-medium">{t("notFound")}</p>
+          <p className="text-red-600 font-medium" role="alert">{t(missing ? "notFound" : "error")}</p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            {!missing && <Button onClick={() => void refetch()} disabled={isFetching}>{tc("catalogue.retry")}</Button>}
+            <Button asChild variant="outline"><Link href={ROUTES.PROJECTS}>{tc("nav.projects")}</Link></Button>
+          </div>
         </div>
       </div>
     );

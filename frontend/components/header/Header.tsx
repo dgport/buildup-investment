@@ -2,7 +2,7 @@
 
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Menu,
   X,
@@ -31,6 +31,7 @@ import { useCurrentUser, useLogout } from "@/lib/hooks/useAuth";
 import { IS_RENT_SITE, RENT_URL, SALES_URL } from "@/lib/market";
 import { ROUTES } from "@/lib/constants/routes";
 import { CurrencySwitcher } from "@/components/shared/CurrencySwitcher";
+import { SavedPropertiesLink } from "@/components/shared/SavedPropertiesLink";
 
 const LanguageFlags: Record<Locale, { src: string; alt: string }> = {
   en: { src: "/svg/English.svg", alt: "English" },
@@ -38,12 +39,14 @@ const LanguageFlags: Record<Locale, { src: string; alt: string }> = {
 };
 
 function LocaleSwitcher() {
+  const [open, setOpen] = useState(false);
   const router = useI18nRouter();
   const pathname = useI18nPathname();
   const currentLocale = useLocale() as Locale;
   const t = useTranslations("common.language");
 
   const handleLocaleChange = (newLocale: Locale) => {
+    setOpen(false);
     if (newLocale === currentLocale) return;
     router.replace(`${pathname}${window.location.search}`, { locale: newLocale });
   };
@@ -51,7 +54,7 @@ function LocaleSwitcher() {
   const currentFlag = LanguageFlags[currentLocale];
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           className="flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 text-white group transition-all duration-300 h-10 px-3"
@@ -121,6 +124,7 @@ function useSignOut() {
 }
 
 function ProfileDropdown() {
+  const [open, setOpen] = useState(false);
   const t = useTranslations("common.nav");
   const { data: user } = useCurrentUser();
   const { signOut, isPending } = useSignOut();
@@ -131,7 +135,7 @@ function ProfileDropdown() {
       : "U";
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button className="flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 text-white group transition-all duration-300 h-10 px-2">
           <div className="h-6 w-6 rounded-lg bg-amber-400 flex items-center justify-center">
@@ -156,7 +160,7 @@ function ProfileDropdown() {
           <p className="text-xs text-amber-100/40 truncate">{user?.email}</p>
         </div>
 
-        <div className="grid gap-1 mt-1">
+        <div className="grid gap-1 mt-1" onClick={(event) => { if ((event.target as HTMLElement).closest("a,button")) setOpen(false); }}>
           <Button
             variant="ghost"
             className="justify-start gap-3 w-full rounded-xl hover:bg-amber-400/10 hover:text-amber-300 transition-all text-sm py-2"
@@ -238,6 +242,7 @@ export default function Header() {
   const locale = useLocale();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const { data: user, isLoading: authLoading } = useCurrentUser();
   const { signOut, isPending: signingOut } = useSignOut();
@@ -260,6 +265,18 @@ export default function Header() {
     setMenuPathname(pathname);
     setMobileOpen(false);
   }
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (!isMainPage) return;
@@ -294,7 +311,7 @@ export default function Header() {
       </a>
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
 
-      <div className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-24">
+      <div className="px-4 sm:px-6 md:px-12 lg:px-16 xl:px-24 2xl:px-12">
         <div className="flex h-20 lg:h-24 items-center justify-between gap-4">
           <Link
             href={ROUTES.HOME}
@@ -326,7 +343,7 @@ export default function Header() {
                   href={item.href}
                   aria-current={isActive(item.href) ? "page" : undefined}
                   className={cn(
-                    "relative px-5 py-2 text-sm font-semibold rounded-lg transition-all duration-300 group/nav",
+                    "relative px-3 py-2 text-sm font-semibold whitespace-nowrap rounded-lg transition-all duration-300 group/nav",
                     isActive(item.href)
                       ? "text-teal-950 bg-amber-400 shadow-md shadow-amber-400/20"
                       : "text-white hover:text-amber-300 hover:bg-white/[0.08]",
@@ -342,6 +359,7 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <SavedPropertiesLink />
             <CurrencySwitcher dark />
             <div className="hidden 2xl:flex items-center gap-3">
               <LocaleSwitcher />
@@ -349,10 +367,13 @@ export default function Header() {
             </div>
 
             <button
+              ref={menuButton}
+              type="button"
               onClick={() => setMobileOpen((v) => !v)}
-              className="2xl:hidden p-2 text-amber-400 hover:bg-white/[0.06] rounded-lg transition-colors border border-amber-400/20"
+              className="2xl:hidden min-h-11 min-w-11 flex items-center justify-center p-2 text-amber-400 hover:bg-white/[0.06] rounded-lg transition-colors border border-amber-400/20"
               aria-label={t("nav.toggleMenu")}
               aria-expanded={mobileOpen}
+              aria-controls="mobile-navigation"
             >
               {mobileOpen ? (
                 <X className="h-5 w-5" />
@@ -366,6 +387,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       <div
+        id="mobile-navigation"
         inert={!mobileOpen}
         aria-hidden={!mobileOpen}
         className={cn(
@@ -373,7 +395,7 @@ export default function Header() {
           mobileOpen ? "max-h-[calc(100dvh-5rem)] overflow-y-auto opacity-100" : "max-h-0 opacity-0",
         )}
       >
-        <nav className="flex flex-col p-4 gap-1">
+        <nav className="flex flex-col p-4 gap-1" onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setMobileOpen(false); }}>
           {navItems.map((item) => (
             <Link
               key={item.href}

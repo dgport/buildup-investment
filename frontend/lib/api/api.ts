@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL } from "../constants/env";
+import { expiredSessionRedirect } from "../utils/auth-flow";
 import {
   getAccessToken,
   setAccessToken,
@@ -73,12 +74,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         removeAccessToken();
         if (typeof window !== "undefined") {
-          const path = window.location.pathname;
-          const isPublic =
-            !path.startsWith("/dashboard") &&
-            !path.startsWith("/admin") &&
-            !/^\/properties\/(new|[^/]+\/edit)/.test(path);
-          if (!isPublic) window.location.href = "/signin";
+          const destination = expiredSessionRedirect(window.location.pathname, window.location.search);
+          if (destination) window.location.href = destination;
         }
         return Promise.reject(refreshError);
       }

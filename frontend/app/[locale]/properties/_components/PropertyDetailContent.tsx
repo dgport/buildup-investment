@@ -43,6 +43,7 @@ import { SimilarProperties } from "./SimilarProperties";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils/format";
 import { DetailSection } from "./DetailSection";
+import { SavePropertyButton } from "@/components/shared/SavePropertyButton";
 
 import { ConditionUtilitiesSection } from "./ConditionUtilitesSection";
 import { AmenitiesFeaturesSection } from "./AmenitiesFeatureSection";
@@ -85,7 +86,7 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [shared, setShared] = useState(false);
 
-  const { data: property, isLoading, error } = useProperty(id, locale, initialData);
+  const { data: property, isLoading, error, refetch, isFetching } = useProperty(id, locale, initialData);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [thumbsRef, thumbsApi] = useEmblaCarousel({
@@ -152,11 +153,16 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
     return <PageLoader />;
   }
 
-  if (error || !property) {
+  const missing = (error as { response?: { status?: number } } | null)?.response?.status === 404;
+  if (!property || missing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
         <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
-          <p className="text-red-600 font-medium">{t("notFound")}</p>
+          <p className="text-red-600 font-medium" role="alert">{t(missing ? "notFound" : "error")}</p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            {!missing && <Button onClick={() => void refetch()} disabled={isFetching}>{tc("catalogue.retry")}</Button>}
+            <Button asChild variant="outline"><Link href={ROUTES.PROPERTIES}>{tc("nav.properties")}</Link></Button>
+          </div>
         </div>
       </div>
     );
@@ -236,14 +242,18 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
               </p>
             </div>
 
+            <div className="flex items-center gap-2">
+            <SavePropertyButton id={property.id} />
             <button
               type="button"
               onClick={share}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-teal-800 hover:text-amber-600 border border-teal-200 hover:border-amber-300 rounded-xl px-3.5 h-10 bg-white shrink-0 transition-colors"
+              aria-label={shared ? t("linkCopied") : t("share")}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-teal-800 hover:text-amber-600 border border-teal-200 hover:border-amber-300 rounded-xl px-3.5 h-11 bg-white shrink-0 transition-colors"
             >
               {shared ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4" />}
               <span className="hidden sm:inline">{shared ? t("linkCopied") : t("share")}</span>
             </button>
+            </div>
           </div>
         </div>
 
