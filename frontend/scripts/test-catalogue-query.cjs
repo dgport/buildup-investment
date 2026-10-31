@@ -1,0 +1,15 @@
+const assert = require("node:assert/strict");
+const fs = require("node:fs"); const vm = require("node:vm"); const ts = require("typescript");
+const compiled = ts.transpileModule(fs.readFileSync(require.resolve("../lib/catalogue-query.ts"), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+const sandbox = { exports: {}, URLSearchParams }; vm.runInNewContext(compiled, sandbox);
+const parse = (query, kind = "properties") => sandbox.exports.normalizeCatalogueQuery(new URLSearchParams(query), kind);
+for (const value of ["NaN", "Infinity", "-1", "0", "1.5", "999999999999999999999"]) assert.equal(parse(`page=${value}`).has("page"), false);
+assert.equal(parse("page=2&rooms=0").toString(), "page=2&rooms=0");
+assert.equal(parse("priceFrom=900&priceTo=100").toString(), "priceFrom=100&priceTo=900");
+assert.equal(parse("priceFrom=0&priceTo=100").get("priceFrom"), "0");
+assert.equal(parse("propertyType=BOGUS&dealType=RENT").toString(), "dealType=RENT");
+assert.equal(parse("sort=delivery", "projects").get("sort"), "delivery");
+assert.equal(parse("sort=delivery").has("sort"), false);
+assert.equal(parse("search=sea&view=map&developer=orbi", "projects").toString(), "search=sea&view=map&developer=orbi");
+assert.equal(parse("areaFrom=abc&areaTo=58").toString(), "areaTo=58");
+console.log("Catalogue regression checks passed (invalid pages, ranges, enums, sorting, preserved filters).");

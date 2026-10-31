@@ -1,3 +1,4 @@
+import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
 import { catalogueData, searchString, type SearchValues } from "@/lib/catalogue-seo";
 import { PageLoader } from "@/components/shared/PageLoader";
 import { publicPageMetadata } from "@/lib/seo";
@@ -9,7 +10,7 @@ import { ProjectsContent } from "./_components/ProjectsContent";
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchValues> }): Promise<Metadata> {
   const t = await getTranslations("projects");
   const query = await searchParams;
-  const page = Math.max(1, Number(query.page) || 1);
+  const page = Number(normalizeCatalogueQuery(new URLSearchParams(searchString(query)), "projects").get("page") || 1);
   const filtered = Object.keys(query).some((key) => !["page", "view"].includes(key));
   const path = "/projects" + (page > 1 ? `?page=${page}` : "");
   return { ...(await publicPageMetadata(t("title") + (page > 1 ? ` · ${page}` : ""), t("metaDescription"), path)), robots: { index: !filtered, follow: true } };

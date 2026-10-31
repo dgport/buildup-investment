@@ -36,13 +36,15 @@ const ContactSection = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (state === "sending") return;
     setState("sending");
 
     try {
       const res = await fetch(`${API_BASE_URL}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(Object.fromEntries(Object.entries(formData).map(([key, value]) => [key, value.trim()]))),
+        signal: AbortSignal.timeout(20000),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message);
@@ -103,19 +105,22 @@ const ContactSection = () => {
 
         <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-start">
           <div className="lg:col-span-3 order-2 lg:order-1">
-            <div className="bg-white rounded-3xl shadow-sm border border-teal-100 p-8 md:p-10">
+            <div className="bg-white rounded-3xl shadow-sm border border-teal-100 p-5 sm:p-8 md:p-10">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
+                  <label htmlFor="contact-fullName" className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
                     {t("fullName")}
                   </label>
                   <Input
                     type="text"
+                    id="contact-fullName"
+                    autoComplete="name"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
                     required
-                    maxLength={100}
+                    minLength={2}
+                    maxLength={120}
                     placeholder={t("fullNamePlaceholder")}
                     className="border-teal-200 focus:border-amber-400 focus:ring-amber-400/20 rounded-xl h-12 text-teal-950 placeholder:text-teal-400"
                   />
@@ -123,11 +128,14 @@ const ContactSection = () => {
 
                 <div className="grid md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
+                    <label htmlFor="contact-email" className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
                       {t("email")}
                     </label>
                     <Input
                       type="email"
+                      id="contact-email"
+                    autoComplete="email"
+                    maxLength={254}
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
@@ -137,11 +145,14 @@ const ContactSection = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
+                    <label htmlFor="contact-phone" className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
                       {t("phone")}
                     </label>
                     <Input
                       type="tel"
+                      id="contact-phone"
+                    autoComplete="tel"
+                    maxLength={40}
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
@@ -152,16 +163,19 @@ const ContactSection = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
+                  <label htmlFor="contact-message" className="block text-xs font-bold text-teal-800 uppercase tracking-widest mb-2">
                     {t("message")}
                   </label>
                   <Textarea
+                    id="contact-message"
+                    autoComplete="off"
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
                     rows={6}
                     required
-                    maxLength={3000}
+                    minLength={2}
+                    maxLength={5000}
                     placeholder={t("messagePlaceholder")}
                     className="border-teal-200 focus:border-amber-400 focus:ring-amber-400/20 rounded-xl text-teal-950 placeholder:text-teal-400 resize-none"
                   />
@@ -177,13 +191,13 @@ const ContactSection = () => {
                 </button>
 
                 {state === "success" && (
-                  <div className="flex items-center gap-2 text-teal-700 bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm font-medium">
+                  <div role="status" className="flex items-center gap-2 text-teal-700 bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-sm font-medium">
                     <div className="w-2 h-2 rounded-full bg-teal-500" />
                     {t("successMessage")}
                   </div>
                 )}
                 {state === "error" && (
-                  <div className="flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-medium">
+                  <div role="alert" className="flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-medium">
                     <AlertCircle className="w-4 h-4" />
                     {t("errorMessage")}
                   </div>

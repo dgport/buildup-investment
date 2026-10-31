@@ -131,5 +131,12 @@
     "sales": "Sales",
     "rentals": "Rentals",
     "publishOn": "This listing will appear on {site}"
+  },
+  "catalogue": {
+    "clear": "Clear filters",
+    "retry": "Try again",
+    "share": "Share search",
+    "copied": "Search link copied",
+    "copyError": "Could not copy the link. Copy it from your address bar."
   }
 }

@@ -1,4 +1,5 @@
 "use client";
+import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { formatMoney, useCurrency } from "@/lib/currency";
 
@@ -75,14 +76,14 @@ export function ProjectFilters() {
   const { data: developers = [] } = useDevelopers(locale);
 
   const [open, setOpen] = useState(false);
-  const [state, setState] = useState<State>(() => read(searchParams));
+  const [state, setState] = useState<State>(() => read(normalizeCatalogueQuery(searchParams, "projects")));
   // Re-sync when the URL changes (back button, chips) – adjust state during render
   const [syncedParams, setSyncedParams] = useState(searchParams);
   if (syncedParams !== searchParams) {
     setSyncedParams(searchParams);
-    setState(read(searchParams));
+    setState(read(normalizeCatalogueQuery(searchParams, "projects")));
   }
-  const applied = read(searchParams);
+  const applied = read(normalizeCatalogueQuery(searchParams, "projects"));
   const set = (key: Key, value: string) => setState((s) => ({ ...s, [key]: value }));
 
   const push = (next: State) => {
@@ -94,7 +95,7 @@ export function ProjectFilters() {
       const value = next[key].trim();
       if (isSet(key, value)) params.set(PARAM[key], value);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${normalizeCatalogueQuery(params, "projects").toString()}`);
     setOpen(false);
   };
   const apply = () => push(state);
@@ -270,7 +271,7 @@ export function ProjectFilters() {
               key={key}
               type="button"
               onClick={() => removeChip(key)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full focus-visible:outline-2 focus-visible:outline-amber-300 bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
             >
               {chipLabel(key, applied[key])}
               <X className="w-3 h-3 opacity-70" />

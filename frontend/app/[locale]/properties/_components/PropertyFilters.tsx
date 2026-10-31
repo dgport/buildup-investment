@@ -1,4 +1,5 @@
 "use client";
+import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { formatMoney, useCurrency } from "@/lib/currency";
 
@@ -78,12 +79,12 @@ export function PropertyFilters() {
   const searchParams = useSearchParams();
 
   const [moreOpen, setMoreOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterState>(() => readFilters(searchParams));
-  const applied = readFilters(searchParams);
+  const [filters, setFilters] = useState<FilterState>(() => readFilters(normalizeCatalogueQuery(searchParams, "properties")));
+  const applied = readFilters(normalizeCatalogueQuery(searchParams, "properties"));
 
   // Follow URL changes (back button, chip removal, hero search links)
   useEffect(() => {
-    setFilters(readFilters(searchParams));
+    setFilters(readFilters(normalizeCatalogueQuery(searchParams, "properties")));
   }, [searchParams]);
 
   const set = <K extends FilterKey>(key: K, value: string) => setFilters((f) => ({ ...f, [key]: value }));
@@ -100,7 +101,7 @@ export function PropertyFilters() {
       if (next.propertyType === PropertyType.LAND && (key === "rooms" || key === "bedrooms")) continue;
       params.set(key, value);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${normalizeCatalogueQuery(params, "properties").toString()}`);
     setMoreOpen(false);
   };
 
@@ -316,7 +317,7 @@ export function PropertyFilters() {
               key={key}
               type="button"
               onClick={() => removeChip(key)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full focus-visible:outline-2 focus-visible:outline-amber-300 bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
             >
               {chipLabel(key, applied[key])}
               <X className="w-3 h-3 opacity-70" />

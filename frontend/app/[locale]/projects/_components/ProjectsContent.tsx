@@ -1,4 +1,6 @@
 "use client";
+import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
+import { ShareSearch, CatalogueRecovery } from "@/components/shared/CatalogueTools";
 import type { ProjectsResponse } from "@/lib/types/projects";
 
 import { PageLoader } from "@/components/shared/PageLoader";
@@ -25,6 +27,7 @@ const PER_PAGE = 12;
 const SORTS = ["featured", "newest", "price_asc", "price_desc", "delivery"] as const;
 
 function parse(params: URLSearchParams): Filters {
+  params = normalizeCatalogueQuery(params, "projects");
   const get = (k: string) => params.get(k) ?? undefined;
   const int = (k: string) => {
     const v = get(k);
@@ -57,7 +60,7 @@ export function ProjectsContent({ initialData, initialSearch }: { initialData?: 
   const filters = parse(searchParams);
   const view = searchParams.get("view") === "map" ? "map" : "list";
 
-  const { data, isLoading, error } = useProjects({ ...filters, lang: locale }, searchParams.toString() === initialSearch ? initialData : undefined);
+  const { data, isLoading, error, refetch } = useProjects({ ...filters, lang: locale }, searchParams.toString() === initialSearch ? initialData : undefined);
   const projects = data?.data ?? [];
   const meta = data?.meta;
 
@@ -100,6 +103,7 @@ export function ProjectsContent({ initialData, initialSearch }: { initialData?: 
           <p className="text-sm text-slate-500">{meta ? t("count", { count: meta.total }) : ""}</p>
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <ShareSearch />
             <Select
               value={filters.sort ?? "featured"}
               onValueChange={(v) => setParam("sort", v === "featured" ? undefined : v)}
@@ -151,6 +155,7 @@ export function ProjectsContent({ initialData, initialSearch }: { initialData?: 
           <div className="flex justify-center py-24">
             <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md text-center">
               <p className="text-red-600 font-medium">{t("error")}</p>
+              <CatalogueRecovery onRetry={() => void refetch()} />
             </div>
           </div>
         ) : projects.length === 0 ? (
@@ -160,6 +165,7 @@ export function ProjectsContent({ initialData, initialSearch }: { initialData?: 
             </div>
             <p className="text-lg font-semibold text-gray-700 mb-1">{t("empty")}</p>
             <p className="text-sm text-gray-400">{t("emptyHint")}</p>
+      <CatalogueRecovery />
           </div>
         ) : (
           <>

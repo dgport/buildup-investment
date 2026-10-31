@@ -1,4 +1,6 @@
 "use client";
+import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
+import { ShareSearch, CatalogueRecovery } from "@/components/shared/CatalogueTools";
 import type { PropertiesResponse } from "@/lib/types/properties";
 
 import { PageLoader } from "@/components/shared/PageLoader";
@@ -26,6 +28,7 @@ const SORTS = ["featured", "newest", "price_asc", "price_desc", "area_desc"] as 
 const PROPERTIES_PER_PAGE = 12;
 
 function parseSearchParams(searchParams: URLSearchParams): PropertyFiltersType {
+  searchParams = normalizeCatalogueQuery(searchParams, "properties");
   const get = (key: string) => searchParams.get(key) ?? undefined;
   const getInt = (key: string): number | undefined => {
     const v = get(key);
@@ -70,7 +73,7 @@ export function PropertiesContent({ initialData, initialSearch }: { initialData?
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const { data: response, isLoading, isFetching, error } = useProperties({ ...filters, lang: locale }, searchParams.toString() === initialSearch ? initialData : undefined);
+  const { data: response, isLoading, isFetching, error, refetch } = useProperties({ ...filters, lang: locale }, searchParams.toString() === initialSearch ? initialData : undefined);
 
   const properties = response?.data ?? [];
   const meta = response?.meta;
@@ -109,6 +112,7 @@ export function PropertiesContent({ initialData, initialSearch }: { initialData?
             {isFetching && !isLoading ? " …" : ""}
           </p>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <ShareSearch />
             <div className="inline-flex rounded-xl border border-slate-200 bg-white p-0.5" role="group" aria-label={t("filters.currency")}>
               {(["GEL", "USD"] as const).map((c) => (
                 <button
@@ -140,7 +144,7 @@ export function PropertiesContent({ initialData, initialSearch }: { initialData?
         {isLoading ? (
           <CardGridSkeleton count={8} tall />
         ) : error ? (
-          <ErrorState message={t("error")} />
+          <ErrorState message={t("error")} onRetry={() => void refetch()} />
         ) : properties.length === 0 ? (
           <EmptyState message={t("empty")} />
         ) : (
@@ -177,15 +181,17 @@ function EmptyState({ message }: { message: string }) {
       </div>
       <p className="text-lg font-semibold text-teal-950 mb-1">{message}</p>
       <p className="text-sm text-slate-500">{t("emptyHint")}</p>
+      <CatalogueRecovery />
     </div>
   );
 }
 
-function ErrorState({ message }: { message: string }) {
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md">
         <p className="text-red-600 font-medium">{message}</p>
+        <CatalogueRecovery onRetry={onRetry} />
       </div>
     </div>
   );
