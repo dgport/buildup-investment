@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { Mail, Phone, Trash2 } from "lucide-react";
@@ -13,7 +13,10 @@ import { ROUTES } from "@/lib/constants/routes";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { roomsLabel } from "@/components/shared/ProjectCard";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { listChoice, listPage } from "@/lib/utils/list-query";
+import { getErrorMessage } from "@/lib/api/api";
+import { AdminLoadError } from "../_components/AdminLoadError";
 import { formatDateTime } from "@/lib/utils/format";
 import { FilterChips, PageHeader } from "../_components/AdminUi";
 
@@ -28,9 +31,17 @@ export default function AdminLeadsPage() {
   const tp = useTranslations("projects");
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
-  const [status, setStatus] = useState<string>("");
-  const { data, isLoading } = useLeads({ page, limit: 20, status: status || undefined });
+  const router = useRouter();
+  const pathname = usePathname();
+  const page = listPage(searchParams.get("page"));
+  const status = listChoice(searchParams.get("status"), ["", ...Object.values(LeadStatus)], "");
+  const setStatus = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) params.set("status", value); else params.delete("status");
+    params.delete("page");
+    router.push(`${pathname}${params.size ? `?${params}` : ""}`);
+  };
+  const { data, isLoading, isError, isFetching, refetch } = useLeads({ page, limit: 20, status: status || undefined });
   const m = useLeadMutations();
   const confirm = useConfirm();
   const leads = data?.data ?? [];
@@ -50,21 +61,22 @@ export default function AdminLeadsPage() {
         }))}
       />
 
+      {isError && <AdminLoadError retry={refetch} pending={isFetching} />}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {isLoading ? (
           <TableSkeleton rows={4} />
-        ) : leads.length === 0 ? (
+        ) : isError ? null : leads.length === 0 ? (
           <p className="p-12 text-center text-sm text-gray-500">{t("leads.empty")}</p>
         ) : (
           <div className="divide-y divide-gray-100">
             {leads.map((lead) => (
-              <LeadRow key={lead.id} lead={lead} locale={locale} onChange={(d) => m.update.mutateAsync({ id: lead.id, data: d }).then(() => toast.success(t("common.saved")))} onDelete={async () => (await confirm({ description: t("leads.deleteConfirm"), destructive: true })) && m.remove.mutateAsync(lead.id)} roomsLabel={(r) => roomsLabel(tp, r)} />
+              <LeadRow key={lead.id} lead={lead} locale={locale} onChange={(d) => m.update.mutateAsync({ id: lead.id, data: d }).then(() => toast.success(t("common.saved")))} onDelete={async () => { if (!(await confirm({ description: t("leads.deleteConfirm"), destructive: true }))) return; await m.remove.mutateAsync(lead.id); if (leads.length === 1 && page > 1) { const params = new URLSearchParams(searchParams.toString()); params.set("page", String(page - 1)); router.replace(`${pathname}?${params}`); } }} roomsLabel={(r) => roomsLabel(tp, r)} />
             ))}
           </div>
         )}
       </div>
 
-      {data?.meta && data.meta.totalPages > 1 && (
+      {!isError && data?.meta && data.meta.totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination currentPage={page} totalPages={data.meta.totalPages} hasNextPage={data.meta.hasNextPage} hasPreviousPage={data.meta.hasPreviousPage} />
         </div>
@@ -83,11 +95,25 @@ function LeadRow({
   lead: Lead;
   locale: string;
   onChange: (data: { status?: string; note?: string }) => Promise<unknown>;
-  onDelete: () => void;
+  onDelete: () => Promise<unknown>;
   roomsLabel: (rooms: number) => string;
 }) {
   const t = useTranslations("admin");
   const [note, setNote] = useState(lead.note ?? "");
+  const [pending, setPending] = useState(false);
+  const [savedNote, setSavedNote] = useState(lead.note ?? "");
+  useEffect(() => {
+    const next = lead.note ?? "";
+    setNote((current) => current === savedNote ? next : current);
+    setSavedNote(next);
+  }, [lead.note, savedNote]);
+  const run = async (action: () => Promise<unknown>, deleting = false) => {
+    if (pending) return;
+    setPending(true);
+    try { await action(); }
+    catch (error) { toast.error(getErrorMessage(error, t(deleting ? "common.deleteError" : "common.saveError"))); }
+    finally { setPending(false); }
+  };
 
   return (
     <div className="p-4 grid grid-cols-1 lg:grid-cols-[150px_1fr_1fr_1fr_auto] gap-3 items-start">
@@ -108,7 +134,9 @@ function LeadRow({
       <div className="space-y-2">
         <select
           value={lead.status}
-          onChange={(e) => onChange({ status: e.target.value })}
+          disabled={pending}
+          aria-label={t("leads.statusLabel")}
+          onChange={(e) => { const status = e.target.value; void run(() => onChange({ status })); }}
           className={`text-xs font-medium rounded-md px-2 py-1.5 border ${STATUS_STYLES[lead.status]}`}
         >
           {Object.values(LeadStatus).map((s) => (
@@ -118,13 +146,15 @@ function LeadRow({
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          onBlur={() => note !== (lead.note ?? "") && onChange({ note })}
+          disabled={pending}
+          aria-label={t("leads.notePlaceholder")}
           placeholder={t("leads.notePlaceholder")}
           rows={2}
           className="w-full text-xs rounded-md border border-gray-200 px-2 py-1.5 resize-none focus:outline-none focus:border-teal-500"
         />
+        {note !== (lead.note ?? "") && <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => void run(() => onChange({ note }))}>{t(pending ? "common.saving" : "common.save")}</Button>}
       </div>
-      <Button variant="ghost" size="icon" className="text-red-600 hover:bg-red-50 justify-self-end" aria-label={t("common.delete")} onClick={onDelete}>
+      <Button variant="ghost" size="icon" className="text-red-600 hover:bg-red-50 justify-self-end" aria-label={t("common.delete")} disabled={pending} onClick={() => void run(onDelete, true)}>
         <Trash2 className="w-4 h-4" />
       </Button>
     </div>

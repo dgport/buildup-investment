@@ -16,6 +16,8 @@ import { thumbnailUrl } from "@/lib/utils/image-utils";
 import { getErrorMessage } from "@/lib/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { listChoice, listPage } from "@/lib/utils/list-query";
+import { AdminLoadError } from "../_components/AdminLoadError";
 import { Pagination } from "@/components/shared/Pagination";
 import { TableSkeleton } from "@/components/shared/Skeletons";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
@@ -33,17 +35,23 @@ export default function AdminListingsPage() {
   const searchParams = useSearchParams();
   const confirm = useConfirm();
 
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
-  const status = (searchParams.get("status") ?? "") as (typeof STATUSES)[number];
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const page = listPage(searchParams.get("page"));
+  const status = listChoice(searchParams.get("status"), STATUSES, "");
+  const appliedSearch = searchParams.get("search")?.trim() ?? "";
+  const [search, setSearch] = useState(appliedSearch);
+  const [previousSearch, setPreviousSearch] = useState(appliedSearch);
+  if (previousSearch !== appliedSearch) {
+    setPreviousSearch(appliedSearch);
+    setSearch(appliedSearch);
+  }
   const [rejecting, setRejecting] = useState<{ id: string; title: string } | null>(null);
 
-  const { data, isLoading, isFetching } = usePropertiesAdmin({
+  const { data, isLoading, isFetching, isError, refetch } = usePropertiesAdmin({
     lang: locale,
     page,
     limit: 20,
     status: status || undefined,
-    search: search.trim() || undefined,
+    search: appliedSearch || undefined,
     sort: "newest",
     market: parseMarket(searchParams.get("market")),
   });
@@ -88,21 +96,25 @@ export default function AdminListingsPage() {
           }))}
         />
         <form
-          className="relative w-full sm:w-72 sm:ml-auto"
+          role="search"
+          className="relative flex w-full items-center gap-2 sm:w-96 sm:ml-auto"
           onSubmit={(e) => {
             e.preventDefault();
             navigate({ search: search.trim() || undefined });
           }}
         >
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("listings.searchPlaceholder")} className="pl-9 bg-white" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("listings.searchPlaceholder")} placeholder={t("listings.searchPlaceholder")} className="pl-9 bg-white min-w-0" />
+          <Button type="submit" size="icon" variant="outline" aria-label={t("common.search")} className="shrink-0"><Search className="size-4" /></Button>
+          {appliedSearch && <Button type="button" size="sm" variant="ghost" onClick={() => { setSearch(""); navigate({ search: undefined }); }}>{t("common.clearSearch")}</Button>}
         </form>
       </div>
 
+      {isError && <AdminLoadError retry={refetch} pending={isFetching} />}
       <AdminCard className={isFetching && !isLoading ? "opacity-70 transition" : ""}>
         {isLoading ? (
           <TableSkeleton rows={6} />
-        ) : rows.length === 0 ? (
+        ) : isError ? null : rows.length === 0 ? (
           <EmptyRow>{t("listings.empty")}</EmptyRow>
         ) : (
           <div className="overflow-x-auto">
@@ -224,7 +236,7 @@ export default function AdminListingsPage() {
         )}
       </AdminCard>
 
-      {data?.meta && data.meta.totalPages > 1 && (
+      {!isError && data?.meta && data.meta.totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination currentPage={page} totalPages={data.meta.totalPages} hasNextPage={data.meta.hasNextPage} hasPreviousPage={data.meta.hasPreviousPage} />
         </div>

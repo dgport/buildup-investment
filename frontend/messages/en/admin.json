@@ -41,7 +41,9 @@
     "titleRequired": "A title is required in at least one language",
     "required": "Required",
     "confirmDelete": "Are you sure? This cannot be undone.",
-    "deleted": "Deleted"
+    "deleted": "Deleted",
+    "retry": "Try again",
+    "clearSearch": "Clear"
   },
   "projects": {
     "title": "Development projects",
@@ -173,7 +175,8 @@
     },
     "notePlaceholder": "Internal note...",
     "deleteConfirm": "Delete this request?",
-    "subtitle": "Consultation requests from project pages — call, update the status, leave a note."
+    "subtitle": "Consultation requests from project pages — call, update the status, leave a note.",
+    "statusLabel": "Request status"
   },
   "overview": {
     "title": "Overview",

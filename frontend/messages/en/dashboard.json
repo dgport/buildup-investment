@@ -167,5 +167,9 @@
   "pendingHint": "This listing is under review — it goes live once approved. You will get an e-mail with the result.",
   "quotaReached": "Listing limit reached",
   "quotaUsage": "Listings: {used} / {limit}",
-  "quotaHint": "All sale and rental listings count, regardless of status. Contact an administrator to increase your limit. Deleting a listing frees a slot."
+  "quotaHint": "All sale and rental listings count, regardless of status. Contact an administrator to increase your limit. Deleting a listing frees a slot.",
+  "hiddenOnPage": "Hidden on this page",
+  "loadingQuota": "Checking listing limit…",
+  "statsError": "Listing totals could not be loaded.",
+  "retry": "Try again"
 }

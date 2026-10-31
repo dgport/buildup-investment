@@ -13,6 +13,8 @@ import { getErrorMessage } from "@/lib/api/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { listChoice, listPage } from "@/lib/utils/list-query";
+import { AdminLoadError } from "../_components/AdminLoadError";
 import { Pagination } from "@/components/shared/Pagination";
 import { TableSkeleton } from "@/components/shared/Skeletons";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
@@ -26,10 +28,10 @@ function ListingLimitControl({ user, pending, onSave }: { user: AdminUser; pendi
   const limit = Number(value);
   const valid = value.trim() !== "" && Number.isInteger(limit) && limit >= 0 && limit <= 1000000;
   return (
-    <form className="min-w-[190px] space-y-2" onSubmit={(event) => { event.preventDefault(); if (valid) onSave(limit); }}>
+    <form className="min-w-[190px] space-y-2" onSubmit={(event) => { event.preventDefault(); if (valid && !pending && limit !== user.listingLimit) onSave(limit); }}>
       <p className="text-xs text-slate-500">{t("users.quotaUsed", { count: user.propertiesCount })}</p>
       <div className="flex items-center gap-2">
-        <Input type="number" min={0} max={1000000} step={1} required value={value} onChange={(event) => setValue(event.target.value)} aria-label={t("users.quotaLabel", { email: user.email })} className="w-24" />
+        <Input type="number" min={0} max={1000000} step={1} required disabled={pending} value={value} onChange={(event) => setValue(event.target.value)} aria-label={t("users.quotaLabel", { email: user.email })} className="w-24" />
         <Button size="sm" type="submit" disabled={pending || !valid || limit === user.listingLimit}>{t("common.save")}</Button>
       </div>
     </form>
@@ -45,11 +47,17 @@ export default function AdminUsersPage() {
   const confirm = useConfirm();
   const { data: me } = useCurrentUser();
 
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
-  const role = (searchParams.get("role") ?? "") as (typeof ROLES)[number];
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const page = listPage(searchParams.get("page"));
+  const role = listChoice(searchParams.get("role"), ROLES, "");
+  const appliedSearch = searchParams.get("search")?.trim() ?? "";
+  const [search, setSearch] = useState(appliedSearch);
+  const [previousSearch, setPreviousSearch] = useState(appliedSearch);
+  if (previousSearch !== appliedSearch) {
+    setPreviousSearch(appliedSearch);
+    setSearch(appliedSearch);
+  }
 
-  const { data, isLoading, isFetching } = useAdminUsers({ page, limit: 25, role: (role || undefined) as UserRole | undefined, search: search.trim() || undefined });
+  const { data, isLoading, isFetching, isError, refetch } = useAdminUsers({ page, limit: 25, role: (role || undefined) as UserRole | undefined, search: appliedSearch || undefined });
   const update = useUpdateAdminUser();
   const users = data?.data ?? [];
   const counts = data?.meta.counts ?? {};
@@ -85,21 +93,25 @@ export default function AdminUsersPage() {
           options={ROLES.map((r) => ({ value: r, label: r ? t(`users.roles.${r}`) : t("leads.all"), count: r ? (counts[r] ?? 0) : total }))}
         />
         <form
-          className="relative w-full sm:w-72 sm:ml-auto"
+          role="search"
+          className="relative flex w-full items-center gap-2 sm:w-96 sm:ml-auto"
           onSubmit={(e) => {
             e.preventDefault();
             navigate({ search: search.trim() || undefined });
           }}
         >
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("users.searchPlaceholder")} className="pl-9 bg-white" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("users.searchPlaceholder")} placeholder={t("users.searchPlaceholder")} className="pl-9 bg-white min-w-0" />
+          <Button type="submit" size="icon" variant="outline" aria-label={t("common.search")} className="shrink-0"><Search className="size-4" /></Button>
+          {appliedSearch && <Button type="button" size="sm" variant="ghost" onClick={() => { setSearch(""); navigate({ search: undefined }); }}>{t("common.clearSearch")}</Button>}
         </form>
       </div>
 
+      {isError && <AdminLoadError retry={refetch} pending={isFetching} />}
       <AdminCard className={isFetching && !isLoading ? "opacity-70 transition" : ""}>
         {isLoading ? (
           <TableSkeleton rows={6} />
-        ) : users.length === 0 ? (
+        ) : isError ? null : users.length === 0 ? (
           <EmptyRow>{t("users.empty")}</EmptyRow>
         ) : (
           <div className="overflow-x-auto">
@@ -147,6 +159,7 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3">
                         <select
                           value={u.role}
+                          aria-label={`${t("users.columns.role")}: ${u.firstname} ${u.lastname}`}
                           disabled={update.isPending || isMe}
                           onChange={(e) => change(u, { role: e.target.value as UserRole })}
                           className={`text-xs font-semibold rounded-md px-2 py-1.5 border ${u.role === "ADMIN" ? "bg-teal-100 text-teal-800 border-teal-200" : "bg-slate-100 text-slate-700 border-slate-200"} disabled:opacity-70`}
@@ -193,7 +206,7 @@ export default function AdminUsersPage() {
         )}
       </AdminCard>
 
-      {data?.meta && data.meta.totalPages > 1 && (
+      {!isError && data?.meta && data.meta.totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination currentPage={page} totalPages={data.meta.totalPages} hasNextPage={data.meta.hasNextPage} hasPreviousPage={data.meta.hasPreviousPage} />
         </div>

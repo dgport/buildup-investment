@@ -37,6 +37,7 @@ import { locales as SITE_LOCALES } from "@/i18n/routing";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { propertySiteUrl, parseMarket } from "@/lib/market";
 import { MarketTabs } from "@/components/shared/MarketTabs";
+import { listPage } from "@/lib/utils/list-query";
 import { ROUTES } from "@/lib/constants/routes";
 import {
   PROPERTY_LANGUAGES,
@@ -166,7 +167,7 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
         </div>
 
         {(property.rooms || property.bedrooms || property.bathrooms) && (
-          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mb-3">
             {property.rooms ? (
               <span>{property.rooms} {t("rooms")}</span>
             ) : null}
@@ -240,7 +241,7 @@ function StatCard({
   tone,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   icon: React.ElementType;
   tone: "teal" | "green" | "yellow" | "gray";
 }) {
@@ -252,8 +253,8 @@ function StatCard({
   }[tone];
 
   return (
-    <div className="card p-5">
-      <div className="flex items-center justify-between">
+    <div className="card p-3 sm:p-5">
+      <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-gray-600">{label}</p>
           <p className={`text-2xl font-bold mt-1 ${tones[2]}`}>{value}</p>
@@ -276,7 +277,7 @@ function DashboardContent() {
 
   const { data: user } = useCurrentUser();
   const confirm = useConfirm();
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+  const page = listPage(searchParams.get("page"));
   const [actionError, setActionError] = useState<string | null>(null);
   const flash = searchParams.get("created") ? tf("created") : null;
 
@@ -295,8 +296,10 @@ function DashboardContent() {
     data: propertiesResponse,
     isLoading,
     error,
+    refetch,
+    isFetching,
   } = useMyProperties({ page, limit: PROPERTIES_PER_PAGE, lang: locale, market: parseMarket(searchParams.get("market")) });
-  const { data: stats } = useMyPropertyStats();
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: retryStats } = useMyPropertyStats();
   const deleteProperty = useDeleteProperty();
 
   const properties = propertiesResponse?.data ?? [];
@@ -352,7 +355,7 @@ function DashboardContent() {
                   </Link>
                 </Button>
               )}
-            {limitReached ? (
+            {statsLoading ? <Button size="lg" disabled>{t("loadingQuota")}</Button> : limitReached ? (
               <Button size="lg" disabled>{t("quotaReached")}</Button>
             ) : <Button
               asChild
@@ -373,28 +376,29 @@ function DashboardContent() {
               <p className="mt-1">{t("quotaHint")}</p>
             </div>
           )}
+          {statsError && <div role="alert" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm"><p>{t("statsError")}</p><Button type="button" variant="link" onClick={() => retryStats()}>{t("retry")}</Button></div>}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               label={t("totalProperties")}
-              value={stats?.total ?? meta?.total ?? 0}
+              value={stats?.total ?? "—"}
               icon={Building2}
               tone="teal"
             />
             <StatCard
               label={t("approved")}
-              value={stats?.approved ?? 0}
+              value={stats?.approved ?? "—"}
               icon={CheckCircle2}
               tone="green"
             />
             <StatCard
               label={t("pendingReview")}
-              value={stats?.pending ?? 0}
+              value={stats?.pending ?? "—"}
               icon={Clock}
               tone="yellow"
             />
             <StatCard
-              label={t("hidden")}
-              value={hiddenCount}
+              label={t("hiddenOnPage")}
+              value={isLoading || error ? "—" : hiddenCount}
               icon={EyeOff}
               tone="gray"
             />
@@ -437,7 +441,8 @@ function DashboardContent() {
           <CardGridSkeleton count={6} />
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
-            <p className="text-red-600 font-medium">{t("loadError")}</p>
+            <p className="text-red-600 font-medium" role="alert">{t("loadError")}</p>
+            <Button type="button" variant="outline" className="mt-4" disabled={isFetching} onClick={() => refetch()}>{t("retry")}</Button>
           </div>
         ) : properties.length > 0 ? (
           <>
@@ -463,7 +468,7 @@ function DashboardContent() {
             )}
           </>
         ) : (
-          <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 p-16 text-center">
+          <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 p-6 sm:p-12 text-center">
             <div className="flex flex-col items-center gap-4">
               <div className="bg-gray-100 rounded-full p-6">
                 <Building2 className="w-12 h-12 text-gray-400" />
