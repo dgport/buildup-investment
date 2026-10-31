@@ -17,6 +17,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { useCurrentUser, useHasToken } from "@/lib/hooks/useAuth";
+import { useClientReady } from "@/lib/hooks/useClientReady";
 import { useAdminStats } from "@/lib/hooks/useAdmin";
 import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const hasToken = useHasToken();
+  const clientReady = useClientReady();
   const { data: user, isLoading, isError, isFetching, refetch } = useCurrentUser();
   const isAdmin = user?.role === "ADMIN";
   const { data: stats } = useAdminStats(locale, isAdmin);
@@ -42,7 +44,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     { href: ROUTES.ADMIN_SETTINGS, label: t("nav.settings"), icon: Settings },
   ];
 
-  if (hasToken && isLoading) {
+  if (!clientReady || (hasToken && isLoading)) {
     return <PageLoader />;
   }
 

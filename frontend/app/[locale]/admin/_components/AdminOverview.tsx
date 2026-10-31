@@ -14,6 +14,7 @@ import { getErrorMessage } from "@/lib/api/api";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminCard, EmptyRow, PageHeader, StatCard, StatusPill, formatDate, initials } from "./AdminUi";
+import { AdminLoadError } from "./AdminLoadError";
 import { RejectDialog } from "./RejectDialog";
 import { useState } from "react";
 
@@ -23,7 +24,7 @@ export function AdminOverview() {
   const t = useTranslations("admin");
   const tp = useTranslations("properties");
   const locale = useLocale();
-  const { data, isLoading } = useAdminStats(locale);
+  const { data, isLoading, isError, isFetching, refetch } = useAdminStats(locale);
   const setStatus = useSetPropertyStatus();
   const [rejecting, setRejecting] = useState<{ id: string; title: string } | null>(null);
 
@@ -40,7 +41,7 @@ export function AdminOverview() {
     <div className="space-y-6">
       <PageHeader title={t("overview.title")} subtitle={t("overview.subtitle")} />
 
-      {isLoading || !data ? (
+      {isError ? <AdminLoadError retry={refetch} pending={isFetching} /> : isLoading || !data ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-36 rounded-2xl" />

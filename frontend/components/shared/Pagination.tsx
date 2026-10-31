@@ -60,13 +60,14 @@ export function Pagination({
         size="icon"
         asChild={hasPreviousPage}
         disabled={!hasPreviousPage}
-        className="h-10 w-10"
+        className="h-11 w-11"
         aria-label={ka ? "წინა გვერდი" : "Previous page"}
       >
         {hasPreviousPage ? <Link href={pageHref(currentPage - 1)} rel="prev"><ChevronLeft className="h-4 w-4" /></Link> : <ChevronLeft className="h-4 w-4" />}
       </Button>
 
-      <div className="flex items-center gap-1">
+      <span className="sm:hidden min-w-24 px-3 text-center text-sm font-semibold tabular-nums text-teal-900" aria-live="polite">{currentPage} / {totalPages}</span>
+      <div className="hidden sm:flex items-center gap-1">
         {getPageNumbers().map((page, index) =>
           page === "..." ? (
             <span
@@ -100,7 +101,7 @@ export function Pagination({
         size="icon"
         asChild={hasNextPage}
         disabled={!hasNextPage}
-        className="h-10 w-10"
+        className="h-11 w-11"
         aria-label={ka ? "შემდეგი გვერდი" : "Next page"}
       >
         {hasNextPage ? <Link href={pageHref(currentPage + 1)} rel="next"><ChevronRight className="h-4 w-4" /></Link> : <ChevronRight className="h-4 w-4" />}
