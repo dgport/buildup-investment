@@ -126,6 +126,9 @@ export default function EditPropertyPage() {
 
   const [tab, setTab] = useState<Tab>("details");
   const [imagesVisited, setImagesVisited] = useState(false);
+  const [translationsVisited, setTranslationsVisited] = useState(false);
+  const [imagesDirty, setImagesDirty] = useState(false);
+  const [translationsDirty, setTranslationsDirty] = useState(false);
   const [original, setOriginal] = useState<PropertyFormData | null>(null);
   const [formData, setFormData] = useState<PropertyFormData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -150,7 +153,7 @@ export default function EditPropertyPage() {
   useUnsavedChanges(hasChanges);
 
   const leave = async () => {
-    if (!hasChanges || await confirm({ description: t("unsavedConfirm") })) router.push(ROUTES.DASHBOARD);
+    if (!(hasChanges || imagesDirty || translationsDirty) || await confirm({ description: t("unsavedConfirm") })) router.push(ROUTES.DASHBOARD);
   };
 
   const updateField = <K extends keyof CreatePropertyDto>(
@@ -244,17 +247,19 @@ export default function EditPropertyPage() {
           </div>
         </div>
 
-        <div className="flex border-b border-gray-200 mb-6 gap-1 overflow-x-auto">
+        <div className="grid grid-cols-3 sm:flex border-b border-gray-200 mb-6 gap-1">
           {TABS.map(({ id: tabId, icon: Icon }) => (
             <button
               key={tabId}
               type="button"
               onClick={() => {
                 if (tabId === "images") setImagesVisited(true);
+                if (tabId === "translations") setTranslationsVisited(true);
                 setTab(tabId);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
+              aria-pressed={tab === tabId}
+              className={`relative flex min-w-0 flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors -mb-px ${
                 tab === tabId
                   ? "border-teal-800 text-teal-800"
                   : "border-transparent text-gray-500 hover:text-gray-900"
@@ -269,7 +274,7 @@ export default function EditPropertyPage() {
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-8">
           {tab === "details" && (
             <div className="space-y-10">
               {hasChanges && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">{t("unsavedHint")}</p>}
@@ -323,11 +328,9 @@ export default function EditPropertyPage() {
             </div>
           )}
 
-          {imagesVisited && <div hidden={tab !== "images"}><PropertyImagesManager propertyId={id} /></div>}
+          {imagesVisited && <div hidden={tab !== "images"}><PropertyImagesManager propertyId={id} onDirtyChange={setImagesDirty} /></div>}
 
-          {tab === "translations" && (
-            <PropertyTranslationsManager propertyId={id} />
-          )}
+          {translationsVisited && <div hidden={tab !== "translations"}><PropertyTranslationsManager propertyId={id} onDirtyChange={setTranslationsDirty} /></div>}
         </div>
       </div>
     </div>

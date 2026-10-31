@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { Edit, Save, AlertCircle } from "lucide-react";
 import {
   usePropertyTranslations,
@@ -20,11 +22,16 @@ import type {
 
 interface PropertyTranslationsManagerProps {
   propertyId: string;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 export function PropertyTranslationsManager({
   propertyId,
+  onDirtyChange,
 }: PropertyTranslationsManagerProps) {
+  const fieldId = useId();
+  const confirm = useConfirm();
+  const tf = useTranslations("dashboard.form");
   const t = useTranslations("dashboard.translations");
   const tl = useTranslations("common.language");
   const ta = useTranslations("common.actions");
@@ -32,15 +39,25 @@ export function PropertyTranslationsManager({
   const [editing, setEditing] = useState<UpsertPropertyTranslationDto | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: translations = [], isLoading } =
+  const { data: translations = [], isLoading, isError, refetch } =
     usePropertyTranslations(propertyId);
   const upsertTranslation = useUpsertPropertyTranslation();
+
+  const source = translations.find((translation) => translation.language === editing?.language);
+  const dirty = !!editing && (editing.title !== (source?.title ?? "") || (editing.address ?? "") !== (source?.address ?? "") || (editing.description ?? "") !== (source?.description ?? ""));
+  useUnsavedChanges(dirty);
+  useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
+  const startEditing = async (translation: PropertyTranslation) => {
+    if (upsertTranslation.isPending || (dirty && !(await confirm({ description: tf("unsavedConfirm") })))) return;
+    setError(null);
+    setEditing({ language: translation.language, title: translation.title, address: translation.address ?? "", description: translation.description ?? "" });
+  };
 
   const languageLabel = (code: string) =>
     (["ka", "en", "ru"] as const).includes(code as "ka") ? tl(code as "ka") : code;
 
   const handleSave = async () => {
-    if (!editing?.title?.trim()) return;
+    if (!editing?.title?.trim() || upsertTranslation.isPending) return;
     setError(null);
     try {
       await upsertTranslation.mutateAsync({
@@ -66,6 +83,8 @@ export function PropertyTranslationsManager({
     );
   }
 
+  if (isError) return <div role="alert" className="space-y-3 text-center py-8"><p>{t("loadFailed")}</p><Button type="button" variant="outline" onClick={() => refetch()}>{ta("retry")}</Button></div>;
+
   return (
     <div className="space-y-6">
       <div>
@@ -88,20 +107,23 @@ export function PropertyTranslationsManager({
         <div className="space-y-3">
           {translations.map((tr: PropertyTranslation) =>
             editing?.language === tr.language ? (
-              <div
+              <fieldset
+                disabled={upsertTranslation.isPending}
                 key={tr.language}
-                className="rounded-xl border border-teal-200 bg-teal-50/30 p-5 space-y-4"
+                className="min-w-0 rounded-xl border border-teal-200 bg-teal-50/30 p-4 sm:p-5 space-y-4"
               >
                 <div className="space-y-1.5">
-                  <Label>{t("language")}</Label>
-                  <Input value={languageLabel(editing.language)} disabled className="bg-gray-100" />
+                  <Label htmlFor={`${fieldId}-language`}>{t("language")}</Label>
+                  <Input id={`${fieldId}-language`} value={languageLabel(editing.language)} disabled className="bg-gray-100" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>
+                  <Label htmlFor={`${fieldId}-title`}>
                     {t("titleLabel")} <span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    id={`${fieldId}-title`}
+                    required
                     value={editing.title}
                     maxLength={200}
                     onChange={(e) =>
@@ -112,8 +134,9 @@ export function PropertyTranslationsManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>{t("address")}</Label>
+                  <Label htmlFor={`${fieldId}-address`}>{t("address")}</Label>
                   <Input
+                    id={`${fieldId}-address`}
                     value={editing.address ?? ""}
                     maxLength={300}
                     onChange={(e) =>
@@ -124,8 +147,9 @@ export function PropertyTranslationsManager({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>{t("descriptionLabel")}</Label>
+                  <Label htmlFor={`${fieldId}-description`}>{t("descriptionLabel")}</Label>
                   <Textarea
+                    id={`${fieldId}-description`}
                     value={editing.description ?? ""}
                     maxLength={5000}
                     onChange={(e) =>
@@ -136,7 +160,7 @@ export function PropertyTranslationsManager({
                   />
                 </div>
 
-                <div className="flex gap-2 justify-end">
+                <div className="flex flex-wrap gap-2 justify-end">
                   <Button variant="outline" onClick={() => setEditing(null)}>
                     {ta("cancel")}
                   </Button>
@@ -149,7 +173,7 @@ export function PropertyTranslationsManager({
                     {upsertTranslation.isPending ? ta("saving") : ta("save")}
                   </Button>
                 </div>
-              </div>
+              </fieldset>
             ) : (
               <div
                 key={tr.language}
@@ -184,14 +208,8 @@ export function PropertyTranslationsManager({
                   variant="ghost"
                   size="icon"
                   aria-label={ta("edit")}
-                  onClick={() =>
-                    setEditing({
-                      language: tr.language,
-                      title: tr.title,
-                      address: tr.address ?? undefined,
-                      description: tr.description ?? undefined,
-                    })
-                  }
+                  disabled={upsertTranslation.isPending}
+                  onClick={() => void startEditing(tr)}
                 >
                   <Edit className="w-4 h-4" />
                 </Button>

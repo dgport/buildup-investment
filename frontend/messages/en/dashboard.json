@@ -151,7 +151,8 @@
     "missing": "Not filled in",
     "saveFailed": "Failed to save translation",
     "loading": "Loading translations...",
-    "empty": "No translations"
+    "empty": "No translations",
+    "loadFailed": "Translations could not be loaded."
   },
   "map": {
     "title": "Select location",

@@ -24,9 +24,10 @@ import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
 
 interface PropertyImagesManagerProps {
   propertyId: string;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps) {
+export function PropertyImagesManager({ propertyId, onDirtyChange }: PropertyImagesManagerProps) {
   const t = useTranslations("dashboard.images");
   const tf = useTranslations("dashboard.form");
   const ta = useTranslations("common.actions");
@@ -38,6 +39,7 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
 
   const [pending, setPending] = usePendingImages();
   useUnsavedChanges(pending.length > 0);
+  useEffect(() => { onDirtyChange?.(pending.length > 0); }, [pending.length, onDirtyChange]);
   const busy = deleteImage.isPending || addImages.isPending || reorder.isPending;
   const serverImages = property?.galleryImages;
   const [gallery, setGallery] = useState<PropertyGalleryImage[]>(serverImages ?? []);
@@ -143,7 +145,7 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
 
       <div>
         <h3 className="font-semibold text-gray-900">{t("title")}</h3>
-        <p className="text-xs text-gray-500 mt-0.5">{t("subtitle")}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{tf("reorderHint")}</p>
       </div>
 
       {gallery.length === 0 ? (
