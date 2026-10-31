@@ -64,7 +64,7 @@ const MortgageCalculator = ({ initialPrice = null }: { initialPrice?: number | n
 
         <div className="grid lg:grid-cols-5 gap-6 items-stretch">
           {/* Inputs */}
-          <div className="lg:col-span-3 card p-7 sm:p-8 flex flex-col justify-between">
+          <div className="lg:col-span-3 card p-5 sm:p-8 flex flex-col justify-between">
             <div className="space-y-7">
               <SliderRow
                 label={t("propertyPrice")}
@@ -123,7 +123,7 @@ const MortgageCalculator = ({ initialPrice = null }: { initialPrice?: number | n
           </div>
 
           {/* Result */}
-          <div className="lg:col-span-2 relative overflow-hidden rounded-2xl p-7 sm:p-8 flex flex-col bg-gradient-to-br from-teal-950 via-teal-900 to-teal-950 text-white shadow-2xl shadow-teal-950/30 ring-1 ring-amber-400/15">
+          <div className="lg:col-span-2 relative overflow-hidden rounded-2xl p-5 sm:p-8 flex flex-col bg-gradient-to-br from-teal-950 via-teal-900 to-teal-950 text-white shadow-2xl shadow-teal-950/30 ring-1 ring-amber-400/15">
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -134,7 +134,7 @@ const MortgageCalculator = ({ initialPrice = null }: { initialPrice?: number | n
             <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
 
             <div className="relative z-10 flex flex-col h-full gap-6">
-              <div className="flex justify-between items-center gap-3">
+              <div className="flex flex-wrap justify-between items-center gap-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <CircleDollarSign className="text-amber-400 w-5 h-5 shrink-0" />
                   <span className="text-white/60 text-xs font-semibold uppercase tracking-widest truncate">
@@ -211,7 +211,7 @@ const MortgageCalculator = ({ initialPrice = null }: { initialPrice?: number | n
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className="flex justify-between items-center gap-3">
+    <div className="flex flex-wrap justify-between items-center gap-3">
       <dt className="flex items-center gap-2 text-white/55">
         <span className={`w-1.5 h-1.5 rounded-full ${strong ? "bg-amber-400" : "bg-white/25"}`} />
         {label}
@@ -250,6 +250,7 @@ function SliderRow({ label, value, icon, min, max, step, sliderValue, onChange, 
       </div>
       <Slider
         aria-label={label}
+        aria-valuetext={value}
         min={min}
         max={max}
         step={step}

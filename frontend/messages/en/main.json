@@ -74,7 +74,9 @@
     "projects": "projects",
     "developers": "developers",
     "quickLinks": "Quick links",
-    "allProjects": "New projects"
+    "allProjects": "New projects",
+    "pauseMotion": "Pause background and headlines",
+    "playMotion": "Play background and headlines"
   },
   "listCta": {
     "label": "For owners",

@@ -1,8 +1,8 @@
 "use client";
 
-import { Link } from "@/i18n/routing";
+import { Link, usePathname, useRouter } from "@/i18n/routing";
+import { AdminLoadError } from "./AdminLoadError";
 import { PageLoader } from "@/components/shared/PageLoader";
-import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowLeft,
@@ -26,10 +26,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("admin");
   const locale = useLocale();
   const pathname = usePathname();
+  const router = useRouter();
   const hasToken = useHasToken();
-  const { data: user, isLoading } = useCurrentUser();
+  const { data: user, isLoading, isError, isFetching, refetch } = useCurrentUser();
   const isAdmin = user?.role === "ADMIN";
-  const { data: stats } = useAdminStats(isAdmin ? locale : undefined);
+  const { data: stats } = useAdminStats(locale, isAdmin);
 
   const items = [
     { href: ROUTES.ADMIN, label: t("nav.overview"), icon: LayoutDashboard, exact: true },
@@ -44,6 +45,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   if (hasToken && isLoading) {
     return <PageLoader />;
   }
+
+  if (hasToken && isError) return <div className="min-h-[60vh] flex items-center justify-center px-4"><AdminLoadError retry={refetch} pending={isFetching} /></div>;
 
   if (!isAdmin) {
     return (
@@ -82,7 +85,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-700/60">{t("title")}</p>
           </div>
-          <nav aria-label={t("title")} className="flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0">
+          <select
+            aria-label={t("title")}
+            value={items.find((item) => item.exact ? pathname === item.href : pathname.startsWith(item.href))?.href ?? ROUTES.ADMIN}
+            onChange={(event) => router.push(event.target.value)}
+            className="lg:hidden w-full min-h-11 rounded-xl border border-teal-200 bg-white px-3 text-sm font-semibold text-teal-900"
+          >
+            {items.map(({ href, label, badge }) => <option key={href} value={href}>{label}{badge ? ` (${badge})` : ""}</option>)}
+          </select>
+          <nav aria-label={t("title")} className="hidden lg:flex flex-col gap-1">
             {items.map(({ href, label, icon: Icon, badge, exact }) => {
               const active = exact ? pathname === href : pathname.startsWith(href);
               return (

@@ -36,7 +36,8 @@ import { formatMoney, useCurrency } from "@/lib/currency";
 import { useTranslations, useLocale } from "next-intl";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { nearbySlide } from "@/lib/utils/gallery";
+import { resolveImageUrl, thumbnailUrl, fallbackToFullImage } from "@/lib/utils/image-utils";
 import { PageLoader } from "@/components/shared/PageLoader";
 import { MobileContactBar } from "@/components/shared/MobileContactBar";
 import { SimilarProperties } from "./SimilarProperties";
@@ -48,7 +49,7 @@ import { SavePropertyButton } from "@/components/shared/SavePropertyButton";
 import { ConditionUtilitiesSection } from "./ConditionUtilitesSection";
 import { AmenitiesFeaturesSection } from "./AmenitiesFeatureSection";
 import { PropertyDetailsSection } from "./PropertyDetailsSection";
-import MapboxMap from "./MapBox";
+import { LazyPropertyMap } from "@/components/shared/LazyPropertyMap";
 import { parseLocation } from "@/lib/utils/location";
 
 function InfoRow({
@@ -266,16 +267,16 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
                   {images.length > 0 ? (
                     images.map((img, i) => (
                       <div key={img} className="relative flex-[0_0_100%] h-full">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={img}
-                          alt={`${title} ${i + 1}`}
-                          className="w-full h-full object-cover cursor-pointer"
-                          onClick={() => {
-                            setLightboxIndex(selectedIndex);
-                            setLightboxOpen(true);
-                          }}
-                        />
+                        {nearbySlide(i, selectedIndex, images.length) && <button
+                          type="button"
+                          tabIndex={i === selectedIndex ? 0 : -1}
+                          aria-label={tc("photos.open", { position: i + 1 })}
+                          className="block h-full w-full focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-amber-400"
+                          onClick={() => { setLightboxIndex(i); setLightboxOpen(true); }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img} alt={`${title} ${i + 1}`} loading={i === selectedIndex ? "eager" : "lazy"} decoding="async" fetchPriority={i === 0 ? "high" : "auto"} className="w-full h-full object-cover" />
+                        </button>}
                       </div>
                     ))
                   ) : (
@@ -291,14 +292,14 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
                 <>
                   <button
                     onClick={scrollPrev}
-                    aria-label="Previous"
+                    aria-label={tc("photos.previous")}
                     className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-md z-20 transition-colors border border-teal-100"
                   >
                     <ChevronLeft className="w-5 h-5 text-teal-900" />
                   </button>
                   <button
                     onClick={scrollNext}
-                    aria-label="Next"
+                    aria-label={tc("photos.next")}
                     className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-md z-20 transition-colors border border-teal-100"
                   >
                     <ChevronRight className="w-5 h-5 text-teal-900" />
@@ -322,7 +323,7 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
                         }`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={img} alt={`${title} — ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                        <img src={thumbnailUrl(img) ?? img} onError={(event) => fallbackToFullImage(event, img)} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                       </button>
                     ))}
                   </div>
@@ -524,7 +525,7 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
           {coordinates && (
             <DetailSection icon={MapIcon} title={t("mapTitle")} accent="violet">
               <div className="h-[300px] sm:h-[380px] rounded-xl overflow-hidden ring-1 ring-teal-900/10">
-                <MapboxMap
+                <LazyPropertyMap
                   latitude={coordinates.lat}
                   longitude={coordinates.lng}
                   labels={{ view2d: t("view2d"), view3d: t("view3d") }}
@@ -546,6 +547,7 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
 
       <Lightbox
         open={lightboxOpen}
+        labels={{ Close: tc("actions.close"), Next: tc("photos.next"), Previous: tc("photos.previous") }}
         close={() => setLightboxOpen(false)}
         slides={images.map((src) => ({ src }))}
         index={lightboxIndex}

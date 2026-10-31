@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
+import { invalidPropertyNumbers } from "@/lib/utils/property-validation";
 import { rebaseForm } from "@/lib/utils/form-state";
 import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
@@ -167,8 +168,12 @@ export default function EditPropertyPage() {
 
   const handleSubmit = async () => {
     if (submitting.current || !hasChanges) return;
-    if (!hasAnyTitle(formData)) {
-      setErrors({ title: t("errors.titleRequired") });
+    const validation: Record<string, string> = {};
+    if (!hasAnyTitle(formData)) validation.title = t("errors.titleRequired");
+    for (const field of invalidPropertyNumbers(formData)) validation[field] = t("errors.invalidNumber");
+    setErrors(validation);
+    if (Object.keys(validation).length) {
+      requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
       return;
     }
     setSubmitError(null);

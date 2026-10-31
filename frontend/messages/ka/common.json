@@ -134,7 +134,10 @@
   },
   "photos": {
     "earlier": "ფოტო {position} წინ გადმოწიე",
-    "later": "ფოტო {position} უკან გადაიტანე"
+    "later": "ფოტო {position} უკან გადაიტანე",
+    "open": "ფოტო {position}-ის გახსნა",
+    "previous": "წინა ფოტო",
+    "next": "შემდეგი ფოტო"
   },
   "saved": {
     "title": "შენახული განცხადებები",

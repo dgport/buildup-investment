@@ -8,7 +8,7 @@ import { MAPBOX_ACCESS_TOKEN } from "@/lib/constants/env";
 
 mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-interface MapboxMapProps {
+export interface MapboxMapProps {
   latitude: number;
   longitude: number;
   zoom?: number;
@@ -99,6 +99,11 @@ export default function MapboxMap({
   }, []);
 
   useEffect(() => {
+    markerRef.current?.setLngLat([longitude, latitude]);
+    mapRef.current?.jumpTo({ center: [longitude, latitude] });
+  }, [latitude, longitude]);
+
+  useEffect(() => {
     mapRef.current?.easeTo({
       pitch: is3D ? pitch3D : 0,
       bearing: is3D ? bearing3D : 0,
@@ -115,6 +120,7 @@ export default function MapboxMap({
       {enable3D && (
         <button
           type="button"
+          aria-pressed={is3D}
           onClick={() => setIs3D((prev) => !prev)}
           className="absolute top-4 left-4 bg-white/95 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium hover:bg-white transition-colors z-10"
         >

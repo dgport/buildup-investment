@@ -3,6 +3,7 @@
 import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
+import { invalidPropertyNumbers } from "@/lib/utils/property-validation";
 import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { PageLoader } from "@/components/shared/PageLoader";
@@ -85,10 +86,13 @@ function CreatePropertyContent() {
       if (!formData.propertyType) newErrors.propertyType = t("errors.required");
       if (!formData.dealType) newErrors.dealType = t("errors.required");
       if (!hasAnyTitle(formData)) newErrors.title = t("errors.titleRequired");
-      if (formData.price !== undefined && formData.price !== "" && formData.price < 0)
-        newErrors.price = t("errors.invalidNumber");
+
+    }
+    for (const field of invalidPropertyNumbers(formData)) {
+      if ((s === 1 && field === "price") || (s === 3 && field !== "price")) newErrors[field] = t("errors.invalidNumber");
     }
     setErrors(newErrors);
+    if (Object.keys(newErrors).length) requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
     return Object.keys(newErrors).length === 0;
   };
 
@@ -116,6 +120,7 @@ function CreatePropertyContent() {
       goTo(1);
       return;
     }
+    if (!validateStep(3)) { goTo(3); return; }
     if (!termsAlreadyAccepted && !acceptTerms) {
       setTermsError(true);
       return;

@@ -134,7 +134,10 @@
   },
   "photos": {
     "earlier": "Move photo {position} earlier",
-    "later": "Move photo {position} later"
+    "later": "Move photo {position} later",
+    "open": "Open photo {position}",
+    "previous": "Previous photo",
+    "next": "Next photo"
   },
   "saved": {
     "title": "Saved properties",

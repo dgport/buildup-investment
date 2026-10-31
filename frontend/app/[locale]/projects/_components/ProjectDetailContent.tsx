@@ -33,14 +33,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useProject } from "@/lib/hooks/useProjects";
-import { resolveImageUrl } from "@/lib/utils/image-utils";
+import { nearbySlide } from "@/lib/utils/gallery";
+import { resolveImageUrl, thumbnailUrl, fallbackToFullImage } from "@/lib/utils/image-utils";
 import { PageLoader } from "@/components/shared/PageLoader";
 import { MobileContactBar } from "@/components/shared/MobileContactBar";
 import { toEmbedUrl } from "@/lib/utils/format";
 import { formatMoney, useCurrency } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants/routes";
 import type { UnitType } from "@/lib/types/projects";
-import MapboxMap from "@/app/[locale]/properties/_components/MapBox";
+import { LazyPropertyMap } from "@/components/shared/LazyPropertyMap";
 import { parseLocation } from "@/lib/utils/location";
 import ProjectCard from "@/components/shared/ProjectCard";
 import { UnitTypeCard } from "./UnitTypeCard";
@@ -194,13 +195,16 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
                   {images.length ? (
                     images.map((img, i) => (
                       <div key={img} className="relative flex-[0_0_100%] h-full">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={img}
-                          alt={`${title} ${i + 1}`}
-                          className="w-full h-full object-cover cursor-pointer"
-                          onClick={() => setLightbox({ images, index: selected })}
-                        />
+                        {nearbySlide(i, selected, images.length) && <button
+                          type="button"
+                          tabIndex={i === selected ? 0 : -1}
+                          aria-label={tc("photos.open", { position: i + 1 })}
+                          className="block h-full w-full focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-amber-400"
+                          onClick={() => { setLightbox({ images, index: i }); }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img} alt={`${title} ${i + 1}`} loading={i === selected ? "eager" : "lazy"} decoding="async" fetchPriority={i === 0 ? "high" : "auto"} className="w-full h-full object-cover" />
+                        </button>}
                       </div>
                     ))
                   ) : (
@@ -213,10 +217,10 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
               </div>
               {images.length > 1 && (
                 <>
-                  <button onClick={scrollPrev} aria-label="Previous" className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-md z-20 border border-teal-100">
+                  <button onClick={scrollPrev} aria-label={tc("photos.previous")} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-md z-20 border border-teal-100">
                     <ChevronLeft className="w-5 h-5 text-teal-900" />
                   </button>
-                  <button onClick={scrollNext} aria-label="Next" className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-md z-20 border border-teal-100">
+                  <button onClick={scrollNext} aria-label={tc("photos.next")} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-md z-20 border border-teal-100">
                     <ChevronRight className="w-5 h-5 text-teal-900" />
                   </button>
                   <div className="absolute bottom-2 left-0 right-0 z-20 px-4">
@@ -224,7 +228,10 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
                       <div className="overflow-hidden" ref={thumbsRef}>
                         <div className="flex gap-2">
                           {images.map((img, i) => (
-                            <div
+                            <button
+                              type="button"
+                              aria-label={tc("photos.open", { position: i + 1 })}
+                              aria-pressed={i === selected}
                               key={img}
                               onClick={() => { setSelected(i); emblaApi?.scrollTo(i); }}
                               style={{ width: 64, height: 48 }}
@@ -233,8 +240,8 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
                               }`}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={img} alt="" loading="lazy" className="h-full w-full object-cover" />
-                            </div>
+                              <img src={thumbnailUrl(img) ?? img} onError={(event) => fallbackToFullImage(event, img)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                            </button>
                           ))}
                         </div>
                       </div>
@@ -403,7 +410,7 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
             <section className="card p-4">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-600 mb-3 flex items-center gap-2"><MapPin className="w-4 h-4" />{t("detail.map")}</h2>
               <div className="h-[320px] sm:h-[380px] rounded-xl overflow-hidden">
-                <MapboxMap latitude={coords.lat} longitude={coords.lng} labels={{ view2d: "2D", view3d: "3D" }} />
+                <LazyPropertyMap latitude={coords.lat} longitude={coords.lng} labels={{ view2d: "2D", view3d: "3D" }} />
               </div>
             </section>
           )}
@@ -435,13 +442,14 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
 
       <Lightbox
         open={!!lightbox}
+        labels={{ Close: tc("actions.close"), Next: tc("photos.next"), Previous: tc("photos.previous") }}
         close={() => setLightbox(null)}
         slides={(lightbox?.images ?? []).map((src) => ({ src }))}
         index={lightbox?.index ?? 0}
       />
 
       <Dialog open={leadOpen} onOpenChange={setLeadOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{t("lead.title")}</DialogTitle>
           </DialogHeader>

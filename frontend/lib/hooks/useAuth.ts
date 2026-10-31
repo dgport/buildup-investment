@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isPrivateQueryKey } from "../utils/private-query";
 import { useSyncExternalStore } from "react";
 import type {
   ForgotPasswordDto,
@@ -41,13 +42,14 @@ export const useHasToken = () =>
 export const useCurrentUser = () => {
   const hasToken = useHasToken();
 
-  return useQuery<User | null>({
+  const query = useQuery<User | null>({
     queryKey: authKeys.currentUser,
     queryFn: async () => (await authService.getCurrentUser()).data,
     enabled: hasToken,
     retry: false,
     staleTime: 5 * 60 * 1000,
   });
+  return { ...query, data: hasToken ? query.data : null };
 };
 
 export const useSignIn = () => {
@@ -59,7 +61,10 @@ export const useSignIn = () => {
       const response = await authService.signIn(credentials);
       return { ...response.data, rememberMe };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      const privateQueries = { predicate: (query: { queryKey: readonly unknown[] }) => isPrivateQueryKey(query.queryKey) };
+      await queryClient.cancelQueries(privateQueries);
+      queryClient.removeQueries(privateQueries);
       setAccessToken(data.accessToken, data.rememberMe || false);
       queryClient.setQueryData(authKeys.currentUser, data.user);
     },
@@ -76,14 +81,13 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: async () => (await authService.logout()).data,
-    onSettled: () => {
-      // Clear locally even if the server call failed (expired session etc.)
+    onSettled: async () => {
+      // Clear locally even when the server call fails; discard all account/admin data.
       removeAccessToken();
+      const privateQueries = { predicate: (query: { queryKey: readonly unknown[] }) => isPrivateQueryKey(query.queryKey) };
+      await queryClient.cancelQueries(privateQueries);
+      queryClient.removeQueries(privateQueries);
       queryClient.setQueryData(authKeys.currentUser, null);
-      queryClient.removeQueries({ queryKey: ["auth"] });
-      queryClient.removeQueries({ queryKey: ["properties", "my-properties"] });
-      queryClient.removeQueries({ queryKey: ["properties", "my-stats"] });
-      queryClient.removeQueries({ queryKey: ["properties", "manage"] });
     },
   });
 };

@@ -9,9 +9,10 @@ export const adminKeys = {
   settings: ["admin", "settings"] as const,
 };
 
-export const useAdminStats = (lang?: string) =>
+export const useAdminStats = (lang?: string, enabled = true) =>
   useQuery({
     queryKey: adminKeys.stats(lang),
+    enabled,
     queryFn: async () => (await adminService.getStats(lang)).data,
     staleTime: 30_000,
   });

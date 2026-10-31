@@ -11,10 +11,13 @@ import {
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, // refresh-token cookie
+  timeout: 20000,
 });
 
 api.interceptors.request.use(
   (config) => {
+    // Photo uploads need more time than ordinary JSON requests.
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) config.timeout = 180000;
     const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -33,7 +36,7 @@ async function refreshAccessToken(): Promise<string> {
       .post<{ accessToken: string }>(
         `${API_BASE_URL}/auth/refresh-token`,
         {},
-        { withCredentials: true },
+        { withCredentials: true, timeout: 20000 },
       )
       .then((response) => {
         const { accessToken } = response.data;
@@ -87,6 +90,8 @@ api.interceptors.response.use(
 
 /** Best-effort human readable message from an axios/Nest error. */
 export function getErrorMessage(error: unknown, fallback: string): string {
+  // Keep network/time-out and server failures in the visitor's chosen language.
+  if (axios.isAxiosError(error) && (!error.response || error.response.status >= 500)) return fallback;
   const message = (error as { response?: { data?: { message?: unknown } } })
     ?.response?.data?.message;
   if (Array.isArray(message)) return message.join(", ");

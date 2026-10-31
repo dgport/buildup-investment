@@ -18,3 +18,10 @@ for (const prefix of ["", "/ka", "/en"]) {
 assert.equal(context.exports.safeAuthNext("//evil.test"), "/dashboard");
 assert.equal(context.exports.safeAuthNext("/\\evil.test"), "/dashboard");
 console.log("Session navigation checks passed: localized protected pages, preserved destination, public routes and redirect safety.");
+
+const privateCode = ts.transpileModule(fs.readFileSync(require.resolve("../lib/utils/private-query.ts"), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+const privateContext = { exports: {} }; vm.runInNewContext(privateCode, privateContext);
+const isPrivate = privateContext.exports.isPrivateQueryKey;
+for (const key of [["auth", "currentUser"], ["admin", "users"], ["leads"], ["properties", "manage", "id"], ["properties", "translations"], ["properties", "admin"], ["projects", "admin", "detail"], ["developers", "admin"]]) assert.equal(isPrivate(key), true);
+for (const key of [["properties", "public"], ["properties", "detail"], ["projects", "list"], ["developers", "detail"], ["currency"]]) assert.equal(isPrivate(key), false);
+console.log("Private account cache classification passed");
