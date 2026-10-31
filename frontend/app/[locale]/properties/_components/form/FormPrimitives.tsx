@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,9 +35,9 @@ export function SectionTitle({
   );
 }
 
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+function FieldLabel({ label, required, htmlFor }: { label: string; required?: boolean; htmlFor: string }) {
   return (
-    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800/80">
+    <Label htmlFor={htmlFor} className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800/80">
       {label} {required && <span className="text-amber-500">*</span>}
     </Label>
   );
@@ -56,14 +57,17 @@ export function FieldInput({
   /** Helper text under the field (hidden while an error is shown). */
   hint?: React.ReactNode;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const generatedId = useId();
+  const id = props.id ?? generatedId;
+  const description = [props["aria-describedby"], (error || hint) ? `${id}-description` : undefined].filter(Boolean).join(" ") || undefined;
   return (
     <div className="space-y-1.5">
-      <FieldLabel label={label} required={required} />
-      <Input {...props} aria-invalid={!!error} className={cn(FIELD, className)} />
+      <FieldLabel htmlFor={id} label={label} required={required} />
+      <Input {...props} id={id} aria-required={required} aria-describedby={description} aria-invalid={!!error} className={cn(FIELD, className)} />
       {error ? (
-        <p className="text-xs text-red-500">{error}</p>
+        <p id={`${id}-description`} role="alert" className="text-xs text-red-500">{error}</p>
       ) : hint ? (
-        <p className="text-xs text-slate-500 leading-relaxed">{hint}</p>
+        <p id={`${id}-description`} className="text-xs text-slate-500 leading-relaxed">{hint}</p>
       ) : null}
     </div>
   );
@@ -80,18 +84,23 @@ export function FieldTextarea({
   required?: boolean;
   error?: string;
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const generatedId = useId();
+  const id = props.id ?? generatedId;
   return (
     <div className="space-y-1.5">
-      <FieldLabel label={label} required={required} />
+      <FieldLabel htmlFor={id} label={label} required={required} />
       <Textarea
         {...props}
+        id={id}
+        aria-required={required}
+        aria-describedby={error ? `${id}-error` : props["aria-describedby"]}
         aria-invalid={!!error}
         className={cn(
           "rounded-xl border-slate-200 bg-slate-50 text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 resize-none",
           className,
         )}
       />
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p id={`${id}-error`} role="alert" className="text-xs text-red-500">{error}</p>}
     </div>
   );
 }
@@ -122,14 +131,18 @@ export function FieldSelect({
   clearLabel?: string;
 }) {
   const NONE = "__none__";
+  const id = useId();
   return (
     <div className="space-y-1.5">
-      <FieldLabel label={label} required={required} />
+      <FieldLabel htmlFor={id} label={label} required={required} />
       <Select
         value={value || (clearLabel ? NONE : undefined)}
         onValueChange={(v) => onValueChange(v === NONE ? "" : v)}
       >
         <SelectTrigger
+          id={id}
+          aria-required={required}
+          aria-describedby={error ? `${id}-error` : undefined}
           aria-invalid={!!error}
           className={cn(FIELD, "w-full", error && "border-red-400")}
         >
@@ -148,7 +161,7 @@ export function FieldSelect({
           ))}
         </SelectContent>
       </Select>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p id={`${id}-error`} role="alert" className="text-xs text-red-500">{error}</p>}
     </div>
   );
 }

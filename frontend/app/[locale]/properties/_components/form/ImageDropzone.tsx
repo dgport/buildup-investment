@@ -1,17 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useRef, useState, type DragEvent } from "react";
 import { useTranslations } from "next-intl";
-import { Upload, Trash2, GripVertical } from "lucide-react";
-
-export const MAX_IMAGES = 20;
-export const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
-
-export interface PendingImage {
-  id: string;
-  file: File;
-  preview: string;
-}
+import { Upload, Trash2 } from "lucide-react";
+import { MAX_IMAGES, MAX_IMAGE_SIZE, IMAGE_ACCEPT, supportedImage, moveItem, type PendingImage } from "@/lib/image-upload";
+import { PhotoOrderControls } from "@/components/shared/PhotoOrderControls";
+export { MAX_IMAGES, MAX_IMAGE_SIZE, type PendingImage } from "@/lib/image-upload";
 
 interface ImageDropzoneProps {
   images: PendingImage[];
@@ -19,6 +13,7 @@ interface ImageDropzoneProps {
   /** Photos already stored for the property (limits how many can be added). */
   existingCount?: number;
   onError?: (message: string) => void;
+  disabled?: boolean;
 }
 
 let counter = 0;
@@ -37,33 +32,21 @@ export function ImageDropzone({
   onChange,
   existingCount = 0,
   onError,
+  disabled = false,
 }: ImageDropzoneProps) {
   const t = useTranslations("dashboard.form");
   const inputRef = useRef<HTMLInputElement>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isOver, setIsOver] = useState(false);
 
-  // Revoke object URLs of images that were removed
-  const previousRef = useRef<PendingImage[]>([]);
-  useEffect(() => {
-    const current = new Set(images.map((i) => i.preview));
-    previousRef.current
-      .filter((i) => !current.has(i.preview))
-      .forEach((i) => URL.revokeObjectURL(i.preview));
-    previousRef.current = images;
-  }, [images]);
-  useEffect(
-    () => () => previousRef.current.forEach((i) => URL.revokeObjectURL(i.preview)),
-    [],
-  );
-
   const addFiles = (fileList: FileList | File[]) => {
+    if (disabled) return;
     const files = Array.from(fileList);
     if (!files.length) return;
 
     const accepted: File[] = [];
     for (const file of files) {
-      if (!file.type.startsWith("image/")) {
+      if (!supportedImage(file.type)) {
         onError?.(t("errors.notImage", { name: file.name }));
         continue;
       }
@@ -88,11 +71,8 @@ export function ImageDropzone({
     onChange(images.filter((_, i) => i !== index));
 
   const move = (from: number, to: number) => {
-    if (from === to) return;
-    const next = [...images];
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
-    onChange(next);
+    if (disabled) return;
+    onChange(moveItem(images, from, to));
   };
 
   const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
@@ -110,7 +90,7 @@ export function ImageDropzone({
         }}
         onDragLeave={() => setIsOver(false)}
         onDrop={handleDrop}
-        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
+        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 sm:p-10 text-center cursor-pointer transition-all focus-within:ring-2 focus-within:ring-teal-600 ${disabled ? "opacity-50 pointer-events-none" : ""} ${
           isOver
             ? "border-teal-500 bg-teal-50/50"
             : "border-gray-200 hover:border-teal-500 hover:bg-teal-50/40"
@@ -124,7 +104,9 @@ export function ImageDropzone({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={IMAGE_ACCEPT}
+          disabled={disabled || existingCount + images.length >= MAX_IMAGES}
+          aria-label={t("uploadTitle")}
           multiple
           onChange={(e) => e.target.files && addFiles(e.target.files)}
           className="sr-only"
@@ -138,7 +120,7 @@ export function ImageDropzone({
             {images.map((image, index) => (
               <div
                 key={image.id}
-                draggable
+                draggable={!disabled}
                 onDragStart={() => setDraggedIndex(index)}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -158,23 +140,22 @@ export function ImageDropzone({
                   alt={image.file.name}
                   className="w-full h-28 object-cover"
                 />
-                {index === 0 && (
+                {index === 0 && existingCount === 0 && (
                   <span className="absolute top-2 left-2 bg-teal-900 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
                     {t("cover")}
                   </span>
                 )}
-                <div className="absolute bottom-1.5 left-1.5 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
-                  <GripVertical className="w-2.5 h-2.5" />
-                  {index + 1}
-                </div>
                 <button
                   type="button"
+                  disabled={disabled}
+                  draggable={false}
                   onClick={() => remove(index)}
                   aria-label={t("removePhoto")}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                  className="absolute top-1 right-1 flex h-11 w-11 items-center justify-center bg-red-600/90 text-white rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity disabled:opacity-50"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
+                <PhotoOrderControls index={index} total={images.length} disabled={disabled} onMove={(direction) => move(index, index + direction)} />
               </div>
             ))}
           </div>

@@ -30,6 +30,7 @@ import { useCurrentUser } from "@/lib/hooks/useAuth";
 import { PropertyLocationPicker } from "../PropertyLocationPicker";
 import { MoneyField } from "@/components/shared/MoneyInput";
 import { CurrencySwitcher } from "@/components/shared/CurrencySwitcher";
+import { parseLocation } from "@/lib/utils/location";
 
 export type PropertyFormData = Partial<CreatePropertyDto>;
 
@@ -40,14 +41,6 @@ export interface SectionProps {
     value: CreatePropertyDto[K],
   ) => void;
   errors?: Record<string, string>;
-}
-
-/** Parse "lat,lng" into numbers (null when missing/invalid). */
-export function parseLocation(location?: string | null) {
-  if (!location) return null;
-  const [lat, lng] = location.split(",").map((v) => Number(v.trim()));
-  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
-  return { lat, lng };
 }
 
 const numberValue = (v: number | "" | undefined) =>
@@ -262,7 +255,7 @@ export function LocationSection({ data, onChange }: SectionProps) {
         <Label className="text-sm font-medium text-gray-700">
           {t("mapPin")}
         </Label>
-        <div className="flex items-center justify-between gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
           <div className="flex items-center gap-2 min-w-0">
             <MapPin
               className={`w-4 h-4 shrink-0 ${coords ? "text-teal-700" : "text-gray-400"}`}

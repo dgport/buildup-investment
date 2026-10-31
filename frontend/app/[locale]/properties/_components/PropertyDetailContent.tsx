@@ -49,7 +49,7 @@ import { ConditionUtilitiesSection } from "./ConditionUtilitesSection";
 import { AmenitiesFeaturesSection } from "./AmenitiesFeatureSection";
 import { PropertyDetailsSection } from "./PropertyDetailsSection";
 import MapboxMap from "./MapBox";
-import { parseLocation } from "./form/PropertyFormSections";
+import { parseLocation } from "@/lib/utils/location";
 
 function InfoRow({
   icon: Icon,

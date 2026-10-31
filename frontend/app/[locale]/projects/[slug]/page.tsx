@@ -8,6 +8,7 @@ import { API_BASE_URL, SITE_URL } from "@/lib/constants/env";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { jsonLd, publicPageMetadata } from "@/lib/seo";
 import type { Project } from "@/lib/types/projects";
+import { parseLocation } from "@/lib/utils/location";
 import { ProjectDetailContent } from "../_components/ProjectDetailContent";
 
 interface PageProps {
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 function projectJsonLd(project: Project, locale: string) {
-  const coords = project.location?.split(",").map((v) => Number(v.trim()));
+  const coords = parseLocation(project.location);
   const prices = project.unitTypes
     .map((u) => u.priceFrom)
     .filter((p): p is number => typeof p === "number" && p > 0);
@@ -63,8 +64,8 @@ function projectJsonLd(project: Project, locale: string) {
       addressCountry: "GE",
     },
     geo:
-      coords && coords.length === 2 && coords.every((n) => !Number.isNaN(n))
-        ? { "@type": "GeoCoordinates", latitude: coords[0], longitude: coords[1] }
+      coords
+        ? { "@type": "GeoCoordinates", latitude: coords.lat, longitude: coords.lng }
         : undefined,
     provider: {
       "@type": "Organization",

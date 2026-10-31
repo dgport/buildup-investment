@@ -27,6 +27,8 @@
   "deleting": "Deleting...",
   "missingTranslations": "Not translated: {languages}",
   "form": {
+    "unsavedConfirm": "You have unsaved changes. Leave this page and discard them?",
+    "unsavedHint": "You have unsaved changes. Save them before leaving this page.",
     "newTitle": "New Listing",
     "editTitle": "Edit Listing",
     "stepOf": "Step {step} of {total}",
@@ -94,7 +96,7 @@
     "nonStandard": "Non-standard layout",
     "uploadTitle": "Click or drop photos here",
     "uploadHint": "JPG, PNG, WEBP · up to 10MB · up to {max} photos at once",
-    "reorderHint": "Drag to reorder · the first photo is the cover",
+    "reorderHint": "Use the arrows or drag to reorder · the first photo is the cover",
     "cover": "Cover",
     "removePhoto": "Remove photo",
     "create": "Create listing",
@@ -113,7 +115,7 @@
       "invalidNumber": "Enter a valid number",
       "tooManyImages": "You can upload at most {max} photos at once",
       "imageTooLarge": "{name} is larger than 10MB",
-      "notImage": "{name} is not an image"
+      "notImage": "{name}: use JPG, PNG, GIF, WebP, AVIF or HEIC/HEIF"
     },
     "contactPhoneHint": "This number is not shown on the site — BuildUp uses it to reach you when someone is interested.",
     "limitReached": "Your listing limit has been reached. Contact an administrator to increase it."

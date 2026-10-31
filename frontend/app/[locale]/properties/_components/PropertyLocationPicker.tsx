@@ -31,6 +31,7 @@ export function PropertyLocationPicker({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const geocodeRequest = useRef<AbortController | null>(null);
 
   const [coords, setCoords] = useState<{ lng: number; lat: number } | null>(
     initialLocation ?? null,
@@ -107,6 +108,8 @@ export function PropertyLocationPicker({
     }
 
     return () => {
+      geocodeRequest.current?.abort();
+      geocodeRequest.current = null;
       markerRef.current?.remove();
       map.remove();
       mapRef.current = null;
@@ -142,18 +145,26 @@ export function PropertyLocationPicker({
   };
 
   const reverseGeocode = async (lng: number, lat: number) => {
+    geocodeRequest.current?.abort();
+    const controller = new AbortController();
+    geocodeRequest.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 10000);
     setLoading(true);
     const fallback = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    setAddress(fallback);
     try {
       const res = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=address,poi,place&language=ka,en&access_token=${MAPBOX_ACCESS_TOKEN}`,
+        { signal: controller.signal },
       );
+      if (!res.ok) throw new Error("Address unavailable");
       const data = await res.json();
-      setAddress(data.features?.[0]?.place_name ?? fallback);
+      if (geocodeRequest.current === controller && !controller.signal.aborted) setAddress(data.features?.[0]?.place_name ?? fallback);
     } catch {
-      setAddress(fallback);
+      // Coordinates remain usable even if the address service is unavailable.
     } finally {
-      setLoading(false);
+      clearTimeout(timeout);
+      if (geocodeRequest.current === controller) setLoading(false);
     }
   };
 
@@ -170,8 +181,9 @@ export function PropertyLocationPicker({
       className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4"
       role="dialog"
       aria-modal="true"
+      aria-label={t("title")}
     >
-      <div className="bg-slate-900 w-full max-w-6xl h-[92vh] rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
+      <div className="bg-slate-900 w-full max-w-6xl h-[92dvh] rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
         <header className="flex items-center justify-between px-4 sm:px-8 py-4 border-b border-slate-700">
           <div className="flex items-center gap-3">
             <MapPin className="text-amber-400" />
@@ -190,7 +202,7 @@ export function PropertyLocationPicker({
           </button>
         </header>
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-h-0">
           {MAPBOX_ACCESS_TOKEN ? (
             <div ref={mapContainerRef} className="w-full h-full" />
           ) : (

@@ -9,7 +9,7 @@ import { useProjectsMap } from "@/lib/hooks/useProjects";
 import { thumbnailUrl } from "@/lib/utils/image-utils";
 import { formatMoney, useCurrency } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants/routes";
-import { parseLocation } from "@/app/[locale]/properties/_components/form/PropertyFormSections";
+import { parseLocation } from "@/lib/utils/location";
 
 mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 

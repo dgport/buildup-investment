@@ -16,7 +16,7 @@ import {
   SectionTitle,
   ToggleChip,
 } from "@/app/[locale]/properties/_components/form/FormPrimitives";
-import { parseLocation } from "@/app/[locale]/properties/_components/form/PropertyFormSections";
+import { parseLocation } from "@/lib/utils/location";
 import { PropertyLocationPicker } from "@/app/[locale]/properties/_components/PropertyLocationPicker";
 import { Region, PROPERTY_LANGUAGES, type PropertyLanguage } from "@/lib/types/properties";
 import { PROJECT_AMENITIES, ProjectStatus, type Developer, type Project, type ProjectInput } from "@/lib/types/projects";

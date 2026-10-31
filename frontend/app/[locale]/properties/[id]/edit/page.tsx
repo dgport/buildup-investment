@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
+import { rebaseForm } from "@/lib/utils/form-state";
+import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import {
   ArrowLeft,
   Save,
@@ -117,8 +120,12 @@ export default function EditPropertyPage() {
 
   const { data: property, isLoading, error } = usePropertyManage(id, locale);
   const updateProperty = useUpdateProperty();
+  const confirm = useConfirm();
+  const baseline = useRef<{ id: string; data: PropertyFormData } | null>(null);
+  const submitting = useRef(false);
 
   const [tab, setTab] = useState<Tab>("details");
+  const [imagesVisited, setImagesVisited] = useState(false);
   const [original, setOriginal] = useState<PropertyFormData | null>(null);
   const [formData, setFormData] = useState<PropertyFormData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -128,8 +135,10 @@ export default function EditPropertyPage() {
   useEffect(() => {
     if (property) {
       const mapped = propertyToFormData(property);
+      const previous = baseline.current;
+      baseline.current = { id: property.id, data: mapped };
       setOriginal(mapped);
-      setFormData(mapped);
+      setFormData((current) => previous?.id === property.id ? rebaseForm(previous.data, current, mapped) : mapped);
     }
   }, [property]);
 
@@ -138,6 +147,11 @@ export default function EditPropertyPage() {
     [original, formData],
   );
   const hasChanges = Object.keys(changes).length > 0;
+  useUnsavedChanges(hasChanges);
+
+  const leave = async () => {
+    if (!hasChanges || await confirm({ description: t("unsavedConfirm") })) router.push(ROUTES.DASHBOARD);
+  };
 
   const updateField = <K extends keyof CreatePropertyDto>(
     field: K,
@@ -149,17 +163,26 @@ export default function EditPropertyPage() {
   };
 
   const handleSubmit = async () => {
+    if (submitting.current || !hasChanges) return;
     if (!hasAnyTitle(formData)) {
       setErrors({ title: t("errors.titleRequired") });
       return;
     }
     setSubmitError(null);
+    submitting.current = true;
+    const submitted = formData;
     try {
-      await updateProperty.mutateAsync({ id, data: changes });
+      const saved = await updateProperty.mutateAsync({ id, data: changes });
+      const mapped = propertyToFormData(saved);
+      baseline.current = { id, data: mapped };
+      setOriginal(mapped);
+      setFormData((current) => rebaseForm(submitted, current, mapped));
       setSavedAt(Date.now());
       toast.success(t("saved"));
     } catch (err) {
       setSubmitError(getErrorMessage(err, t("updateFailed")));
+    } finally {
+      submitting.current = false;
     }
   };
 
@@ -192,7 +215,7 @@ export default function EditPropertyPage() {
         <div className="mb-8">
           <button
             type="button"
-            onClick={() => router.push(ROUTES.DASHBOARD)}
+            onClick={() => void leave()}
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -227,6 +250,7 @@ export default function EditPropertyPage() {
               key={tabId}
               type="button"
               onClick={() => {
+                if (tabId === "images") setImagesVisited(true);
                 setTab(tabId);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
@@ -248,7 +272,8 @@ export default function EditPropertyPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
           {tab === "details" && (
             <div className="space-y-10">
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start [&>*]:min-w-0 [&>*]:rounded-xl [&>*]:border [&>*]:border-slate-100 [&>*]:p-4 sm:[&>*]:p-6">
+              {hasChanges && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">{t("unsavedHint")}</p>}
+              <fieldset disabled={updateProperty.isPending} className="grid min-w-0 grid-cols-1 xl:grid-cols-2 gap-6 items-start [&>*]:min-w-0 [&>*]:rounded-xl [&>*]:border [&>*]:border-slate-100 [&>*]:p-4 sm:[&>*]:p-6">
                 <BasicsSection data={formData} onChange={updateField} errors={errors} />
                 <TextsSection data={formData} onChange={updateField} errors={errors} />
                 <LocationSection data={formData} onChange={updateField} />
@@ -256,7 +281,7 @@ export default function EditPropertyPage() {
                 <div className="xl:col-span-2">
                   <AmenitiesSection data={formData} onChange={updateField} />
                 </div>
-              </div>
+              </fieldset>
 
               {(submitError || errors.title) && (
                 <Alert variant="destructive">
@@ -289,7 +314,7 @@ export default function EditPropertyPage() {
                   type="button"
                   variant="outline"
                   onClick={() => original && setFormData(original)}
-                  disabled={!hasChanges}
+                  disabled={!hasChanges || updateProperty.isPending}
                   className="px-6"
                 >
                   {tc("cancel")}
@@ -298,7 +323,7 @@ export default function EditPropertyPage() {
             </div>
           )}
 
-          {tab === "images" && <PropertyImagesManager propertyId={id} />}
+          {imagesVisited && <div hidden={tab !== "images"}><PropertyImagesManager propertyId={id} /></div>}
 
           {tab === "translations" && (
             <PropertyTranslationsManager propertyId={id} />

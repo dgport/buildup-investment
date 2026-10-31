@@ -132,6 +132,10 @@
     "rentals": "Rentals",
     "publishOn": "This listing will appear on {site}"
   },
+  "photos": {
+    "earlier": "Move photo {position} earlier",
+    "later": "Move photo {position} later"
+  },
   "saved": {
     "title": "Saved properties",
     "nav": "Saved properties ({count})",

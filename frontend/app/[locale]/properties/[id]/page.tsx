@@ -10,6 +10,7 @@ import { API_BASE_URL } from "@/lib/constants/env";
 import { resolveImageUrl } from "@/lib/utils/image-utils";
 import { jsonLd, publicPageMetadata } from "@/lib/seo";
 import type { Property } from "@/lib/types/properties";
+import { parseLocation } from "@/lib/utils/location";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -58,7 +59,7 @@ function propertyJsonLd(property: Property, locale: string) {
   const image = property.galleryImages
     .map((g) => resolveImageUrl(g.imageUrl))
     .filter((s): s is string => !!s);
-  const coords = property.location?.split(",").map((v) => Number(v.trim()));
+  const coords = parseLocation(property.location);
   return {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
@@ -91,8 +92,8 @@ function propertyJsonLd(property: Property, locale: string) {
         addressCountry: "GE",
       },
       geo:
-        coords && coords.length === 2 && coords.every((n) => !Number.isNaN(n))
-          ? { "@type": "GeoCoordinates", latitude: coords[0], longitude: coords[1] }
+        coords
+          ? { "@type": "GeoCoordinates", latitude: coords.lat, longitude: coords.lng }
           : undefined,
     },
   };

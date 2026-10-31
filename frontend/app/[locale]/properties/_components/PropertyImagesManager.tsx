@@ -16,7 +16,11 @@ import { getErrorMessage } from "@/lib/api/api";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import type { PropertyGalleryImage } from "@/lib/types/properties";
-import { ImageDropzone, type PendingImage } from "./form/ImageDropzone";
+import { ImageDropzone } from "./form/ImageDropzone";
+import { usePendingImages } from "@/lib/hooks/usePendingImages";
+import { PhotoOrderControls } from "@/components/shared/PhotoOrderControls";
+import { moveItem } from "@/lib/image-upload";
+import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
 
 interface PropertyImagesManagerProps {
   propertyId: string;
@@ -32,7 +36,9 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
   const reorder = useReorderPropertyImages();
   const confirm = useConfirm();
 
-  const [pending, setPending] = useState<PendingImage[]>([]);
+  const [pending, setPending] = usePendingImages();
+  useUnsavedChanges(pending.length > 0);
+  const busy = deleteImage.isPending || addImages.isPending || reorder.isPending;
   const serverImages = property?.galleryImages;
   const [gallery, setGallery] = useState<PropertyGalleryImage[]>(serverImages ?? []);
   const [syncedImages, setSyncedImages] = useState(serverImages);
@@ -60,7 +66,7 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
   };
 
   const handleUpload = async () => {
-    if (!pending.length) return;
+    if (!pending.length || busy) return;
     try {
       await addImages.mutateAsync({
         id: propertyId,
@@ -96,9 +102,9 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
     });
   };
 
-  const persistOrder = async () => {
+  const persistOrder = async (nextGallery = gallery) => {
     setDraggedId(null);
-    const ids = gallery.map((g) => g.id);
+    const ids = nextGallery.map((g) => g.id);
     const serverIds = property?.galleryImages.map((g) => g.id) ?? [];
     if (ids.join(",") === serverIds.join(",")) return;
     try {
@@ -150,13 +156,13 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
           {gallery.map((image, index) => (
             <div
               key={image.id}
-              draggable
+              draggable={!busy}
               onDragStart={() => setDraggedId(image.id)}
               onDragOver={(e) => {
                 e.preventDefault();
                 if (draggedId !== null) moveTo(draggedId, image.id);
               }}
-              onDragEnd={persistOrder}
+              onDragEnd={() => void persistOrder()}
               className={`relative group rounded-xl overflow-hidden border border-gray-200 cursor-move transition-opacity ${
                 draggedId === image.id ? "opacity-40" : ""
               }`}
@@ -174,19 +180,25 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
                   {tf("cover")}
                 </span>
               )}
-              <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
+              <div className="absolute top-12 left-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
                 <GripVertical className="w-2.5 h-2.5" />
                 {index + 1}
               </div>
               <button
                 type="button"
                 onClick={() => handleDelete(image.id)}
-                disabled={deleteImage.isPending}
+                disabled={busy}
+                draggable={false}
                 aria-label={tf("removePhoto")}
-                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity disabled:opacity-50"
+                className="absolute top-1 right-1 flex h-11 w-11 items-center justify-center bg-red-600/90 hover:bg-red-600 text-white rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
+              <PhotoOrderControls index={index} total={gallery.length} disabled={busy} onMove={(direction) => {
+                const next = moveItem(gallery, index, index + direction);
+                setGallery(next);
+                void persistOrder(next);
+              }} />
             </div>
           ))}
         </div>
@@ -194,6 +206,7 @@ export function PropertyImagesManager({ propertyId }: PropertyImagesManagerProps
 
       <div className="pt-4 border-t border-gray-100 space-y-4">
         <ImageDropzone
+          disabled={busy}
           images={pending}
           onChange={setPending}
           existingCount={gallery.length}

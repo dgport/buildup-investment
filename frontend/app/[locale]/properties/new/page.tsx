@@ -1,7 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
+import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { PageLoader } from "@/components/shared/PageLoader";
 import { useQueryClient } from "@tanstack/react-query";
 import { authKeys, useCurrentUser } from "@/lib/hooks/useAuth";
@@ -22,7 +25,8 @@ import {
   type PropertyFormData,
 } from "../_components/form/PropertyFormSections";
 import { SectionTitle } from "../_components/form/FormPrimitives";
-import { ImageDropzone, type PendingImage } from "../_components/form/ImageDropzone";
+import { ImageDropzone } from "../_components/form/ImageDropzone";
+import { usePendingImages } from "@/lib/hooks/usePendingImages";
 import { FormStepper, STEP_KEYS } from "../_components/form/FormStepper";
 import { ListingTermsConsent } from "../_components/form/ListingTermsConsent";
 
@@ -43,6 +47,8 @@ function CreatePropertyContent() {
   const t = useTranslations("dashboard.form");
   const { data: quota } = useMyPropertyStats();
   const createProperty = useCreateProperty();
+  const submitting = useRef(false);
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser();
   const termsAlreadyAccepted = !!currentUser?.listingTermsAccepted;
@@ -53,11 +59,16 @@ function CreatePropertyContent() {
   const [formData, setFormData] = useState<PropertyFormData>(() => ({ ...INITIAL_FORM,
     dealType: params.get("dealType") === DealType.RENT ? DealType.RENT : params.get("dealType") === DealType.DAILY_RENT ? DealType.DAILY_RENT : DealType.SALE,
   }));
-  const [images, setImages] = useState<PendingImage[]>([]);
+  const [images, setImages] = usePendingImages();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [edited, setEdited] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const dirty = !completed && (edited || images.length > 0);
+  useUnsavedChanges(dirty);
 
   const updateField = <K extends keyof CreatePropertyDto>(field: K, value: CreatePropertyDto[K]) => {
+    setEdited(true);
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => {
       if (!prev[field] && !(field.startsWith("title") && prev.title)) return prev;
@@ -90,12 +101,13 @@ function CreatePropertyContent() {
     if (validateStep(step)) goTo(Math.min(step + 1, STEP_KEYS.length));
   };
 
-  const goBack = () => {
+  const goBack = async () => {
     if (step > 1) goTo(step - 1);
-    else router.push(ROUTES.DASHBOARD);
+    else if (!dirty || await confirm({ description: t("unsavedConfirm") })) router.push(ROUTES.DASHBOARD);
   };
 
   const handleSubmit = async () => {
+    if (submitting.current) return;
     if (quota && quota.total >= quota.listingLimit) {
       setSubmitError(t("limitReached"));
       return;
@@ -120,6 +132,7 @@ function CreatePropertyContent() {
     ) as unknown as CreatePropertyDto;
     if (!termsAlreadyAccepted) cleaned.acceptTerms = true;
 
+    submitting.current = true;
     try {
       await createProperty.mutateAsync({
         data: cleaned,
@@ -127,6 +140,7 @@ function CreatePropertyContent() {
       });
       // Acceptance is now stored on the account
       queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
+      setCompleted(true);
       router.push(`${ROUTES.DASHBOARD}?created=1`);
     } catch (err) {
       const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
@@ -138,6 +152,8 @@ function CreatePropertyContent() {
         return;
       }
       setSubmitError(code === "LISTING_LIMIT_REACHED" ? t("limitReached") : getErrorMessage(err, t("createFailed")));
+    } finally {
+      submitting.current = false;
     }
   };
 
@@ -158,6 +174,7 @@ function CreatePropertyContent() {
         <button
           type="button"
           onClick={goBack}
+          disabled={createProperty.isPending}
           className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-900 transition-colors mb-5"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -168,12 +185,12 @@ function CreatePropertyContent() {
           <FormStepper
             title={t("newTitle")}
             step={step}
-            onSelect={(s) => s < step && goTo(s)}
+            onSelect={(s) => !createProperty.isPending && s < step && goTo(s)}
             stepLabel={(key) => t(`steps.${key}`)}
             progressLabel={t("stepOf", { step, total: STEP_KEYS.length })}
           />
 
-          <div className="card p-6 sm:p-8 relative overflow-hidden">
+          <fieldset disabled={createProperty.isPending} className="card min-w-0 p-5 sm:p-8 relative overflow-hidden">
             <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-900 via-amber-400 to-teal-900" />
 
             {step === 1 && (
@@ -188,7 +205,7 @@ function CreatePropertyContent() {
             {step === 5 && (
               <div className="space-y-6">
                 <SectionTitle>{t("sections.photos")}</SectionTitle>
-                <ImageDropzone images={images} onChange={setImages} onError={setSubmitError} />
+                <ImageDropzone images={images} onChange={setImages} onError={setSubmitError} disabled={createProperty.isPending} />
                 <ListingTermsConsent
                   alreadyAccepted={termsAlreadyAccepted}
                   acceptedAt={currentUser?.listingTermsAcceptedAt}
@@ -231,7 +248,7 @@ function CreatePropertyContent() {
                 </Button>
               )}
             </div>
-          </div>
+          </fieldset>
         </div>
       </div>
     </div>

@@ -41,7 +41,7 @@ import { formatMoney, useCurrency } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants/routes";
 import type { UnitType } from "@/lib/types/projects";
 import MapboxMap from "@/app/[locale]/properties/_components/MapBox";
-import { parseLocation } from "@/app/[locale]/properties/_components/form/PropertyFormSections";
+import { parseLocation } from "@/lib/utils/location";
 import ProjectCard from "@/components/shared/ProjectCard";
 import { UnitTypeCard } from "./UnitTypeCard";
 import { LeadForm } from "./LeadForm";

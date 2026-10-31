@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/shared/ConfirmDialog";
 import { fallbackToFullImage, thumbnailUrl } from "@/lib/utils/image-utils";
 import type { ProjectImage } from "@/lib/types/projects";
-import { ImageDropzone, type PendingImage } from "@/app/[locale]/properties/_components/form/ImageDropzone";
+import { ImageDropzone } from "@/app/[locale]/properties/_components/form/ImageDropzone";
+import { usePendingImages } from "@/lib/hooks/usePendingImages";
+import { PhotoOrderControls } from "@/components/shared/PhotoOrderControls";
+import { moveItem } from "@/lib/image-upload";
+import { getErrorMessage } from "@/lib/api/api";
+import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
 
 interface Props {
   images: ProjectImage[];
@@ -33,7 +38,8 @@ export function AdminImageGallery({
 }: Props) {
   const t = useTranslations("admin");
   const confirm = useConfirm();
-  const [pending, setPending] = useState<PendingImage[]>([]);
+  const [pending, setPending] = usePendingImages();
+  useUnsavedChanges(pending.length > 0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,15 +55,25 @@ export function AdminImageGallery({
   const ordered = order.map((id) => byId.get(id)).filter((i): i is ProjectImage => !!i);
 
   const run = async (fn: () => Promise<unknown>) => {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
       await fn();
     } catch (e) {
-      setError((e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? t("common.saveError"));
+      setError(getErrorMessage(e, t("common.saveError")));
     } finally {
       setBusy(false);
     }
+  };
+
+  const saveOrder = (next: number[]) => {
+    if (busy) return;
+    setOrder(next);
+    void run(async () => {
+      try { await onReorder(next); }
+      catch (error) { setOrder(images.map((image) => image.id)); throw error; }
+    });
   };
 
   return (
@@ -70,11 +86,11 @@ export function AdminImageGallery({
           {emptyLabel}
         </div>
       ) : (
-        <div className={`grid gap-3 ${compact ? "grid-cols-3 sm:grid-cols-4" : "grid-cols-2 md:grid-cols-4"}`}>
+        <div className={`grid gap-3 ${compact ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2 md:grid-cols-4"}`}>
           {ordered.map((img, index) => (
             <div
               key={img.id}
-              draggable
+              draggable={!busy}
               onDragStart={() => setDragged(img.id)}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -90,7 +106,7 @@ export function AdminImageGallery({
               }}
               onDragEnd={() => {
                 setDragged(null);
-                if (order.join() !== images.map((i) => i.id).join()) run(() => onReorder(order));
+                if (order.join() !== images.map((i) => i.id).join()) saveOrder(order);
               }}
               className={`relative group rounded-xl overflow-hidden border border-gray-200 bg-slate-50 cursor-move ${dragged === img.id ? "opacity-40" : ""}`}
             >
@@ -107,24 +123,26 @@ export function AdminImageGallery({
               {index === 0 && coverLabel && (
                 <span className="absolute top-2 left-2 bg-teal-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">{coverLabel}</span>
               )}
-              <span className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span className="absolute top-12 left-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
                 <GripVertical className="w-2.5 h-2.5" />{index + 1}
               </span>
               <button
                 type="button"
                 disabled={busy}
+                draggable={false}
                 onClick={async () => (await confirm({ description: deleteConfirm, destructive: true })) && run(() => onDelete(img.id))}
-                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition"
+                className="absolute top-1 right-1 flex h-11 w-11 items-center justify-center bg-red-600/90 hover:bg-red-600 text-white rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition disabled:opacity-50"
                 aria-label={t("common.delete")}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
+              <PhotoOrderControls index={index} total={ordered.length} disabled={busy} onMove={(direction) => saveOrder(moveItem(order, index, index + direction))} />
             </div>
           ))}
         </div>
       )}
 
-      <ImageDropzone images={pending} onChange={setPending} existingCount={images.length} onError={setError} />
+      <ImageDropzone images={pending} onChange={setPending} existingCount={images.length} onError={setError} disabled={busy} />
 
       {pending.length > 0 && (
         <div className="flex justify-end gap-2">
