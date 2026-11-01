@@ -236,7 +236,7 @@ body.locale-ka {
 /* App-like mobile shell: safe areas, accessible inputs, and no competing bottom bars. */
 .admin-field-label { display: none; }
 @media (max-width: 1023px) {
-  body:has([data-mobile-navigation]) { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+  body:has([data-mobile-navigation]) { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
   body:has([data-mobile-contact-bar]) [data-mobile-navigation],
   body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) [data-mobile-navigation] { display: none; }
   body:has([data-mobile-contact-bar]) { padding-bottom: 0; }
