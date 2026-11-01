@@ -32,14 +32,14 @@ export function ShareSearch() {
       if (!(error instanceof DOMException && error.name === "AbortError")) toast.error(t("copyError"));
     } finally { setSharing(false); }
   };
-  return <button type="button" onClick={share} disabled={sharing} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-teal-900 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-700"><Share2 aria-hidden className="h-4 w-4" />{t("share")}</button>;
+  return <button type="button" onClick={share} disabled={sharing} className="inline-flex whitespace-nowrap shrink-0 min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-teal-900 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-700"><Share2 aria-hidden className="h-4 w-4" />{t("share")}</button>;
 }
 export function CatalogueRecovery({ onRetry }: { onRetry?: () => void }) {
   const { params, clear } = useFilterActions(); const t = useTranslations("common.catalogue");
   const filtered = filterKeys.some((key) => params.has(key)) || Number(params.get("page")) > 1;
   if (!onRetry && !filtered) return null;
   return <div className="mt-5 flex flex-wrap justify-center gap-3">
-    {onRetry && <button type="button" onClick={onRetry} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal-900 px-5 text-sm font-semibold text-white hover:bg-teal-800"><RotateCcw aria-hidden className="h-4 w-4" />{t("retry")}</button>}
+    {onRetry && <button type="button" onClick={onRetry} className="inline-flex whitespace-nowrap shrink-0 min-h-11 items-center gap-2 rounded-xl bg-teal-900 px-5 text-sm font-semibold text-white hover:bg-teal-800"><RotateCcw aria-hidden className="h-4 w-4" />{t("retry")}</button>}
     {filtered && <button type="button" onClick={() => clear()} className="min-h-11 rounded-xl border border-teal-200 bg-white px-5 text-sm font-semibold text-teal-900 hover:bg-teal-50">{t("clear")}</button>}
   </div>;
 }
@@ -49,7 +49,7 @@ export function FilterDraftNotice({ onApply, onReset }: { onApply: () => void; o
   const t = useTranslations("common.catalogue");
   return <div className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-300/40 bg-amber-50 px-3 py-2 text-teal-950">
     <p role="status" className="w-full min-w-0 sm:w-auto sm:flex-1 text-sm font-medium">{t("draft")}</p>
-    <button type="button" onClick={onApply} className="min-h-11 rounded-lg bg-teal-900 px-4 text-sm font-semibold text-white">{t("apply")}</button>
-    <button type="button" onClick={onReset} className="min-h-11 rounded-lg px-3 text-sm font-semibold hover:bg-amber-100">{t("undo")}</button>
+    <button type="button" onClick={onApply} className="whitespace-nowrap shrink-0 min-h-11 rounded-lg bg-teal-900 px-4 text-sm font-semibold text-white">{t("apply")}</button>
+    <button type="button" onClick={onReset} className="whitespace-nowrap shrink-0 min-h-11 rounded-lg px-3 text-sm font-semibold hover:bg-amber-100">{t("undo")}</button>
   </div>;
 }

@@ -8,7 +8,7 @@ interface Props {
   callLabel: string;
   whatsappLabel: string;
   /** Optional extra action (e.g. "request a consultation") */
-  action?: { label: string; onClick: () => void };
+  action?: { label: string; ariaLabel?: string; onClick: () => void };
 }
 
 /** Fixed bottom bar with call / WhatsApp buttons, visible only on small screens. */
@@ -38,7 +38,7 @@ export function MobileContactBar({ phone, whatsappText, callLabel, whatsappLabel
             aria-label={whatsappLabel}
             className="min-w-0 flex-1 h-11 px-1 rounded-xl border border-amber-400/40 text-amber-100 font-semibold text-xs sm:text-sm flex items-center justify-center gap-1 sm:gap-2"
           >
-            <MessageCircle className="w-4 h-4 shrink-0" />
+            <MessageCircle className={action ? "hidden min-[400px]:block w-4 h-4 shrink-0" : "w-4 h-4 shrink-0"} />
             <span>WhatsApp</span>
           </a>
         )}
@@ -46,7 +46,8 @@ export function MobileContactBar({ phone, whatsappText, callLabel, whatsappLabel
           <button
             type="button"
             onClick={action.onClick}
-            className="min-w-0 flex-[1.4] min-h-11 px-2 rounded-xl bg-white text-teal-950 font-bold text-[11px] sm:text-sm leading-4 flex items-center justify-center gap-2"
+            aria-label={action.ariaLabel ?? action.label}
+            className="min-w-0 flex-[1.4] min-h-11 px-2 rounded-xl bg-white text-teal-950 font-bold whitespace-nowrap text-[11px] sm:text-sm leading-4 flex items-center justify-center gap-2"
           >
             {action.label}
           </button>

@@ -176,7 +176,8 @@
     "priceTo": "Max price",
     "areaFrom": "Min area (m²)",
     "areaTo": "Max area (m²)",
-    "currency": "Currency"
+    "currency": "Currency",
+    "dailyShort": "Daily rent"
   },
   "callHint": "Mention listing ID {id} when you call",
   "contactUs": "Contact us",

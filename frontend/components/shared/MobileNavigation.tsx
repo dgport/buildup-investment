@@ -33,7 +33,7 @@ export function MobileNavigation() {
           const active = pathname === href || (href !== "/" && href !== "/admin" && pathname.startsWith(`${href}/`));
           return <Link key={label} href={href} aria-current={active ? "page" : undefined} className={cn("min-w-0 min-h-16 flex flex-col items-center justify-center gap-1 rounded-xl px-0.5 py-2 text-[10px] sm:text-[11px] text-center leading-4 font-semibold transition-colors active:bg-teal-50",active ? "text-teal-950" : "text-slate-500")}>
             <span className={cn("flex h-7 w-12 items-center justify-center rounded-full", active && "bg-teal-100", label === "add" && "bg-amber-400 text-teal-950")}><Icon className="size-5" aria-hidden /></span>
-            <span className="max-w-full break-words">{t(label)}</span>
+            <span className="max-w-full whitespace-nowrap">{t(label)}</span>
           </Link>;
         })}
       </div>

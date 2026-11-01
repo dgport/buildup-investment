@@ -63,7 +63,7 @@ const read = (p: URLSearchParams): State => ({
 
 const isSet = (key: Key, value: string) => (SELECTS.includes(key) ? value !== ALL : value.trim() !== "");
 const control =
-  "h-11 w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-sm text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 [&>span]:truncate";
+  "max-[479px]:col-span-2 h-11 w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-sm text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 [&>span]:truncate";
 
 /** Inline toolbar + "more" sheet + removable chips, matching the listings page. */
 export function ProjectFilters() {
@@ -192,7 +192,7 @@ export function ProjectFilters() {
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-teal-900 hover:bg-slate-50 inline-flex items-center justify-center gap-2 whitespace-nowrap"
+                className="max-[479px]:col-span-2 h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-teal-900 hover:bg-slate-50 inline-flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <SlidersHorizontal className="w-4 h-4 text-teal-700" />
                 {t("filters.more")}
@@ -216,7 +216,7 @@ export function ProjectFilters() {
                         type="button"
                         onClick={() => set("rooms", r)}
                         aria-pressed={state.rooms === r}
-                        className={`min-h-11 px-3.5 rounded-xl border text-sm font-semibold transition ${
+                        className={`min-h-11 px-3.5 rounded-xl border text-sm font-semibold whitespace-nowrap transition ${
                           state.rooms === r ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-slate-200 hover:border-teal-400"
                         }`}
                       >
@@ -232,7 +232,7 @@ export function ProjectFilters() {
                         key={y}
                         type="button"
                         onClick={() => set("year", y)}
-                        className={`min-h-11 px-3.5 rounded-xl border text-sm font-semibold transition ${
+                        className={`min-h-11 px-3.5 rounded-xl border text-sm font-semibold whitespace-nowrap transition ${
                           state.year === y ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-slate-200 hover:border-teal-400"
                         }`}
                       >
@@ -278,10 +278,10 @@ export function ProjectFilters() {
               key={key}
               type="button"
               onClick={() => removeChip(key)}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full focus-visible:outline-2 focus-visible:outline-amber-300 bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
+              className="inline-flex max-w-full min-h-11 items-center gap-1.5 rounded-full focus-visible:outline-2 focus-visible:outline-amber-300 bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
             >
-              {chipLabel(key, applied[key])}
-              <X className="w-3 h-3 opacity-70" />
+              <span className="truncate" title={chipLabel(key, applied[key])}>{chipLabel(key, applied[key])}</span>
+              <X className="w-3 h-3 shrink-0 opacity-70" />
             </button>
           ))}
           <button type="button" onClick={clear} className="text-xs font-semibold text-amber-300 hover:text-amber-200 px-2">

@@ -69,7 +69,7 @@ const isSet = (key: FilterKey, value: string) =>
 const digits = (v: string) => v.replace(/[^\d]/g, "");
 
 const control =
-  "h-11 w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-sm text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 [&>span]:truncate";
+  "max-[479px]:col-span-2 h-11 w-full min-w-0 rounded-xl border-slate-200 bg-slate-50 text-sm text-teal-950 hover:bg-white focus:bg-white focus:border-teal-500 [&>span]:truncate";
 
 /** Inline search toolbar + "more filters" sheet + removable active-filter chips. */
 export function PropertyFilters() {
@@ -163,11 +163,12 @@ export function PropertyFilters() {
                 type="button"
                 onClick={() => set("dealType", d)}
                 aria-pressed={filters.dealType === d}
-                className={`sm:flex-1 xl:flex-none px-3 h-9 rounded-lg text-[13px] sm:text-sm font-semibold whitespace-nowrap transition ${
+                aria-label={d === ALL ? t("filters.dealAll") : t(`enums.dealType.${d as DealType}`)}
+                className={`${d === ALL && MARKET_DEAL_TYPES.length > 1 ? "max-sm:col-span-2" : ""} sm:flex-1 xl:flex-none px-3 min-h-11 rounded-lg text-[13px] sm:text-sm font-semibold whitespace-nowrap transition ${
                   filters.dealType === d ? "bg-teal-900 text-white shadow" : "text-teal-900 hover:bg-white"
                 }`}
               >
-                {d === ALL ? t("filters.dealAll") : t(`enums.dealType.${d as DealType}`)}
+                {d === ALL ? t("filters.dealAll") : d === DealType.DAILY_RENT ? t("filters.dailyShort") : t(`enums.dealType.${d as DealType}`)}
               </button>
             ))}
           </div>
@@ -235,7 +236,7 @@ export function PropertyFilters() {
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-teal-900 hover:bg-slate-50 inline-flex items-center justify-center gap-2 whitespace-nowrap"
+                className="max-[479px]:col-span-2 h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-teal-900 hover:bg-slate-50 inline-flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <SlidersHorizontal className="w-4 h-4 text-teal-700" />
                 {t("filters.more")}
@@ -273,14 +274,14 @@ export function PropertyFilters() {
                 </div>
                 {!isLand && (
                   <Field label={t("fields.bedrooms")}>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       {[ALL, "1", "2", "3", "4"].map((n) => (
                         <button
                           key={n}
                           type="button"
                           onClick={() => set("bedrooms", n)}
                           aria-pressed={filters.bedrooms === n}
-                          className={`flex-1 min-h-11 px-3 rounded-xl border text-sm font-semibold whitespace-nowrap transition ${n === ALL ? "min-w-[112px]" : "min-w-11"} ${
+                          className={`min-h-11 px-3 rounded-xl border text-sm font-semibold whitespace-nowrap transition ${n === ALL ? "col-span-4" : "min-w-0"} ${
                             filters.bedrooms === n ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-slate-200 hover:border-teal-400"
                           }`}
                         >
@@ -321,10 +322,10 @@ export function PropertyFilters() {
               key={key}
               type="button"
               onClick={() => removeChip(key)}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full focus-visible:outline-2 focus-visible:outline-amber-300 bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
+              className="inline-flex max-w-full min-h-11 items-center gap-1.5 rounded-full focus-visible:outline-2 focus-visible:outline-amber-300 bg-white/10 hover:bg-white/20 text-white text-xs font-medium pl-3 pr-2 py-1.5 transition"
             >
-              {chipLabel(key, applied[key])}
-              <X className="w-3 h-3 opacity-70" />
+              <span className="truncate" title={chipLabel(key, applied[key])}>{chipLabel(key, applied[key])}</span>
+              <X className="w-3 h-3 shrink-0 opacity-70" />
             </button>
           ))}
           <button type="button" onClick={clearAll} className="text-xs font-semibold text-amber-300 hover:text-amber-200 px-2">

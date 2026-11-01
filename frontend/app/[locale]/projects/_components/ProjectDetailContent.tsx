@@ -437,7 +437,7 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
         whatsappText={`${title} · buildup.ge`}
         callLabel={t("detail.call")}
         whatsappLabel={t("detail.whatsapp")}
-        action={{ label: t("detail.requestConsultation"), onClick: () => openLead(null) }}
+        action={{ label: t("detail.consultationShort"), ariaLabel: t("detail.requestConsultation"), onClick: () => openLead(null) }}
       />
 
       <Lightbox

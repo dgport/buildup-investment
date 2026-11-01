@@ -111,7 +111,8 @@
     "map": "Location on map",
     "related": "More projects by this developer",
     "share": "Share",
-    "copied": "Link copied"
+    "copied": "Link copied",
+    "consultationShort": "Consultation"
   },
   "lead": {
     "title": "Request a consultation",
