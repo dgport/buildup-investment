@@ -1,9 +1,10 @@
 "use client";
+import { FilterDraftNotice } from "@/components/shared/CatalogueTools";
 import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { formatMoney, useCurrency } from "@/lib/currency";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Hash, Search, SlidersHorizontal, X } from "lucide-react";
@@ -149,6 +150,7 @@ export function PropertyFilters() {
 
   return (
     <div className="space-y-3">
+      {FILTER_KEYS.some((key) => filters[key] !== applied[key]) && <FilterDraftNotice onApply={apply} onReset={() => setFilters(applied)} />}
       <div className="rounded-2xl bg-white p-2 shadow-2xl shadow-black/25 ring-1 ring-white/10">
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,0.8fr)_auto_auto] gap-2 items-stretch">
           {/* Deal type segmented control */}
@@ -333,9 +335,10 @@ export function PropertyFilters() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const id = useId();
   return (
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-teal-800/80">{label}</label>
+    <div role="group" aria-labelledby={id} className="space-y-1.5">
+      <label id={id} className="text-[11px] font-semibold uppercase tracking-[0.15em] text-teal-800/80">{label}</label>
       {children}
     </div>
   );

@@ -1,4 +1,5 @@
 "use client";
+import { FilterDraftNotice } from "@/components/shared/CatalogueTools";
 import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
 import { MoneyInput } from "@/components/shared/MoneyInput";
 import { formatMoney, useCurrency } from "@/lib/currency";
@@ -89,6 +90,8 @@ export function ProjectFilters() {
   const push = (next: State) => {
     const params = new URLSearchParams();
     params.set("page", "1");
+    const view = searchParams.get("view");
+    if (view === "map") params.set("view", view);
     const sort = searchParams.get("sort");
     if (sort) params.set("sort", sort);
     for (const key of KEYS) {
@@ -132,6 +135,7 @@ export function ProjectFilters() {
 
   return (
     <div className="space-y-3">
+      {KEYS.some((key) => state[key] !== applied[key]) && <FilterDraftNotice onApply={apply} onReset={() => setState(applied)} />}
       <div className="rounded-2xl bg-white p-2 shadow-2xl shadow-black/25 ring-1 ring-white/10">
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] gap-2 items-stretch">
           <div className="col-span-2 md:col-span-4 xl:col-span-1 relative">
@@ -198,7 +202,7 @@ export function ProjectFilters() {
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full max-w-full sm:w-[440px] sm:max-w-[440px] flex flex-col gap-0 p-0">
-              <div className="px-6 py-5 border-b border-slate-100 bg-teal-950">
+              <div className="pl-5 pr-16 py-5 border-b border-slate-100 bg-teal-950">
                 <SheetTitle className="text-white font-semibold text-base m-0">{t("filters.heading")}</SheetTitle>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 space-y-6">
@@ -209,7 +213,8 @@ export function ProjectFilters() {
                         key={r}
                         type="button"
                         onClick={() => set("rooms", r)}
-                        className={`h-10 px-3.5 rounded-xl border text-sm font-semibold transition ${
+                        aria-pressed={state.rooms === r}
+                        className={`min-h-11 px-3.5 rounded-xl border text-sm font-semibold transition ${
                           state.rooms === r ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-slate-200 hover:border-teal-400"
                         }`}
                       >
@@ -225,7 +230,7 @@ export function ProjectFilters() {
                         key={y}
                         type="button"
                         onClick={() => set("year", y)}
-                        className={`h-10 px-3.5 rounded-xl border text-sm font-semibold transition ${
+                        className={`min-h-11 px-3.5 rounded-xl border text-sm font-semibold transition ${
                           state.year === y ? "bg-teal-900 text-white border-teal-900" : "bg-white text-teal-900 border-slate-200 hover:border-teal-400"
                         }`}
                       >

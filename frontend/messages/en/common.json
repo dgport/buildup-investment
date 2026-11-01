@@ -168,7 +168,10 @@
     "retry": "Try again",
     "share": "Share search",
     "copied": "Search link copied",
-    "copyError": "Could not copy the link. Copy it from your address bar."
+    "copyError": "Could not copy the link. Copy it from your address bar.",
+    "draft": "Filters changed — results have not updated yet.",
+    "apply": "Apply",
+    "undo": "Undo changes"
   },
   "mobileNav": {
     "navigation": "Mobile navigation",

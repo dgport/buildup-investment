@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Share2, RotateCcw } from "lucide-react";
@@ -16,13 +17,22 @@ function useFilterActions() {
 }
 export function ShareSearch() {
   const t = useTranslations("common.catalogue");
+  const [sharing, setSharing] = useState(false);
   const share = async () => {
+    if (sharing) return;
+    setSharing(true);
     try {
+      if (navigator.share) {
+        await navigator.share({ title: document.title, url: window.location.href });
+        return;
+      }
       await navigator.clipboard.writeText(window.location.href);
       toast.success(t("copied"));
-    } catch { toast.error(t("copyError")); }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) toast.error(t("copyError"));
+    } finally { setSharing(false); }
   };
-  return <button type="button" onClick={share} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-teal-900 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-700"><Share2 aria-hidden className="h-4 w-4" />{t("share")}</button>;
+  return <button type="button" onClick={share} disabled={sharing} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-teal-900 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-700"><Share2 aria-hidden className="h-4 w-4" />{t("share")}</button>;
 }
 export function CatalogueRecovery({ onRetry }: { onRetry?: () => void }) {
   const { params, clear } = useFilterActions(); const t = useTranslations("common.catalogue");
@@ -31,5 +41,15 @@ export function CatalogueRecovery({ onRetry }: { onRetry?: () => void }) {
   return <div className="mt-5 flex flex-wrap justify-center gap-3">
     {onRetry && <button type="button" onClick={onRetry} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal-900 px-5 text-sm font-semibold text-white hover:bg-teal-800"><RotateCcw aria-hidden className="h-4 w-4" />{t("retry")}</button>}
     {filtered && <button type="button" onClick={() => clear()} className="min-h-11 rounded-xl border border-teal-200 bg-white px-5 text-sm font-semibold text-teal-900 hover:bg-teal-50">{t("clear")}</button>}
+  </div>;
+}
+
+/** Clarify that edited filters have not changed the visible results yet. */
+export function FilterDraftNotice({ onApply, onReset }: { onApply: () => void; onReset: () => void }) {
+  const t = useTranslations("common.catalogue");
+  return <div className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-300/40 bg-amber-50 px-3 py-2 text-teal-950">
+    <p role="status" className="min-w-0 flex-1 text-sm font-medium">{t("draft")}</p>
+    <button type="button" onClick={onApply} className="min-h-11 rounded-lg bg-teal-900 px-4 text-sm font-semibold text-white">{t("apply")}</button>
+    <button type="button" onClick={onReset} className="min-h-11 rounded-lg px-3 text-sm font-semibold hover:bg-amber-100">{t("undo")}</button>
   </div>;
 }
