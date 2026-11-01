@@ -255,7 +255,7 @@ body.locale-ka {
   .admin-responsive-table td:last-child { border-top: 1px solid #f1f5f9; padding-top: 12px; }
   .admin-responsive-table td:last-child > div { justify-content: flex-start; flex-wrap: wrap; }
   .admin-responsive-table .admin-field-label { display: block; margin-bottom: 6px; color: #64748b; font-size: 12px; font-weight: 500; }
-  .admin-responsive-table button, .admin-responsive-table select { min-height: 44px; }
+  .admin-responsive-table button:not([role="switch"]), .admin-responsive-table select { min-height: 44px; }
 }
 @media (hover: none) {
   a, button, select, [role="button"] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
