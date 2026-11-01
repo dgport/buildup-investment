@@ -85,8 +85,9 @@ export function FilterChips<T extends string>({
           key={o.value || "all"}
           type="button"
           onClick={() => onChange(o.value)}
+          aria-pressed={value === o.value}
           className={cn(
-            "px-3 py-1.5 rounded-full text-sm font-medium border transition",
+            "min-h-11 px-3 py-2 rounded-full text-sm font-medium border transition",
             value === o.value
               ? "bg-teal-900 text-white border-teal-900 shadow"
               : "bg-white text-teal-900 border-teal-200 hover:border-teal-400",

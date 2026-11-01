@@ -33,3 +33,14 @@ const { nearbySlide } = load("../lib/utils/gallery.ts");
 assert.deepEqual(Array.from({length: 22}, (_, i) => i).filter(i => nearbySlide(i, 0, 22)), [0, 1, 21]);
 assert.deepEqual(Array.from({length: 22}, (_, i) => i).filter(i => nearbySlide(i, 7, 22)), [6, 7, 8]);
 console.log("Numeric validation and gallery loading passed");
+
+const imageCode = ts.transpileModule(fs.readFileSync(require.resolve("../lib/utils/image-utils.ts"), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+const imageContext = { exports: {}, URL, require: () => ({ API_IMAGE_URL: "https://api.buildup.ge" }) };
+vm.runInNewContext(imageCode, imageContext);
+const { thumbnailUrl } = imageContext.exports;
+assert.equal(thumbnailUrl("uploads/properties/photo.png"), "https://api.buildup.ge/uploads/properties/photo_t.jpg");
+assert.equal(thumbnailUrl("https://api.buildup.ge/uploads/projects/photo.jpg?v=2"), "https://api.buildup.ge/uploads/projects/photo_t.jpg?v=2");
+assert.equal(thumbnailUrl("https://api.buildup.ge/uploads/projects/photo_t.jpg"), "https://api.buildup.ge/uploads/projects/photo_t.jpg");
+assert.equal(thumbnailUrl("https://images.example.com/photo.jpg"), "https://images.example.com/photo.jpg");
+assert.equal(thumbnailUrl("blob:preview"), "blob:preview");
+console.log("Thumbnail URL handling passed");

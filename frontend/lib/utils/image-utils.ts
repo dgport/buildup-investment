@@ -19,7 +19,16 @@ export function resolveImageUrl(imagePath?: string | null): string | null {
 export function thumbnailUrl(imagePath?: string | null): string | null {
   const full = resolveImageUrl(imagePath);
   if (!full || /^(data:|blob:)/i.test(full)) return full;
-  return full.replace(/\.[a-z0-9]+$/i, "_t.jpg");
+  try {
+    const url = new URL(full);
+    // Only our upload pipeline creates `_t.jpg`; external photo hosts do not.
+    if (url.origin !== new URL(API_IMAGE_URL).origin || !url.pathname.includes("/uploads/")) return full;
+    if (/_t\.jpg$/i.test(url.pathname)) return full;
+    url.pathname = url.pathname.replace(/\.[a-z0-9]+$/i, "_t.jpg");
+    return url.toString();
+  } catch {
+    return full;
+  }
 }
 
 /** `onError` handler that swaps a missing thumbnail for the full-size image. */

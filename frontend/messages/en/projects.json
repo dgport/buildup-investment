@@ -170,5 +170,7 @@
     "title": "New projects",
     "seeAll": "All projects"
   },
-  "eyebrow": "New developments"
+  "eyebrow": "New developments",
+  "mapPagePins": "{count} of {total} results on this page have a map pin",
+  "mapUnavailable": "The map is unavailable. You can still browse the list of projects."
 }

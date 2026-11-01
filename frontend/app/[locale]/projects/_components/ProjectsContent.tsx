@@ -3,7 +3,6 @@ import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
 import { ShareSearch, CatalogueRecovery } from "@/components/shared/CatalogueTools";
 import type { ProjectsResponse } from "@/lib/types/projects";
 
-import { PageLoader } from "@/components/shared/PageLoader";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -21,7 +20,8 @@ import {
 } from "@/components/ui/select";
 import type { ProjectFilters as Filters } from "@/lib/types/projects";
 import { ProjectFilters } from "./ProjectFilters";
-import { ProjectsMap } from "./ProjectsMap";
+import dynamic from "next/dynamic";
+const ProjectsMap = dynamic(() => import("./ProjectsMap").then((module) => module.ProjectsMap), { ssr: false, loading: () => <div aria-hidden className="h-[70vh] min-h-[360px] rounded-2xl bg-teal-50 animate-pulse mb-8" /> });
 
 const PER_PAGE = 12;
 const SORTS = ["featured", "newest", "price_asc", "price_desc", "delivery"] as const;
@@ -68,11 +68,10 @@ export function ProjectsContent({ initialData, initialSearch }: { initialData?: 
     const params = new URLSearchParams(searchParams.toString());
     if (value) params.set(key, value);
     else params.delete(key);
-    if (key !== "page") params.set("page", "1");
+    if (key !== "page" && key !== "view") params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  if (isLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -147,9 +146,7 @@ export function ProjectsContent({ initialData, initialSearch }: { initialData?: 
           </div>
         </div>
 
-        {view === "map" ? (
-          <ProjectsMap />
-        ) : isLoading ? (
+        {isLoading ? (
           <CardGridSkeleton count={8} tall />
         ) : error ? (
           <div className="flex justify-center py-24">
@@ -169,11 +166,11 @@ export function ProjectsContent({ initialData, initialSearch }: { initialData?: 
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
+            {view === "map" ? <ProjectsMap items={projects} /> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
               {projects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}
-            </div>
+            </div>}
             {meta && meta.totalPages > 1 && (
               <div className="flex justify-center">
                 <Pagination

@@ -5,6 +5,7 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { ExternalLink, ImageIcon, Pencil, Plus, Save, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AdminLoadError } from "../_components/AdminLoadError";
 import { PageHeader } from "../_components/AdminUi";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -55,7 +56,7 @@ const DESC_KEY: Record<PropertyLanguage, keyof FormState> = { ka: "descriptionKa
 export default function AdminDevelopersPage() {
   const t = useTranslations("admin");
   const tl = useTranslations("common.language");
-  const { data: developers = [], isLoading } = useAdminDevelopers();
+  const { data: developers = [], isLoading, isError, isFetching, refetch } = useAdminDevelopers();
   const m = useDeveloperMutations();
   const fileRef = useRef<HTMLInputElement>(null);
   const confirm = useConfirm();
@@ -124,7 +125,7 @@ export default function AdminDevelopersPage() {
 
       {listError && <Alert variant="destructive"><AlertDescription>{listError}</AlertDescription></Alert>}
 
-      {isLoading ? (
+      {isError ? <AdminLoadError retry={refetch} pending={isFetching} /> : isLoading ? (
         <p className="text-sm text-gray-500">{t("common.loading")}</p>
       ) : developers.length === 0 ? (
         <p className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center text-sm text-gray-500">{t("developers.empty")}</p>

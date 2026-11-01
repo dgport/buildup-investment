@@ -3,7 +3,6 @@ import { normalizeCatalogueQuery } from "@/lib/catalogue-query";
 import { ShareSearch, CatalogueRecovery } from "@/components/shared/CatalogueTools";
 import type { PropertiesResponse } from "@/lib/types/properties";
 
-import { PageLoader } from "@/components/shared/PageLoader";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -78,7 +77,6 @@ export function PropertiesContent({ initialData, initialSearch }: { initialData?
   const properties = response?.data ?? [];
   const meta = response?.meta;
 
-  if (isLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-slate-50">

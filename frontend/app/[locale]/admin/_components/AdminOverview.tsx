@@ -63,7 +63,7 @@ export function AdminOverview() {
               value={data.leads.new}
               hint={t("overview.leadsHint", { total: data.leads.total })}
               icon={<Inbox className="w-5 h-5" />}
-              href={ROUTES.ADMIN_LEADS}
+              href={`${ROUTES.ADMIN_LEADS}?status=NEW`}
               tone={data.leads.new ? "red" : "teal"}
             />
             <StatCard
@@ -100,7 +100,7 @@ export function AdminOverview() {
                     const cover = thumbnailUrl(p.coverImage);
                     const title = p.title ?? `#${p.externalId}`;
                     return (
-                      <li key={p.id} className="flex items-center gap-3 px-5 py-3">
+                      <li key={p.id} className="flex flex-wrap items-center gap-3 px-4 sm:px-5 py-3">
                         <Link href={ROUTES.PROPERTY_EDIT(p.id)} className="w-14 h-11 rounded-lg bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center text-slate-300">
                           {cover ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -120,10 +120,10 @@ export function AdminOverview() {
                           </p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <Button size="icon" className="h-8 w-8 bg-green-600 hover:bg-green-700" aria-label={t("listings.approve")} disabled={setStatus.isPending} onClick={() => approve(p.id)}>
+                          <Button size="icon" className="h-11 w-11 bg-green-600 hover:bg-green-700" aria-label={t("listings.approve")} disabled={setStatus.isPending} onClick={() => approve(p.id)}>
                             <Check className="w-4 h-4" />
                           </Button>
-                          <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50" aria-label={t("listings.reject")} disabled={setStatus.isPending} onClick={() => setRejecting({ id: p.id, title })}>
+                          <Button size="icon" variant="outline" className="h-11 w-11 text-red-600 border-red-200 hover:bg-red-50" aria-label={t("listings.reject")} disabled={setStatus.isPending} onClick={() => setRejecting({ id: p.id, title })}>
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
@@ -147,7 +147,7 @@ export function AdminOverview() {
               ) : (
                 <ul className="divide-y divide-gray-100">
                   {data.recentLeads.map((l) => (
-                    <li key={l.id} className="flex items-center gap-3 px-5 py-3">
+                    <li key={l.id} className="flex flex-wrap items-center gap-3 px-4 sm:px-5 py-3">
                       <div className="w-9 h-9 rounded-full bg-teal-50 text-teal-800 font-bold text-sm flex items-center justify-center shrink-0">
                         {initials(l.name)}
                       </div>
