@@ -188,8 +188,8 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
         {/* Gallery + info card */}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 h-[340px] lg:h-[520px]">
-            <div className="card overflow-hidden h-full relative">
+          <div className="lg:col-span-2 min-w-0 flex flex-col gap-3">
+            <div className="card overflow-hidden h-[340px] lg:h-[520px] shrink-0 relative">
               <div className="overflow-hidden h-full" ref={emblaRef}>
                 <div className="flex h-full">
                   {images.length ? (
@@ -223,8 +223,11 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
                   <button onClick={scrollNext} aria-label={tc("photos.next")} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-md z-20 border border-teal-100">
                     <ChevronRight className="w-5 h-5 text-teal-900" />
                   </button>
-                  <div className="absolute bottom-2 left-0 right-0 z-20 px-4">
-                    <div className="bg-teal-950/60 backdrop-blur-sm rounded-xl p-2.5">
+                </>
+              )}
+            </div>
+            {images.length > 1 && (
+                  <div className="card p-3">
                       <div className="overflow-hidden" ref={thumbsRef}>
                         <div className="flex gap-2">
                           {images.map((img, i) => (
@@ -234,9 +237,8 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
                               aria-pressed={i === selected}
                               key={img}
                               onClick={() => { setSelected(i); emblaApi?.scrollTo(i); }}
-                              style={{ width: 64, height: 48 }}
-                              className={`flex-[0_0_auto] cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                                i === selected ? "border-amber-400 scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                              className={`h-16 w-24 shrink-0 cursor-pointer rounded-lg overflow-hidden border-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                                i === selected ? "border-amber-400" : "border-transparent opacity-70 hover:opacity-100"
                               }`}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -245,11 +247,8 @@ export function ProjectDetailContent({ initialData }: { initialData?: Project })
                           ))}
                         </div>
                       </div>
-                    </div>
                   </div>
-                </>
               )}
-            </div>
           </div>
 
           <div className="card p-5 flex flex-col gap-4 lg:sticky lg:top-28 self-start">

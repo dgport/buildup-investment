@@ -308,7 +308,7 @@ export function PropertyDetailContent({ initialData }: { initialData?: Property 
               )}
             </div>
             {images.length > 1 && (
-              <div className="card mt-auto p-3">
+              <div className="card p-3">
                 <div className="overflow-hidden" ref={thumbsRef}>
                   <div className="flex gap-2.5">
                     {images.map((img, i) => (
