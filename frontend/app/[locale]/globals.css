@@ -232,3 +232,32 @@ body.locale-ka {
     padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 }
+
+/* App-like mobile shell: safe areas, accessible inputs, and no competing bottom bars. */
+.admin-field-label { display: none; }
+@media (max-width: 1023px) {
+  body:has([data-mobile-navigation]) { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+  body:has([data-mobile-contact-bar]) [data-mobile-navigation],
+  body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) [data-mobile-navigation] { display: none; }
+  body:has([data-mobile-contact-bar]) { padding-bottom: 0; }
+  body:has([data-mobile-navigation]) { scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px; }
+  [data-slot="sheet-content"] { max-height: 100dvh; overscroll-behavior: contain; }
+  [data-slot="sheet-content"] > [data-slot="sheet-close"] { min-height: 44px; min-width: 44px; }
+}
+@media (max-width: 1279px) {
+  .admin-responsive-table, .admin-responsive-table tbody { display: block; }
+  .admin-responsive-table thead { display: none; }
+  .admin-responsive-table tbody { padding: 12px; }
+  .admin-responsive-table tr { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 16px; background: white; }
+  .admin-responsive-table td { display: block; min-width: 0; padding: 0; white-space: normal; overflow-wrap: anywhere; }
+  .admin-responsive-table td:first-child, .admin-responsive-table td:last-child, .admin-responsive-table td:nth-child(2), .admin-responsive-table td:nth-child(4) { grid-column: 1 / -1; }
+  .admin-responsive-table td:last-child { border-top: 1px solid #f1f5f9; padding-top: 12px; }
+  .admin-responsive-table td:last-child > div { justify-content: flex-start; flex-wrap: wrap; }
+  .admin-responsive-table .admin-field-label { display: block; margin-bottom: 6px; color: #64748b; font-size: 12px; font-weight: 500; }
+  .admin-responsive-table button, .admin-responsive-table select { min-height: 44px; }
+}
+@media (hover: none) {
+  a, button, select, [role="button"] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .card-hover:hover { transform: none; }
+}

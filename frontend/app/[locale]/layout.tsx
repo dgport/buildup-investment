@@ -1,3 +1,5 @@
+import type { Viewport } from "next";
+import { MobileNavigation } from "@/components/shared/MobileNavigation";
 import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -13,6 +15,8 @@ import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ConfirmProvider } from "@/components/shared/ConfirmDialog";
 import { NavigationProgress } from "@/components/shared/NavigationProgress";
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#042f2e", interactiveWidget: "resizes-content" };
 
 const inter = Inter({
   variable: "--font-inter",
@@ -74,6 +78,7 @@ export default async function LocaleLayout({
                 <main id="main-content" className="min-h-screen min-h-[100svh]">{children}</main>
               </CurrencyProvider>
               <Footer />
+              <MobileNavigation />
               <Toaster position="top-center" richColors closeButton />
             </ConfirmProvider>
           </NextIntlClientProvider>

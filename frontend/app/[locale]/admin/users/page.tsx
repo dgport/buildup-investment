@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
           <EmptyRow>{t("users.empty")}</EmptyRow>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="admin-responsive-table w-full text-sm">
               <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-teal-700/70">
                 <tr>
                   <th className="text-left px-4 py-3">{t("users.columns.user")}</th>
@@ -133,7 +133,7 @@ export default function AdminUsersPage() {
                   return (
                     <tr key={u.id} className={`hover:bg-slate-50/60 ${!u.isActive ? "opacity-60" : ""}`}>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3 min-w-[220px]">
+                        <div className="flex items-center gap-3 min-w-0 xl:min-w-[220px]">
                           <div className="w-9 h-9 rounded-full bg-teal-900 text-amber-300 font-bold text-sm flex items-center justify-center shrink-0 overflow-hidden">
                             {u.avatar ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -152,11 +152,11 @@ export default function AdminUsersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-xs">
+                      <td className="px-4 py-3 text-xs"><span className="admin-field-label">{t("users.columns.contact")}</span>
                         <a href={`mailto:${u.email}`} className="flex items-center gap-1 text-teal-800 hover:text-amber-600 truncate max-w-[220px]"><Mail className="w-3 h-3 shrink-0" />{u.email}</a>
                         {u.phone && <a href={`tel:${u.phone.replace(/[^\d+]/g, "")}`} className="flex items-center gap-1 text-teal-800 hover:text-amber-600 mt-0.5"><Phone className="w-3 h-3" />{u.phone}</a>}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3"><span className="admin-field-label">{t("users.columns.role")}</span>
                         <select
                           value={u.role}
                           aria-label={`${t("users.columns.role")}: ${u.firstname} ${u.lastname}`}
@@ -168,10 +168,10 @@ export default function AdminUsersPage() {
                           <option value="ADMIN">{t("users.roles.ADMIN")}</option>
                         </select>
                       </td>
-                      <td className="px-4 py-3 tabular-nums">
+                      <td className="px-4 py-3 tabular-nums"><span className="admin-field-label">{t("users.quotaTitle")}</span>
                         <ListingLimitControl key={`${u.id}:${u.listingLimit}`} user={u} pending={update.isPending} onSave={(listingLimit) => change(u, { listingLimit })} />
                       </td>
-                      <td className="px-4 py-3 text-xs whitespace-nowrap">
+                      <td className="px-4 py-3 text-xs whitespace-nowrap"><span className="admin-field-label">{t("users.columns.terms")}</span>
                         {u.listingTermsAcceptedAt ? (
                           <>
                             <span className="inline-flex items-center gap-1 font-medium text-teal-800">
@@ -186,11 +186,11 @@ export default function AdminUsersPage() {
                           <span className="text-gray-400">{t("common.none")}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                      <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap"><span className="admin-field-label">{t("users.columns.joined")}</span>
                         {formatDate(u.createdAt, locale)}
                         {u.lastLogin && <p className="text-[11px] text-gray-400">{t("users.lastLogin")}: {formatDate(u.lastLogin, locale)}</p>}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3"><span className="admin-field-label">{t("users.columns.active")}</span>
                         <div className="flex items-center gap-2">
                           <Switch checked={u.isActive} disabled={update.isPending || isMe} onCheckedChange={(v) => change(u, { isActive: v })} aria-label={t("users.columns.active")} />
                           {!u.isActive && <StatusPill status="REJECTED" label={t("users.blocked")} />}

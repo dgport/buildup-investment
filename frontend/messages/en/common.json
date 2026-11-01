@@ -169,5 +169,18 @@
     "share": "Share search",
     "copied": "Search link copied",
     "copyError": "Could not copy the link. Copy it from your address bar."
+  },
+  "mobileNav": {
+    "navigation": "Mobile navigation",
+    "home": "Home",
+    "search": "Search",
+    "add": "Add",
+    "saved": "Saved",
+    "account": "Account",
+    "overview": "Overview",
+    "listings": "Listings",
+    "requests": "Requests",
+    "users": "Users",
+    "site": "Website"
   }
 }

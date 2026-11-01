@@ -118,7 +118,7 @@ export default function AdminListingsPage() {
           <EmptyRow>{t("listings.empty")}</EmptyRow>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="admin-responsive-table w-full text-sm">
               <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-teal-700/70">
                 <tr>
                   <th className="text-left px-4 py-3">{t("listings.columns.listing")}</th>
@@ -135,7 +135,7 @@ export default function AdminListingsPage() {
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/60 align-top">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3 min-w-[260px]">
+                        <div className="flex items-center gap-3 min-w-0 xl:min-w-[260px]">
                           <Link href={ROUTES.PROPERTY_EDIT(p.id)} className="w-16 h-12 rounded-md bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center text-slate-300 relative">
                             {cover ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -157,7 +157,7 @@ export default function AdminListingsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-teal-900">
+                      <td className="px-4 py-3 text-teal-900"><span className="admin-field-label">{t("listings.columns.owner")}</span>
                         {p.user ? (
                           <>
                             <p className="font-medium">{p.user.firstname} {p.user.lastname}</p>
@@ -167,36 +167,36 @@ export default function AdminListingsPage() {
                           <span className="text-gray-400">{t("common.none")}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3"><span className="admin-field-label">{t("listings.columns.status")}</span>
                         <StatusPill status={p.status} label={tp(`enums.status.${p.status}`)} />
                         {p.status === PropertyStatus.REJECTED && p.rejectionReason && (
                           <p className="text-[11px] text-red-600 mt-1 max-w-[200px] line-clamp-2">{p.rejectionReason}</p>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{formatDate(p.createdAt, locale)}</td>
+                      <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap"><span className="admin-field-label">{t("listings.columns.created")}</span>{formatDate(p.createdAt, locale)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
                           {p.status !== PropertyStatus.APPROVED && (
-                            <Button size="sm" className="h-8 bg-green-600 hover:bg-green-700" disabled={setStatus.isPending} onClick={() => run(() => setStatus.mutateAsync({ id: p.id, data: { status: PropertyStatus.APPROVED } }), t("listings.approved"))}>
+                            <Button size="sm" className="h-11 bg-green-600 hover:bg-green-700" disabled={setStatus.isPending} onClick={() => run(() => setStatus.mutateAsync({ id: p.id, data: { status: PropertyStatus.APPROVED } }), t("listings.approved"))}>
                               <Check className="w-3.5 h-3.5 mr-1" />
                               {t("listings.approve")}
                             </Button>
                           )}
                           {p.status !== PropertyStatus.REJECTED && (
-                            <Button size="sm" variant="outline" className="h-8 text-red-600 border-red-200 hover:bg-red-50" disabled={setStatus.isPending} onClick={() => setRejecting({ id: p.id, title })}>
+                            <Button size="sm" variant="outline" className="h-11 text-red-600 border-red-200 hover:bg-red-50" disabled={setStatus.isPending} onClick={() => setRejecting({ id: p.id, title })}>
                               <X className="w-3.5 h-3.5 mr-1" />
                               {t("listings.reject")}
                             </Button>
                           )}
                           {p.status === PropertyStatus.REJECTED && (
-                            <Button size="icon" variant="ghost" className="h-8 w-8" aria-label={t("listings.requeue")} title={t("listings.requeue")} disabled={setStatus.isPending} onClick={() => run(() => setStatus.mutateAsync({ id: p.id, data: { status: PropertyStatus.PENDING } }), t("common.saved"))}>
+                            <Button size="icon" variant="ghost" className="h-11 w-11" aria-label={t("listings.requeue")} title={t("listings.requeue")} disabled={setStatus.isPending} onClick={() => run(() => setStatus.mutateAsync({ id: p.id, data: { status: PropertyStatus.PENDING } }), t("common.saved"))}>
                               <RotateCcw className="w-4 h-4" />
                             </Button>
                           )}
                           <Button
                             size="icon"
                             variant="ghost"
-                            className={`h-8 w-8 ${p.hotSale ? "text-red-500" : "text-gray-400"}`}
+                            className={`h-11 w-11 ${p.hotSale ? "text-red-500" : "text-gray-400"}`}
                             aria-label={t("listings.toggleHot")}
                             title={t("listings.toggleHot")}
                             disabled={update.isPending}
@@ -205,17 +205,17 @@ export default function AdminListingsPage() {
                             <Flame className="w-4 h-4" />
                           </Button>
                           {p.status === PropertyStatus.APPROVED && p.public && (
-                            <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t("common.view")}>
+                            <Button variant="ghost" size="icon" className="h-11 w-11" asChild aria-label={t("common.view")}>
                               <Link href={propertySiteUrl(p)} target="_blank"><ExternalLink className="w-4 h-4" /></Link>
                             </Button>
                           )}
-                          <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={t("common.edit")}>
+                          <Button variant="ghost" size="icon" className="h-11 w-11" asChild aria-label={t("common.edit")}>
                             <Link href={ROUTES.PROPERTY_EDIT(p.id)}><Pencil className="w-4 h-4" /></Link>
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-11 w-11 text-red-600 hover:text-red-700 hover:bg-red-50"
                             aria-label={t("common.delete")}
                             disabled={remove.isPending}
                             onClick={async () =>
