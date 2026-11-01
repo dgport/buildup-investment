@@ -102,7 +102,9 @@ export function PropertyFilters() {
       if (next.propertyType === PropertyType.LAND && (key === "rooms" || key === "bedrooms")) continue;
       params.set(key, value);
     }
-    router.push(`${pathname}?${normalizeCatalogueQuery(params, "properties").toString()}`);
+    const normalized = normalizeCatalogueQuery(params, "properties");
+    setFilters(readFilters(normalized));
+    router.push(`${pathname}?${normalized.toString()}`);
     setMoreOpen(false);
   };
 

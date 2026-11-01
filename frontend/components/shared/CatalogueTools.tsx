@@ -48,7 +48,7 @@ export function CatalogueRecovery({ onRetry }: { onRetry?: () => void }) {
 export function FilterDraftNotice({ onApply, onReset }: { onApply: () => void; onReset: () => void }) {
   const t = useTranslations("common.catalogue");
   return <div className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-300/40 bg-amber-50 px-3 py-2 text-teal-950">
-    <p role="status" className="min-w-0 flex-1 text-sm font-medium">{t("draft")}</p>
+    <p role="status" className="w-full min-w-0 sm:w-auto sm:flex-1 text-sm font-medium">{t("draft")}</p>
     <button type="button" onClick={onApply} className="min-h-11 rounded-lg bg-teal-900 px-4 text-sm font-semibold text-white">{t("apply")}</button>
     <button type="button" onClick={onReset} className="min-h-11 rounded-lg px-3 text-sm font-semibold hover:bg-amber-100">{t("undo")}</button>
   </div>;

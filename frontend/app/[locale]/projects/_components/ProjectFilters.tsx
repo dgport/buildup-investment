@@ -98,7 +98,9 @@ export function ProjectFilters() {
       const value = next[key].trim();
       if (isSet(key, value)) params.set(PARAM[key], value);
     }
-    router.push(`${pathname}?${normalizeCatalogueQuery(params, "projects").toString()}`);
+    const normalized = normalizeCatalogueQuery(params, "projects");
+    setState(read(normalized));
+    router.push(`${pathname}?${normalized.toString()}`);
     setOpen(false);
   };
   const apply = () => push(state);
