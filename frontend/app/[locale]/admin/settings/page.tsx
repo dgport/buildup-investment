@@ -39,13 +39,13 @@ export default function AdminSettingsPage() {
         <Skeleton className="h-64 rounded-2xl" />
       ) : (
         <div className="grid items-start gap-5 xl:grid-cols-2">
-          <AdminCard className="p-6">
-            <div className="flex items-start gap-4">
+          <AdminCard className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start gap-4">
               <div className="rounded-xl bg-teal-900 text-amber-300 p-2.5 shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-4">
+              <div className="w-full flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="font-bold text-teal-950">{t("settings.moderation.title")}</h2>
                     <p className="text-sm text-slate-500 mt-1">{t("settings.moderation.description")}</p>
@@ -64,9 +64,9 @@ export default function AdminSettingsPage() {
             </div>
           </AdminCard>
 
-          <AdminCard className="p-6">
+          <AdminCard className="p-4 sm:p-6">
             <form
-              className="flex items-start gap-4"
+              className="flex flex-col sm:flex-row items-start gap-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 save({ default_contact_phone: phoneValue.trim() || null });
@@ -75,13 +75,13 @@ export default function AdminSettingsPage() {
               <div className="rounded-xl bg-teal-900 text-amber-300 p-2.5 shrink-0">
                 <Phone className="w-5 h-5" />
               </div>
-              <div className="flex-1 min-w-0 space-y-3">
+              <div className="w-full flex-1 min-w-0 space-y-3">
                 <div>
                   <h2 className="font-bold text-teal-950">{t("settings.phone.title")}</h2>
                   <p className="text-sm text-slate-500 mt-1">{t("settings.phone.description")}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 sm:items-end [&_input]:h-11 [&_button]:h-11">
-                  <div className="flex-1 min-w-0">
+                  <div className="w-full flex-1 min-w-0">
                     <Label htmlFor="default-phone" className="text-xs text-slate-500">{t("settings.phone.label")}</Label>
                     <Input id="default-phone" value={phoneValue} onChange={(e) => setPhone(e.target.value)} placeholder="+995 5XX XX XX XX" className="mt-1" />
                   </div>
