@@ -28,11 +28,11 @@ function ListingLimitControl({ user, pending, onSave }: { user: AdminUser; pendi
   const limit = Number(value);
   const valid = value.trim() !== "" && Number.isInteger(limit) && limit >= 0 && limit <= 1000000;
   return (
-    <form className="min-w-[190px] space-y-2" onSubmit={(event) => { event.preventDefault(); if (valid && !pending && limit !== user.listingLimit) onSave(limit); }}>
+    <form className="w-full min-w-0 xl:min-w-[190px] space-y-2" onSubmit={(event) => { event.preventDefault(); if (valid && !pending && limit !== user.listingLimit) onSave(limit); }}>
       <p className="text-xs text-slate-500">{t("users.quotaUsed", { count: user.propertiesCount })}</p>
       <div className="flex items-center gap-2">
-        <Input type="number" min={0} max={1000000} step={1} required disabled={pending} value={value} onChange={(event) => setValue(event.target.value)} aria-label={t("users.quotaLabel", { email: user.email })} className="w-24" />
-        <Button size="sm" type="submit" disabled={pending || !valid || limit === user.listingLimit}>{t("common.save")}</Button>
+        <Input type="number" min={0} max={1000000} step={1} required disabled={pending} value={value} onChange={(event) => setValue(event.target.value)} aria-label={t("users.quotaLabel", { email: user.email })} className="h-11 w-24 flex-1 xl:flex-none" />
+        <Button size="sm" className="h-11" type="submit" disabled={pending || !valid || limit === user.listingLimit}>{t("common.save")}</Button>
       </div>
     </form>
   );
@@ -94,16 +94,16 @@ export default function AdminUsersPage() {
         />
         <form
           role="search"
-          className="relative flex w-full items-center gap-2 sm:w-96 sm:ml-auto"
+          className="relative grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:max-w-md sm:ml-auto"
           onSubmit={(e) => {
             e.preventDefault();
             navigate({ search: search.trim() || undefined });
           }}
         >
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("users.searchPlaceholder")} placeholder={t("users.searchPlaceholder")} className="pl-9 bg-white min-w-0" />
-          <Button type="submit" size="icon" variant="outline" aria-label={t("common.search")} className="shrink-0"><Search className="size-4" /></Button>
-          {appliedSearch && <Button type="button" size="sm" variant="ghost" onClick={() => { setSearch(""); navigate({ search: undefined }); }}>{t("common.clearSearch")}</Button>}
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-5.5 -translate-y-1/2" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("users.searchPlaceholder")} placeholder={t("users.searchPlaceholder")} className="pl-9 bg-white min-w-0 h-11" />
+          <Button type="submit" size="icon" variant="outline" aria-label={t("common.search")} className="shrink-0 size-11"><Search className="size-4" /></Button>
+          {appliedSearch && <Button type="button" size="sm" variant="ghost" className="col-span-2 min-h-11 justify-self-end" onClick={() => { setSearch(""); navigate({ search: undefined }); }}>{t("common.clearSearch")}</Button>}
         </form>
       </div>
 
@@ -162,7 +162,7 @@ export default function AdminUsersPage() {
                           aria-label={`${t("users.columns.role")}: ${u.firstname} ${u.lastname}`}
                           disabled={update.isPending || isMe}
                           onChange={(e) => change(u, { role: e.target.value as UserRole })}
-                          className={`text-xs font-semibold rounded-md px-2 py-1.5 border ${u.role === "ADMIN" ? "bg-teal-100 text-teal-800 border-teal-200" : "bg-slate-100 text-slate-700 border-slate-200"} disabled:opacity-70`}
+                          className={`h-11 max-w-full text-sm font-semibold rounded-md px-2 py-1.5 border ${u.role === "ADMIN" ? "bg-teal-100 text-teal-800 border-teal-200" : "bg-slate-100 text-slate-700 border-slate-200"} disabled:opacity-70`}
                         >
                           <option value="REGULAR">{t("users.roles.REGULAR")}</option>
                           <option value="ADMIN">{t("users.roles.ADMIN")}</option>

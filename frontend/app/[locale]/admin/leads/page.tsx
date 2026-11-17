@@ -116,7 +116,7 @@ function LeadRow({
   };
 
   return (
-    <div className="p-4 grid grid-cols-1 lg:grid-cols-[150px_1fr_1fr_1fr_auto] gap-3 items-start">
+    <div className="p-4 grid grid-cols-1 xl:grid-cols-[130px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 items-start">
       <div className="text-xs text-gray-500">
         {formatDateTime(lead.createdAt, locale)}
         <div className="mt-1 uppercase tracking-wide text-[10px]">{lead.locale}</div>
@@ -129,15 +129,15 @@ function LeadRow({
       <div className="min-w-0 text-sm">
         <Link href={ROUTES.PROJECT(lead.project.slug)} target="_blank" className="font-medium text-teal-900 hover:text-amber-600 truncate block">{lead.project.title}</Link>
         {lead.unitType && <p className="text-xs text-gray-500">{lead.unitType.title || roomsLabel(lead.unitType.rooms)} · {lead.unitType.areaFrom} m²</p>}
-        {lead.message && <p className="text-xs text-gray-600 mt-1 whitespace-pre-line">{lead.message}</p>}
+        {lead.message && <p className="text-xs text-gray-600 mt-1 whitespace-pre-line break-words">{lead.message}</p>}
       </div>
-      <div className="space-y-2">
+      <div className="min-w-0 space-y-2">
         <select
           value={lead.status}
           disabled={pending}
           aria-label={t("leads.statusLabel")}
           onChange={(e) => { const status = e.target.value; void run(() => onChange({ status })); }}
-          className={`text-xs font-medium rounded-md px-2 py-1.5 border ${STATUS_STYLES[lead.status]}`}
+          className={`h-11 w-full text-sm font-medium rounded-md px-3 py-2 border ${STATUS_STYLES[lead.status]}`}
         >
           {Object.values(LeadStatus).map((s) => (
             <option key={s} value={s}>{t(`leads.status.${s}`)}</option>
@@ -154,7 +154,7 @@ function LeadRow({
         />
         {note !== (lead.note ?? "") && <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => void run(() => onChange({ note }))}>{t(pending ? "common.saving" : "common.save")}</Button>}
       </div>
-      <Button variant="ghost" size="icon" className="text-red-600 hover:bg-red-50 justify-self-end" aria-label={t("common.delete")} disabled={pending} onClick={() => void run(onDelete, true)}>
+      <Button variant="ghost" size="icon" className="size-11 text-red-600 hover:bg-red-50 justify-self-end" aria-label={t("common.delete")} disabled={pending} onClick={() => void run(onDelete, true)}>
         <Trash2 className="w-4 h-4" />
       </Button>
     </div>

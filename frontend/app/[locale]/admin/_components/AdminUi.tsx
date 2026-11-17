@@ -18,11 +18,11 @@ export function PageHeader({
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-      <div>
+      <div className="min-w-0 flex-1 basis-64">
         <h1 className="text-xl sm:text-2xl font-bold text-teal-950">{title}</h1>
         {subtitle && <p className="text-sm leading-6 text-slate-500 mt-1 max-w-3xl">{subtitle}</p>}
       </div>
-      {action}
+      {action && <div className="w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto [&_button]:min-h-11 [&_a]:min-h-11">{action}</div>}
     </div>
   );
 }

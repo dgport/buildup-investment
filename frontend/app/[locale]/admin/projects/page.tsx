@@ -75,8 +75,8 @@ export default function AdminProjectsPage() {
         }
       />
 
-      <form role="search" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-3" onSubmit={(event) => { event.preventDefault(); applySearch(search); }}>
-        <div className="relative min-w-0 flex-1">
+      <form role="search" className="flex flex-wrap items-center gap-2 [&_input]:h-11 [&_button]:h-11 rounded-xl border border-slate-200 bg-white p-3" onSubmit={(event) => { event.preventDefault(); applySearch(search); }}>
+        <div className="relative min-w-0 basis-full sm:basis-48 flex-1">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("common.search")} placeholder={t("common.search")} className="pl-9" />
         </div>

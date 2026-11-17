@@ -87,7 +87,7 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
   );
 
   return (
-    <div className="card card-hover overflow-hidden flex flex-col">
+    <div className="card card-hover min-w-0 overflow-hidden flex flex-col">
       <Link
         href={ROUTES.PROPERTY_EDIT(property.id)}
         className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 block"
@@ -188,7 +188,7 @@ function DashboardPropertyCard({ property, onDelete, isDeleting }: PropertyCardP
           </p>
         )}
 
-        <div className="flex gap-2 mt-auto pt-3 border-t border-gray-100">
+        <div className="flex gap-2 mt-auto pt-3 border-t border-gray-100 [&>a]:min-h-11 [&>button]:min-h-11 [&>a:not(:first-child)]:min-w-11 [&>button]:min-w-11">
           <Button variant="outline" size="sm" asChild className="flex-1">
             <Link href={ROUTES.PROPERTY_EDIT(property.id)}>
               <Pencil className="w-3.5 h-3.5 mr-1.5" />
@@ -346,7 +346,7 @@ function DashboardContent() {
                 </p>
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex w-full sm:w-auto flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 [&>*]:min-h-11">
               {user?.role === "ADMIN" && (
                 <Button asChild size="lg" variant="outline" className="border-teal-200 text-teal-900 hover:bg-teal-50">
                   <Link href={ROUTES.ADMIN}>

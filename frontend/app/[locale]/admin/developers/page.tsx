@@ -134,7 +134,7 @@ export default function AdminDevelopersPage() {
           {developers.map((dev) => {
             const logo = resolveImageUrl(dev.logo);
             return (
-              <div key={dev.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex gap-4">
+              <div key={dev.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col sm:flex-row gap-4">
                 <label className="w-20 h-20 rounded-xl bg-slate-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer group relative" title={t("developers.fields.uploadLogo")}>
                   {logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -150,9 +150,9 @@ export default function AdminDevelopersPage() {
                     <p className="font-semibold text-teal-950 truncate">{dev.name}</p>
                     {!dev.published && <span className="text-[10px] font-medium bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">{t("common.unpublished")}</span>}
                   </div>
-                  <p className="text-xs text-gray-500">/{dev.slug} · {t("developers.projectsCount", { count: dev.projectsCount })}</p>
+                  <p className="text-xs text-gray-500 break-all">/{dev.slug} · {t("developers.projectsCount", { count: dev.projectsCount })}</p>
                   <p className="text-xs text-gray-500 truncate">{[dev.phone, dev.email, dev.website].filter(Boolean).join(" · ")}</p>
-                  <div className="flex gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1 mt-2 [&_button]:size-11 [&_a]:size-11">
                     {dev.published && (
                       <Button variant="ghost" size="icon-sm" asChild aria-label={t("common.view")}>
                         <Link href={ROUTES.DEVELOPER(dev.slug)} target="_blank"><ExternalLink className="w-4 h-4" /></Link>

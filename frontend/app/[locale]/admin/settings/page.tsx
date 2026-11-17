@@ -80,8 +80,8 @@ export default function AdminSettingsPage() {
                   <h2 className="font-bold text-teal-950">{t("settings.phone.title")}</h2>
                   <p className="text-sm text-slate-500 mt-1">{t("settings.phone.description")}</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
-                  <div className="flex-1">
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-end [&_input]:h-11 [&_button]:h-11">
+                  <div className="flex-1 min-w-0">
                     <Label htmlFor="default-phone" className="text-xs text-slate-500">{t("settings.phone.label")}</Label>
                     <Input id="default-phone" value={phoneValue} onChange={(e) => setPhone(e.target.value)} placeholder="+995 5XX XX XX XX" className="mt-1" />
                   </div>

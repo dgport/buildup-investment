@@ -97,16 +97,16 @@ export default function AdminListingsPage() {
         />
         <form
           role="search"
-          className="relative flex w-full items-center gap-2 sm:w-96 sm:ml-auto"
+          className="relative grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:max-w-md sm:ml-auto"
           onSubmit={(e) => {
             e.preventDefault();
             navigate({ search: search.trim() || undefined });
           }}
         >
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("listings.searchPlaceholder")} placeholder={t("listings.searchPlaceholder")} className="pl-9 bg-white min-w-0" />
-          <Button type="submit" size="icon" variant="outline" aria-label={t("common.search")} className="shrink-0"><Search className="size-4" /></Button>
-          {appliedSearch && <Button type="button" size="sm" variant="ghost" onClick={() => { setSearch(""); navigate({ search: undefined }); }}>{t("common.clearSearch")}</Button>}
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-5.5 -translate-y-1/2" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("listings.searchPlaceholder")} placeholder={t("listings.searchPlaceholder")} className="pl-9 bg-white min-w-0 h-11" />
+          <Button type="submit" size="icon" variant="outline" aria-label={t("common.search")} className="shrink-0 size-11"><Search className="size-4" /></Button>
+          {appliedSearch && <Button type="button" size="sm" variant="ghost" className="col-span-2 min-h-11 justify-self-end" onClick={() => { setSearch(""); navigate({ search: undefined }); }}>{t("common.clearSearch")}</Button>}
         </form>
       </div>
 
