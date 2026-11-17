@@ -65,8 +65,8 @@ export default function CoverSection() {
     <div className="relative w-full min-h-svh overflow-hidden bg-teal-950">
       <video
         ref={videoRef}
-        poster="/green.webp"
-        preload="none"
+        poster="/hero-video-poster.jpg"
+        preload="metadata"
         loop
         aria-hidden="true"
         muted

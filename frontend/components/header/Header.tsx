@@ -213,7 +213,11 @@ function ProfileDropdown() {
 
 function AuthButtons() {
   const t = useTranslations("common.nav");
-  if (IS_RENT_SITE) return <a href={`${SALES_URL}/dashboard?market=rent`} className="rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-teal-950">{t("dashboard")}</a>;
+  const locale = useLocale();
+  const signInHref = IS_RENT_SITE
+    ? `${SALES_URL}/${locale}/signin?next=${encodeURIComponent("/dashboard?market=rent")}`
+    : ROUTES.SIGNIN;
+  const signUpHref = IS_RENT_SITE ? `${SALES_URL}/${locale}/signup` : ROUTES.SIGNUP;
   return (
     <div className="flex items-center gap-2">
       <Button
@@ -222,14 +226,14 @@ function AuthButtons() {
         className="text-amber-100/80 hover:text-amber-300 hover:bg-white/[0.06] font-semibold rounded-xl h-10 px-4"
         asChild
       >
-        <Link href={ROUTES.SIGNIN}>{t("signin")}</Link>
+        <Link href={signInHref}>{t("signin")}</Link>
       </Button>
       <Button
         size="sm"
         className="bg-amber-400 hover:bg-amber-300 text-teal-950 font-bold rounded-xl h-10 px-4 shadow-md shadow-amber-400/20 transition-all duration-200"
         asChild
       >
-        <Link href={ROUTES.SIGNUP}>{t("signup")}</Link>
+        <Link href={signUpHref}>{t("signup")}</Link>
       </Button>
     </div>
   );
@@ -363,7 +367,7 @@ export default function Header() {
             <CurrencySwitcher dark />
             <div className="hidden 2xl:flex items-center gap-3">
               <LocaleSwitcher />
-              {!authLoading && (user ? <ProfileDropdown /> : <AuthButtons />)}
+              {!authLoading && (!IS_RENT_SITE && user ? <ProfileDropdown /> : <AuthButtons />)}
             </div>
 
             <button

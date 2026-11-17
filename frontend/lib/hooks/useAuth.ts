@@ -48,8 +48,9 @@ export const useCurrentUser = () => {
     enabled: hasToken,
     retry: false,
     staleTime: 5 * 60 * 1000,
+    refetchOnMount: "always",
   });
-  return { ...query, data: hasToken ? query.data : null };
+  return { ...query, data: hasToken && !query.isError ? query.data : null };
 };
 
 export const useSignIn = () => {
