@@ -168,7 +168,7 @@ export function TextsSection({ data, onChange, errors = {} }: SectionProps) {
     <div className="space-y-5">
       <SectionTitle hint={t("textsHint")}>{t("sections.texts")}</SectionTitle>
 
-      <div className="flex gap-1 rounded-xl bg-gray-100 p-1 w-fit">
+      <div className="flex flex-wrap gap-1 rounded-xl bg-gray-100 p-1 w-fit max-w-full">
         {languages.map(({ code, label }) => {
           const filled = titleOf(code).trim().length > 0;
           return (

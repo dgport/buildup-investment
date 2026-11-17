@@ -310,12 +310,12 @@ export default function EditPropertyPage() {
                 </Alert>
               )}
 
-              <div className="sticky bottom-4 z-10 flex gap-3 pt-4 border-t border-gray-100 bg-white/95 backdrop-blur rounded-b-2xl">
+              <div className="sticky bottom-4 z-10 flex flex-col sm:flex-row gap-3 pt-4 [&_button]:min-h-11 border-t border-gray-100 bg-white/95 backdrop-blur rounded-b-2xl">
                 <Button
                   type="button"
                   onClick={handleSubmit}
                   disabled={updateProperty.isPending || !hasChanges}
-                  className="flex-1 bg-teal-900 hover:bg-teal-800"
+                  className="flex-1 text-xs sm:text-sm bg-teal-900 hover:bg-teal-800"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {updateProperty.isPending ? t("saving") : t("saveChanges")}
