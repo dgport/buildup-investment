@@ -37,7 +37,7 @@ export function SectionTitle({
 
 function FieldLabel({ label, required, htmlFor }: { label: string; required?: boolean; htmlFor: string }) {
   return (
-    <Label htmlFor={htmlFor} className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800/80">
+    <Label htmlFor={htmlFor} className="min-h-8 items-end text-[11px] leading-4 font-semibold uppercase tracking-[0.14em] text-teal-800/80">
       {label} {required && <span className="text-amber-500">*</span>}
     </Label>
   );
@@ -61,7 +61,7 @@ export function FieldInput({
   const id = props.id ?? generatedId;
   const description = [props["aria-describedby"], (error || hint) ? `${id}-description` : undefined].filter(Boolean).join(" ") || undefined;
   return (
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
       <FieldLabel htmlFor={id} label={label} required={required} />
       <Input {...props} id={id} aria-required={required} aria-describedby={description} aria-invalid={!!error} className={cn(FIELD, className)} />
       {error ? (
@@ -87,7 +87,7 @@ export function FieldTextarea({
   const generatedId = useId();
   const id = props.id ?? generatedId;
   return (
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
       <FieldLabel htmlFor={id} label={label} required={required} />
       <Textarea
         {...props}
@@ -133,7 +133,7 @@ export function FieldSelect({
   const NONE = "__none__";
   const id = useId();
   return (
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
       <FieldLabel htmlFor={id} label={label} required={required} />
       <Select
         value={value || (clearLabel ? NONE : undefined)}

@@ -57,7 +57,7 @@ export default function HeroSearch() {
         {t("searchTitle")}
       </p>
       <div className="bg-teal-950/70 backdrop-blur-md border border-amber-400/30 rounded-2xl p-2 sm:p-3 shadow-2xl shadow-black/30">
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2">
           <Select value={dealType} onValueChange={setDealType}>
             <SelectTrigger className={trigger} aria-label={t("dealType")}>
               <SelectValue placeholder={t("dealType")} />
@@ -99,7 +99,7 @@ export default function HeroSearch() {
             onClick={submit}
             className="h-12 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 text-teal-950 font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-amber-400/25"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-4 h-4 shrink-0" />
             {t("search")}
           </button>
         </div>

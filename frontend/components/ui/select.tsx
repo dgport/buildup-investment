@@ -37,7 +37,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit min-w-[180px] items-center justify-between gap-3 rounded-lg",
+        "flex w-full min-w-0 items-center justify-between gap-3 rounded-lg text-left",
         "border border-gray-200 dark:border-gray-700",
         "bg-white dark:bg-gray-900/50",
         "px-3.5 py-2 text-sm whitespace-nowrap",
@@ -48,8 +48,8 @@ function SelectTrigger({
         "aria-invalid:border-red-500 aria-invalid:ring-1 aria-invalid:ring-red-500/20",
         "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-900",
         "data-[placeholder]:text-gray-500 dark:data-[placeholder]:text-gray-400",
-        "data-[size=default]:h-10 data-[size=sm]:h-9",
-        "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
+        size === "sm" ? "h-9" : "h-10",
+        "*:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:truncate *:data-[slot=select-value]:block",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "[&_svg:not([class*='text-'])]:text-gray-500 dark:[&_svg:not([class*='text-'])]:text-gray-400",
         className,
